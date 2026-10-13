@@ -98,7 +98,9 @@ pipeline {
                         for (service in services) {
                             def imageName = "ghcr.io/an619/marketplace-${service}"
                             sh "docker build -f docker/Dockerfile.service --build-arg SERVICE_MODULE=${service} -t ${imageName}:${imageTag} ."
+                            sh "docker tag ${imageName}:${imageTag} ${imageName}:latest"
                             sh "docker push ${imageName}:${imageTag}"
+                            sh "docker push ${imageName}:latest"
                         }
                     }
                 }
