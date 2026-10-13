@@ -1,17 +1,32 @@
 # Default values for marketplace-platform.
-# Override per environment using values-dev.yaml, values-qa.yaml, values-prod.yaml
+# Application-only chart. External infrastructure must be provisioned separately.
+
+nameOverride: ""
+fullnameOverride: ""
 
 global:
-  imageRegistry: registry.gitlab.com/enterprise-marketplace
+  # Images published by .github/workflows/publish-images.yml
+  imageRegistry: ghcr.io/an619
+  imageTag: latest
   imagePullPolicy: IfNotPresent
-  environment: local
+  environment: dev
+  # Optional pre-created Secret containing environment-specific application settings.
+  existingSecret: ""
+  imagePullSecrets: []
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 768Mi
 
 gateway:
   enabled: true
   replicaCount: 1
   image:
-    repository: gateway-service
-    tag: "1.0.0-SNAPSHOT"
+    repository: marketplace-gateway-service
+    tag: ""
   service:
     type: ClusterIP
     port: 8080
@@ -26,48 +41,78 @@ gateway:
 services:
   identity-service:
     enabled: true
+    image:
+      repository: marketplace-identity-service
     port: 8081
   product-service:
     enabled: true
+    image:
+      repository: marketplace-product-service
     port: 8082
   seller-service:
     enabled: true
+    image:
+      repository: marketplace-seller-service
     port: 8083
   buyer-service:
     enabled: true
+    image:
+      repository: marketplace-buyer-service
     port: 8084
   category-service:
     enabled: true
+    image:
+      repository: marketplace-category-service
     port: 8085
   inventory-service:
     enabled: true
+    image:
+      repository: marketplace-inventory-service
     port: 8086
   pricing-service:
     enabled: true
+    image:
+      repository: marketplace-pricing-service
     port: 8087
   workflow-service:
     enabled: true
+    image:
+      repository: marketplace-workflow-service
     port: 8088
   notification-service:
     enabled: true
+    image:
+      repository: marketplace-notification-service
     port: 8089
   search-service:
     enabled: true
+    image:
+      repository: marketplace-search-service
     port: 8090
   ai-service:
     enabled: true
+    image:
+      repository: marketplace-ai-service
     port: 8091
   audit-service:
     enabled: true
+    image:
+      repository: marketplace-audit-service
     port: 8092
   subscription-service:
     enabled: true
+    image:
+      repository: marketplace-subscription-service
     port: 8093
   report-service:
     enabled: true
+    image:
+      repository: marketplace-report-service
     port: 8094
   admin-service:
     enabled: true
+    image:
+      repository: marketplace-admin-service
     port: 8095
 
 observability:
