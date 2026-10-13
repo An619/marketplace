@@ -25,7 +25,8 @@ import org.testcontainers.utility.DockerImageName;
         properties = {
             "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration",
             "marketplace.security.enabled=false",
-            "marketplace.auth.session-store=memory"
+            "marketplace.auth.session-store=memory",
+            "management.endpoint.health.group.readiness.include=readinessState,ping,redis"
         })
 class IdentityInfrastructureHealthIntegrationTest {
 
