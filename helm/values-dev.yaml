@@ -1,0 +1,22 @@
+# Development values. Publish images before syncing Argo CD.
+global:
+  environment: dev
+  imageTag: latest
+  imagePullPolicy: Always
+  existingSecret: marketplace-runtime-secrets
+
+gateway:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 768Mi
+
+ingress:
+  enabled: false
+
+# This chart deploys application services only. External infrastructure such as
+# PostgreSQL, Kafka, Redis, Elasticsearch, Keycloak and Ollama must be configured separately.
