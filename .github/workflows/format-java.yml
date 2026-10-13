@@ -1,0 +1,54 @@
+name: Format Java sources
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/format-java.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: java-format-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  format-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Apply repository Java formatting
+        run: mvn -B spotless:apply
+
+      - name: Commit formatting changes
+        shell: bash
+        run: |
+          if [[ -n "$(git status --porcelain -- '*.java')" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -u -- '*.java'
+            git commit -m "Apply Spotless Java formatting"
+            git push origin HEAD:main
+          else
+            echo "All Java files already comply with Spotless."
+          fi
+
+      - name: Verify formatting
+        run: mvn -B spotless:check
+
+      - name: Build and test
+        run: mvn -B clean verify -Pcoverage
