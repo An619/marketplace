@@ -34,7 +34,28 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  validate:
+    name: Verify source before publishing images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Verify formatting
+        run: mvn -B spotless:check
+
+      - name: Build and test all modules
+        run: mvn -B clean verify -Pcoverage
+
   publish:
+    needs: validate
     name: Build and publish ${{ matrix.service }}
     runs-on: ubuntu-latest
     strategy:
