@@ -129,3 +129,23 @@ See [docs/folder-structure.md](docs/folder-structure.md) for the complete layout
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+
+## DevOps practice and deployment
+
+This repository includes starter automation and infrastructure configuration for hands-on DevOps practice. These files still require validation in your environment; their presence does not imply a successful production deployment.
+
+- [Jenkins pipeline](Jenkinsfile) — Maven formatting/tests, SonarQube analysis and quality gate, optional GHCR publishing.
+- [GitHub Actions CI](.github/workflows/ci.yml) — Maven checks and test reports.
+- [Container publishing workflow](.github/workflows/publish-images.yml) — builds the 16 deployable services and publishes images to GitHub Container Registry.
+- [Repository security scan](.github/workflows/security-scan.yml) — Trivy filesystem/dependency/configuration scan.
+- [Infrastructure validation](.github/workflows/validate-infrastructure.yml) — Helm lint/render and Terraform validation.
+- [Helm chart](helm/README.md) — Kubernetes Deployments and Services for the gateway and application services.
+- [Argo CD Application](argocd/marketplace-application.yaml) — GitOps synchronization of the Helm chart.
+- [Kubernetes guide](kubernetes/README.md) — rendering and development deployment instructions.
+- [Terraform EKS guide](terraform/README.md) — starter AWS VPC/EKS infrastructure and cleanup guidance.
+- [DevOps deployment guide](docs/devops-deployment-guide.md) — CI/CD setup, registry permissions, prerequisites and production-readiness checklist.
+
+### Important
+
+The application requires external infrastructure such as PostgreSQL, Kafka, Redis, Elasticsearch, Keycloak and Ollama. Helm does not provision these dependencies. Configure secrets outside Git, verify GHCR image visibility and health probes, and run validation before syncing Argo CD or creating AWS resources.
