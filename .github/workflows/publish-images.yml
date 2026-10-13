@@ -3,6 +3,26 @@ name: Publish microservice images
 on:
   push:
     branches: [main]
+    paths:
+      - 'pom.xml'
+      - 'common-library/**'
+      - 'gateway-service/**'
+      - 'identity-service/**'
+      - 'product-service/**'
+      - 'seller-service/**'
+      - 'buyer-service/**'
+      - 'category-service/**'
+      - 'inventory-service/**'
+      - 'pricing-service/**'
+      - 'workflow-service/**'
+      - 'notification-service/**'
+      - 'search-service/**'
+      - 'ai-service/**'
+      - 'audit-service/**'
+      - 'subscription-service/**'
+      - 'report-service/**'
+      - 'admin-service/**'
+      - 'docker/Dockerfile.service'
   workflow_dispatch:
 
 permissions:
