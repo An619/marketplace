@@ -1,0 +1,25 @@
+# Apply only after Argo CD is installed and container images are published.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: enterprise-marketplace
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/An619/marketplace.git
+    targetRevision: main
+    path: helm
+    helm:
+      valueFiles:
+        - values-dev.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: marketplace
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
