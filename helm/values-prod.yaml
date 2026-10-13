@@ -1,0 +1,20 @@
+# Production example. Replace imageTag with an immutable image tag from CI.
+# Validate external dependencies, secrets, capacity, ingress/TLS and recovery before use.
+global:
+  environment: prod
+  imageTag: "REPLACE_WITH_GIT_SHA"
+  imagePullPolicy: IfNotPresent
+  existingSecret: marketplace-runtime-secrets
+
+gateway:
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+# Tune replicas and resources per service only after load testing.
+# Do not use this example in production until it has been reviewed and tested.
