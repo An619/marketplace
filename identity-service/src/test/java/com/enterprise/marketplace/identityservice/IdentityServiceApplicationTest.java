@@ -13,7 +13,8 @@ import org.springframework.boot.test.context.SpringBootTest;
                     + "org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration",
             "spring.profiles.active=test",
             "marketplace.security.enabled=false",
-            "marketplace.kafka.enabled=false"
+            "marketplace.kafka.enabled=false",
+            "marketplace.auth.session-store=memory"
         })
 class IdentityServiceApplicationTest {
 
