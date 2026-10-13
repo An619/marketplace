@@ -23,8 +23,7 @@ import org.testcontainers.utility.DockerImageName;
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
-            "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration,"
-                    + "org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration",
+            "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration",
             "marketplace.security.enabled=false",
             "marketplace.auth.session-store=memory"
         })
