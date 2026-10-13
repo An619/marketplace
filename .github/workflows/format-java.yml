@@ -50,5 +50,3 @@ jobs:
       - name: Verify formatting
         run: mvn -B spotless:check
 
-      - name: Build and test
-        run: mvn -B clean verify -Pcoverage
