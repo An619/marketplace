@@ -1,12 +1,12 @@
 # Enterprise Marketplace Platform
 
-Production-ready B2B marketplace backend platform (IndiaMART-like) built with Java 21, Spring Boot 3.5.x, and cloud-native microservices architecture.
+Enterprise-style B2B marketplace backend platform (IndiaMART-like) built with Java 21, Spring Boot 3.5.x, and a cloud-native microservices architecture. This repository is intended for hands-on application engineering and DevOps portfolio practice; production readiness must be established through testing, security review, and environment-specific validation.
 
 ## Overview
 
 This repository contains the **Enterprise Marketplace Platform** — a Maven multi-module monorepo with shared libraries, API gateway, domain microservice scaffolds, and a complete **Infrastructure Foundation** (Docker Compose, Keycloak, Kafka, Redis, Elasticsearch, observability stack).
 
-Business APIs for the core B2B domain (product, seller, buyer, category, inventory, pricing) are implemented with full CRUD. **Workflow**, **Notification**, **Audit**, **Subscription**, **Report**, **Admin**, **Search**, and **AI** services are production-ready. Remaining scaffold (identity) will be added in subsequent milestones.
+Core B2B domain services include CRUD APIs for products, sellers, buyers, categories, inventory, and pricing. Workflow, notification, audit, subscription, report, admin, search, AI, and identity modules are present; their operational readiness should be judged by the current CI/test results and successful environment-specific deployment, not by source presence alone.
 
 ## Technology Stack
 
@@ -144,7 +144,7 @@ This repository includes starter automation and infrastructure configuration for
 - [Argo CD Application](argocd/marketplace-application.yaml) — GitOps synchronization of the Helm chart.
 - [Kubernetes guide](kubernetes/README.md) — rendering and development deployment instructions.
 - [Terraform EKS guide](terraform/README.md) — starter AWS VPC/EKS infrastructure and cleanup guidance.
-- [DevOps deployment guide](docs/devops-deployment-guide.md) — CI/CD setup, registry permissions, prerequisites and production-readiness checklist.
+- [DevOps deployment guide](docs/devops-deployment-guide.md) — CI/CD setup, registry permissions, prerequisites and production-readiness checklist.\n- [Jenkins and Argo CD setup](docs/jenkins-argocd-setup.md) — Jenkins tools, credentials, GHCR publishing and GitOps deployment steps.
 
 ### Important
 
