@@ -1,5 +1,7 @@
 # Enterprise Marketplace Platform
 
+![CI](https://github.com/An619/marketplace/actions/workflows/ci.yml/badge.svg?branch=main) ![Deployment validation](https://github.com/An619/marketplace/actions/workflows/validate-infrastructure.yml/badge.svg?branch=main)
+
 Enterprise-style B2B marketplace backend platform (IndiaMART-like) built with Java 21, Spring Boot 3.5.x, and a cloud-native microservices architecture. This repository is intended for hands-on application engineering and DevOps portfolio practice; production readiness must be established through testing, security review, and environment-specific validation.
 
 ## Overview
