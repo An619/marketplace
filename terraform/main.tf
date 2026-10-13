@@ -32,12 +32,12 @@ locals {
 
   private_subnets = [
     cidrsubnet(var.vpc_cidr, 4, 0),
-    cidrsubnet(var.vpc_cidr, 4, 1)
+    cidrsubnet(var.vpc_cidr, 4, 1),
   ]
 
   public_subnets = [
     cidrsubnet(var.vpc_cidr, 4, 8),
-    cidrsubnet(var.vpc_cidr, 4, 9)
+    cidrsubnet(var.vpc_cidr, 4, 9),
   ]
 
   common_tags = merge(var.tags, {
@@ -70,7 +70,7 @@ module "vpc" {
   }
 
   private_subnet_tags = {
-    "kubernetes.io/role/internal-elb" = "1"
+    "kubernetes.io/role/internal-elb"   = "1"
     "kubernetes.io/cluster/${local.name}" = "shared"
   }
 
@@ -84,8 +84,8 @@ module "eks" {
   cluster_name    = local.name
   cluster_version = var.kubernetes_version
 
-  cluster_endpoint_private_access = true
-  cluster_endpoint_public_access  = true
+  cluster_endpoint_private_access      = true
+  cluster_endpoint_public_access       = true
   cluster_endpoint_public_access_cidrs = var.cluster_endpoint_public_access_cidrs
 
   enable_cluster_creator_admin_permissions = true
