@@ -1,0 +1,67 @@
+name: Validate deployment configuration
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'helm/**'
+      - 'kubernetes/**'
+      - 'argocd/**'
+      - 'terraform/**'
+      - '.github/workflows/validate-infrastructure.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'helm/**'
+      - 'kubernetes/**'
+      - 'argocd/**'
+      - 'terraform/**'
+      - '.github/workflows/validate-infrastructure.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  helm:
+    name: Lint and render Helm chart
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.17.3
+
+      - name: Lint chart
+        run: helm lint ./helm
+
+      - name: Render development chart
+        run: helm template marketplace ./helm --namespace marketplace --values ./helm/values-dev.yaml
+
+      - name: Render production chart
+        run: helm template marketplace ./helm --namespace marketplace --values ./helm/values-prod.yaml
+
+  terraform:
+    name: Format and validate Terraform
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Check formatting
+        run: terraform fmt -check -recursive
+
+      - name: Initialize providers and modules without backend
+        run: terraform init -backend=false -input=false
+
+      - name: Validate configuration
+        run: terraform validate
