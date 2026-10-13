@@ -8,9 +8,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import com.enterprise.marketplace.identityservice.config.AuthProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.enterprise.marketplace.identityservice.config.AuthProperties;
 
 import lombok.RequiredArgsConstructor;
 
@@ -91,12 +91,15 @@ public class RedisAuthSessionStore implements AuthSessionStore {
 
     private void put(String key, Object value, long ttlSeconds) {
         try {
-            redisTemplate.opsForValue().set(
-                    key,
-                    objectMapper.writeValueAsString(value),
-                    Duration.ofSeconds(Math.max(1, ttlSeconds)));
+            redisTemplate
+                    .opsForValue()
+                    .set(
+                            key,
+                            objectMapper.writeValueAsString(value),
+                            Duration.ofSeconds(Math.max(1, ttlSeconds)));
         } catch (JsonProcessingException exception) {
-            throw new IllegalStateException("Unable to serialize authentication session data", exception);
+            throw new IllegalStateException(
+                    "Unable to serialize authentication session data", exception);
         }
     }
 
@@ -108,7 +111,8 @@ public class RedisAuthSessionStore implements AuthSessionStore {
         try {
             return Optional.of(objectMapper.readValue(json, type));
         } catch (JsonProcessingException exception) {
-            throw new IllegalStateException("Unable to deserialize authentication session data", exception);
+            throw new IllegalStateException(
+                    "Unable to deserialize authentication session data", exception);
         }
     }
 }
