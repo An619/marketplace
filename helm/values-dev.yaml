@@ -3,7 +3,7 @@ global:
   environment: dev
   imageTag: latest
   imagePullPolicy: Always
-  existingSecret: marketplace-runtime-secrets
+  existingSecret: ""
 
 gateway:
   replicaCount: 1
@@ -20,3 +20,6 @@ ingress:
 
 # This chart deploys application services only. External infrastructure such as
 # PostgreSQL, Kafka, Redis, Elasticsearch, Keycloak and Ollama must be configured separately.
+
+# To inject runtime configuration, create a Secret securely and set
+# global.existingSecret to its name in an environment-specific values file.
