@@ -10,12 +10,12 @@ permissions:
   packages: write
 
 concurrency:
-  group: publish-images-\${{ github.ref }}
+  group: publish-images-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   publish:
-    name: Build and publish \${{ matrix.service }}
+    name: Build and publish ${{ matrix.service }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -49,8 +49,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: \${{ github.actor }}
-          password: \${{ secrets.GITHUB_TOKEN }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push image
         uses: docker/build-push-action@v6
@@ -58,13 +58,13 @@ jobs:
           context: .
           file: docker/Dockerfile.service
           build-args: |
-            SERVICE_MODULE=\${{ matrix.service }}
+            SERVICE_MODULE=${{ matrix.service }}
           push: true
           tags: |
-            ghcr.io/an619/marketplace-\${{ matrix.service }}:sha-\${{ github.sha }}
-            ghcr.io/an619/marketplace-\${{ matrix.service }}:latest
-          cache-from: type=gha,scope=\${{ matrix.service }}
-          cache-to: type=gha,mode=max,scope=\${{ matrix.service }}
+            ghcr.io/an619/marketplace-${{ matrix.service }}:sha-${{ github.sha }}
+            ghcr.io/an619/marketplace-${{ matrix.service }}:latest
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
 
 # GHCR packages may be private by default. Configure package visibility or imagePullSecrets
 # before deploying to a cluster that cannot authenticate. This workflow builds all 16
