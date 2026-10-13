@@ -41,8 +41,8 @@ Flyway: `V1__create_report_domain_tables.sql`
 
 ## Kafka Topics
 
-**Consumed:** `workflow-completed`, `product-created`  
-**Published:** `report-generated`, `report-failed`, `audit-created`  
+**Consumed:** `workflow-completed`, `product-created`
+**Published:** `report-generated`, `report-failed`, `audit-created`
 **DLQ:** `report-dead-letter`
 
 ## Run Locally

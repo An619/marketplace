@@ -49,7 +49,7 @@ Flyway: `V1__create_admin_domain_tables.sql`
 
 ## Kafka Topics
 
-**Published:** `admin-config-changed`, `admin-feature-toggled`, `audit-created`  
+**Published:** `admin-config-changed`, `admin-feature-toggled`, `audit-created`
 **DLQ:** `admin-dead-letter`
 
 ## Run Locally

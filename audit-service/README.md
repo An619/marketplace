@@ -43,8 +43,8 @@ Flyway: `V1__create_audit_domain_tables.sql`
 
 ## Kafka Topics
 
-**Consumed:** `audit-created`  
-**Published:** `audit-indexed`, `audit-archived`  
+**Consumed:** `audit-created`
+**Published:** `audit-indexed`, `audit-archived`
 **DLQ:** `audit-dead-letter`
 
 ## Run Locally
