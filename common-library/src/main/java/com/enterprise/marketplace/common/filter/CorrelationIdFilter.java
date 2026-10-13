@@ -1,21 +1,22 @@
 package com.enterprise.marketplace.common.filter;
 
-import com.enterprise.marketplace.common.constant.HttpHeaders;
-import com.enterprise.marketplace.common.context.RequestContext;
+import java.io.IOException;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
+
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-/**
- * Propagates correlation and request identifiers across service boundaries.
- */
+import com.enterprise.marketplace.common.constant.HttpHeaders;
+import com.enterprise.marketplace.common.context.RequestContext;
+
+/** Propagates correlation and request identifiers across service boundaries. */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class CorrelationIdFilter extends OncePerRequestFilter {

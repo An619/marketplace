@@ -1,12 +1,13 @@
 package com.enterprise.marketplace.sellerservice.infrastructure.persistence.mapper;
 
-import com.enterprise.marketplace.sellerservice.domain.model.Seller;
-import com.enterprise.marketplace.sellerservice.infrastructure.persistence.entity.SellerEntity;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+
+import com.enterprise.marketplace.sellerservice.domain.model.Seller;
+import com.enterprise.marketplace.sellerservice.infrastructure.persistence.entity.SellerEntity;
 
 @Mapper(componentModel = "spring")
 public interface SellerPersistenceMapper {

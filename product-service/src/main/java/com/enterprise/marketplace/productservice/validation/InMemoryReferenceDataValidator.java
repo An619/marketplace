@@ -1,15 +1,20 @@
 package com.enterprise.marketplace.productservice.validation;
 
-import com.enterprise.marketplace.common.exception.ErrorCode;
-import com.enterprise.marketplace.common.exception.MarketplaceException;
 import java.util.Set;
 import java.util.UUID;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import com.enterprise.marketplace.common.exception.ErrorCode;
+import com.enterprise.marketplace.common.exception.MarketplaceException;
+
 @Component
-@ConditionalOnProperty(name = "marketplace.redis.enabled", havingValue = "false", matchIfMissing = true)
+@ConditionalOnProperty(
+        name = "marketplace.redis.enabled",
+        havingValue = "false",
+        matchIfMissing = true)
 public class InMemoryReferenceDataValidator implements ReferenceDataValidator {
 
     private static final Set<String> VALID_CURRENCIES = Set.of("INR", "USD", "EUR", "GBP");
@@ -30,7 +35,8 @@ public class InMemoryReferenceDataValidator implements ReferenceDataValidator {
             return;
         }
         if (!VALID_CURRENCIES.contains(currency.toUpperCase())) {
-            throw new MarketplaceException(ErrorCode.VALIDATION_ERROR, "Unknown currency: " + currency);
+            throw new MarketplaceException(
+                    ErrorCode.VALIDATION_ERROR, "Unknown currency: " + currency);
         }
     }
 }

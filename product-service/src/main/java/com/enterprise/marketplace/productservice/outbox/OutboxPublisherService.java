@@ -1,25 +1,32 @@
 package com.enterprise.marketplace.productservice.outbox;
 
-import com.enterprise.marketplace.productservice.entity.OutboxEventEntity;
-import com.enterprise.marketplace.productservice.enums.OutboxEventStatus;
-import com.enterprise.marketplace.productservice.kafka.ProductKafkaEventPublisher;
-import com.enterprise.marketplace.productservice.repository.OutboxEventRepository;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.enterprise.marketplace.productservice.entity.OutboxEventEntity;
+import com.enterprise.marketplace.productservice.enums.OutboxEventStatus;
+import com.enterprise.marketplace.productservice.kafka.ProductKafkaEventPublisher;
+import com.enterprise.marketplace.productservice.repository.OutboxEventRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "marketplace.kafka", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+        prefix = "marketplace.kafka",
+        name = "enabled",
+        havingValue = "true",
+        matchIfMissing = true)
 @ConditionalOnBean(ProductKafkaEventPublisher.class)
 public class OutboxPublisherService {
 
@@ -30,7 +37,8 @@ public class OutboxPublisherService {
     @Transactional
     public void publishPendingEvents() {
         List<OutboxEventEntity> pending =
-                outboxEventRepository.findTop50ByStatusOrderByCreatedAtAsc(OutboxEventStatus.PENDING);
+                outboxEventRepository.findTop50ByStatusOrderByCreatedAtAsc(
+                        OutboxEventStatus.PENDING);
         for (OutboxEventEntity event : pending) {
             publishSingle(event);
         }
@@ -47,7 +55,10 @@ public class OutboxPublisherService {
             }
             headers.put("eventType", event.getEventType());
             kafkaEventPublisher.publish(
-                    event.getTopic(), event.getAggregateId().toString(), event.getPayload(), headers);
+                    event.getTopic(),
+                    event.getAggregateId().toString(),
+                    event.getPayload(),
+                    headers);
             event.setStatus(OutboxEventStatus.PUBLISHED);
             event.setPublishedAt(Instant.now());
             event.setLastError(null);
@@ -59,11 +70,21 @@ public class OutboxPublisherService {
             if (event.getRetryCount() >= event.getMaxRetries()) {
                 event.setStatus(OutboxEventStatus.DEAD_LETTER);
                 kafkaEventPublisher.publishDeadLetter(
-                        event.getAggregateId().toString(), event.getPayload(), Map.of("eventType", event.getEventType()));
-                log.error("Outbox event moved to dead letter id={} type={}", event.getId(), event.getEventType(), ex);
+                        event.getAggregateId().toString(),
+                        event.getPayload(),
+                        Map.of("eventType", event.getEventType()));
+                log.error(
+                        "Outbox event moved to dead letter id={} type={}",
+                        event.getId(),
+                        event.getEventType(),
+                        ex);
             } else {
                 event.setStatus(OutboxEventStatus.FAILED);
-                log.warn("Outbox publish failed id={} retry={}", event.getId(), event.getRetryCount(), ex);
+                log.warn(
+                        "Outbox publish failed id={} retry={}",
+                        event.getId(),
+                        event.getRetryCount(),
+                        ex);
             }
         }
         outboxEventRepository.save(event);

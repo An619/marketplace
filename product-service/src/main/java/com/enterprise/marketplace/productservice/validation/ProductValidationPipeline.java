@@ -1,6 +1,7 @@
 package com.enterprise.marketplace.productservice.validation;
 
 import java.util.List;
+
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 
@@ -20,13 +21,14 @@ public class ProductValidationPipeline {
                 referenceValidationStepProvider.getIfAvailable() != null
                         ? referenceValidationStepProvider.getIfAvailable()
                         : context -> {};
-        this.steps = List.of(
-                jwtValidationStep,
-                jsonSchemaValidationStep,
-                beanValidationStep,
-                referenceStep,
-                businessValidationStep,
-                duplicateSkuValidationStep);
+        this.steps =
+                List.of(
+                        jwtValidationStep,
+                        jsonSchemaValidationStep,
+                        beanValidationStep,
+                        referenceStep,
+                        businessValidationStep,
+                        duplicateSkuValidationStep);
     }
 
     public void validate(ProductValidationContext context) {

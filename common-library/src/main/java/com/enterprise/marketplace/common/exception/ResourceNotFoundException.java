@@ -1,8 +1,6 @@
 package com.enterprise.marketplace.common.exception;
 
-/**
- * Thrown when a requested resource does not exist.
- */
+/** Thrown when a requested resource does not exist. */
 public class ResourceNotFoundException extends MarketplaceException {
 
     public ResourceNotFoundException(String resource, Object identifier) {

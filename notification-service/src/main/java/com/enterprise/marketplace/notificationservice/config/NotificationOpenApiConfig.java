@@ -11,7 +11,8 @@ public class NotificationOpenApiConfig {
     public GroupedOpenApi notificationGroupedOpenApi() {
         return GroupedOpenApi.builder()
                 .group("notification-service")
-                .pathsToMatch("/api/v1/notifications/**", "/api/v1/inbox/**", "/api/v1/bootstrap/**")
+                .pathsToMatch(
+                        "/api/v1/notifications/**", "/api/v1/inbox/**", "/api/v1/bootstrap/**")
                 .displayName("Notification Service API")
                 .build();
     }

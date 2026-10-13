@@ -1,16 +1,14 @@
 package com.enterprise.marketplace.categoryservice.domain.service;
 
-import com.enterprise.marketplace.categoryservice.domain.model.Category;
-import com.enterprise.marketplace.categoryservice.domain.model.CategoryStatus;
 import org.springframework.util.StringUtils;
 
-/**
- * Pure domain rules for category validation.
- */
+import com.enterprise.marketplace.categoryservice.domain.model.Category;
+import com.enterprise.marketplace.categoryservice.domain.model.CategoryStatus;
+
+/** Pure domain rules for category validation. */
 public final class CategoryDomainService {
 
-    private CategoryDomainService() {
-    }
+    private CategoryDomainService() {}
 
     public static void validateForCreate(Category category) {
         validateSlug(category.getSlug());
@@ -28,13 +26,15 @@ public final class CategoryDomainService {
 
     private static void validateSlug(String slug) {
         if (!StringUtils.hasText(slug) || slug.length() > 120) {
-            throw new IllegalArgumentException("Slug is required and must be at most 120 characters");
+            throw new IllegalArgumentException(
+                    "Slug is required and must be at most 120 characters");
         }
     }
 
     private static void validateName(String name) {
         if (!StringUtils.hasText(name) || name.length() > 255) {
-            throw new IllegalArgumentException("Name is required and must be at most 255 characters");
+            throw new IllegalArgumentException(
+                    "Name is required and must be at most 255 characters");
         }
     }
 

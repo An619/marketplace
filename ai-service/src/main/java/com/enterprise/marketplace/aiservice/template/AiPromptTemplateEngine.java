@@ -1,6 +1,7 @@
 package com.enterprise.marketplace.aiservice.template;
 
 import java.util.Map;
+
 import org.springframework.stereotype.Component;
 
 @Component
@@ -13,7 +14,10 @@ public class AiPromptTemplateEngine {
         String rendered = template;
         if (variables != null) {
             for (Map.Entry<String, String> entry : variables.entrySet()) {
-                rendered = rendered.replace("{{" + entry.getKey() + "}}", entry.getValue() != null ? entry.getValue() : "");
+                rendered =
+                        rendered.replace(
+                                "{{" + entry.getKey() + "}}",
+                                entry.getValue() != null ? entry.getValue() : "");
             }
         }
         return rendered;

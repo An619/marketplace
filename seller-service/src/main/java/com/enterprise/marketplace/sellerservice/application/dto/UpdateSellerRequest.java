@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -13,43 +14,23 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class UpdateSellerRequest {
 
-    @NotBlank
-    @Size(max = 255)
-    String companyName;
+    @NotBlank @Size(max = 255) String companyName;
 
-    @NotBlank
-    @Size(max = 255)
-    String tradeName;
+    @NotBlank @Size(max = 255) String tradeName;
 
-    @NotBlank
-    @Size(max = 15)
-    String gstin;
+    @NotBlank @Size(max = 15) String gstin;
 
-    @NotBlank
-    @Size(max = 10)
-    String pan;
+    @NotBlank @Size(max = 10) String pan;
 
-    @NotBlank
-    @Email
-    @Size(max = 255)
-    String email;
+    @NotBlank @Email @Size(max = 255) String email;
 
-    @NotBlank
-    @Pattern(regexp = "^[0-9]{10}$")
-    String phone;
+    @NotBlank @Pattern(regexp = "^[0-9]{10}$") String phone;
 
-    @NotBlank
-    @Size(max = 128)
-    String city;
+    @NotBlank @Size(max = 128) String city;
 
-    @NotBlank
-    @Size(max = 128)
-    String state;
+    @NotBlank @Size(max = 128) String state;
 
-    @Size(max = 128)
-    String country;
+    @Size(max = 128) String country;
 
-    @NotBlank
-    @Size(max = 10)
-    String pinCode;
+    @NotBlank @Size(max = 10) String pinCode;
 }

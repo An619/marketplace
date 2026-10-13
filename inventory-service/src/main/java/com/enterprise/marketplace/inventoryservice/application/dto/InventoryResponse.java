@@ -1,8 +1,10 @@
 package com.enterprise.marketplace.inventoryservice.application.dto;
 
-import com.enterprise.marketplace.inventoryservice.domain.model.InventoryStatus;
 import java.time.Instant;
 import java.util.UUID;
+
+import com.enterprise.marketplace.inventoryservice.domain.model.InventoryStatus;
+
 import lombok.Builder;
 import lombok.Value;
 

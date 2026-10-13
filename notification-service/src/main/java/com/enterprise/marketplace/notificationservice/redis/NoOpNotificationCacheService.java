@@ -1,13 +1,15 @@
 package com.enterprise.marketplace.notificationservice.redis;
 
-import com.enterprise.marketplace.notificationservice.dto.NotificationResponse;
-import com.enterprise.marketplace.notificationservice.entity.NotificationChannelEntity;
-import com.enterprise.marketplace.notificationservice.entity.NotificationTemplateEntity;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+
+import com.enterprise.marketplace.notificationservice.dto.NotificationResponse;
+import com.enterprise.marketplace.notificationservice.entity.NotificationChannelEntity;
+import com.enterprise.marketplace.notificationservice.entity.NotificationTemplateEntity;
 
 @Service
 @ConditionalOnProperty(prefix = "marketplace.redis", name = "enabled", havingValue = "false")

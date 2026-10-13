@@ -1,5 +1,7 @@
 package com.enterprise.marketplace.workflowservice.audit;
 
+import org.springframework.stereotype.Component;
+
 import com.enterprise.marketplace.common.context.RequestContext;
 import com.enterprise.marketplace.workflowservice.entity.WorkflowAuditEntity;
 import com.enterprise.marketplace.workflowservice.entity.WorkflowEntity;
@@ -7,9 +9,9 @@ import com.enterprise.marketplace.workflowservice.enums.AuditOperation;
 import com.enterprise.marketplace.workflowservice.enums.WorkflowStatus;
 import com.enterprise.marketplace.workflowservice.repository.WorkflowAuditRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component

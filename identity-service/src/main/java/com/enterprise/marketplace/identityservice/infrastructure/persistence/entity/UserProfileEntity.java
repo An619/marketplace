@@ -1,10 +1,13 @@
 package com.enterprise.marketplace.identityservice.infrastructure.persistence.entity;
 
-import com.enterprise.marketplace.common.model.BaseEntity;
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import java.util.UUID;
+
+import com.enterprise.marketplace.common.model.BaseEntity;
+
 import lombok.Getter;
 import lombok.Setter;
 

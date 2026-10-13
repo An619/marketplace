@@ -1,12 +1,14 @@
 package com.enterprise.marketplace.auditservice.validation;
 
-import com.enterprise.marketplace.common.exception.ErrorCode;
-import com.enterprise.marketplace.common.exception.MarketplaceException;
-import com.enterprise.marketplace.auditservice.dto.CreateAuditRequest;
-import com.enterprise.marketplace.auditservice.repository.AuditRecordRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+
+import com.enterprise.marketplace.auditservice.dto.CreateAuditRequest;
+import com.enterprise.marketplace.auditservice.repository.AuditRecordRepository;
+import com.enterprise.marketplace.common.exception.ErrorCode;
+import com.enterprise.marketplace.common.exception.MarketplaceException;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
@@ -22,10 +24,14 @@ public class AuditRequestValidator {
     }
 
     public void validateEventKeyUnique(String eventKey) {
-        auditRecordRepository.findByEventKey(eventKey).ifPresent(existing -> {
-            throw new MarketplaceException(
-                    ErrorCode.CONFLICT, "Audit record already exists for eventKey " + eventKey);
-        });
+        auditRecordRepository
+                .findByEventKey(eventKey)
+                .ifPresent(
+                        existing -> {
+                            throw new MarketplaceException(
+                                    ErrorCode.CONFLICT,
+                                    "Audit record already exists for eventKey " + eventKey);
+                        });
     }
 
     private void validateRequiredFields(CreateAuditRequest request) {

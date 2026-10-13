@@ -1,17 +1,17 @@
 package com.enterprise.marketplace.gatewayservice.filter;
 
 import java.util.UUID;
+
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
+
 import reactor.core.publisher.Mono;
 
-/**
- * Injects correlation and request identifiers at the API gateway edge.
- */
+/** Injects correlation and request identifiers at the API gateway edge. */
 @Component
 public class GatewayCorrelationFilter implements GlobalFilter, Ordered {
 
@@ -24,10 +24,11 @@ public class GatewayCorrelationFilter implements GlobalFilter, Ordered {
         String correlationId = resolveHeader(request, CORRELATION_ID_HEADER);
         String requestId = resolveHeader(request, REQUEST_ID_HEADER);
 
-        ServerHttpRequest mutated = request.mutate()
-                .header(CORRELATION_ID_HEADER, correlationId)
-                .header(REQUEST_ID_HEADER, requestId)
-                .build();
+        ServerHttpRequest mutated =
+                request.mutate()
+                        .header(CORRELATION_ID_HEADER, correlationId)
+                        .header(REQUEST_ID_HEADER, requestId)
+                        .build();
 
         exchange.getResponse().getHeaders().add(CORRELATION_ID_HEADER, correlationId);
         exchange.getResponse().getHeaders().add(REQUEST_ID_HEADER, requestId);

@@ -1,9 +1,11 @@
 package com.enterprise.marketplace.aiservice.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.util.Map;
 import java.util.UUID;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import lombok.Builder;
 import lombok.Value;
 
@@ -11,11 +13,9 @@ import lombok.Value;
 @Builder
 public class GenerateDescriptionRequest {
 
-    @NotNull
-    UUID productId;
+    @NotNull UUID productId;
 
-    @NotBlank
-    String name;
+    @NotBlank String name;
 
     String sku;
 

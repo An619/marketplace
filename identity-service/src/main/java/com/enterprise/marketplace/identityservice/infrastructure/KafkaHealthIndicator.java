@@ -1,11 +1,12 @@
 package com.enterprise.marketplace.identityservice.infrastructure;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.stereotype.Component;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
 @ConditionalOnBean(KafkaAdmin.class)
@@ -20,7 +21,9 @@ public class KafkaHealthIndicator implements HealthIndicator {
             kafkaAdmin.initialize();
             return Health.up()
                     .withDetail("component", "kafka")
-                    .withDetail("bootstrapServers", kafkaAdmin.getConfigurationProperties().get("bootstrap.servers"))
+                    .withDetail(
+                            "bootstrapServers",
+                            kafkaAdmin.getConfigurationProperties().get("bootstrap.servers"))
                     .build();
         } catch (Exception ex) {
             return Health.down(ex).withDetail("component", "kafka").build();

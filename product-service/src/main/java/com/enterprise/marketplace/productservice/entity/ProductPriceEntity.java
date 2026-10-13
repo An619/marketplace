@@ -1,12 +1,15 @@
 package com.enterprise.marketplace.productservice.entity;
 
-import com.enterprise.marketplace.common.model.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+
+import com.enterprise.marketplace.common.model.BaseEntity;
+
 import lombok.Getter;
 import lombok.Setter;
 

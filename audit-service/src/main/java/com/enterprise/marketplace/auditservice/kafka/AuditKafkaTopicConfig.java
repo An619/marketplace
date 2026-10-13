@@ -1,6 +1,5 @@
 package com.enterprise.marketplace.auditservice.kafka;
 
-import com.enterprise.marketplace.auditservice.constants.AuditKafkaTopics;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -9,8 +8,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.KafkaAdmin;
 
+import com.enterprise.marketplace.auditservice.constants.AuditKafkaTopics;
+
 @Configuration
-@ConditionalOnProperty(prefix = "marketplace.kafka", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+        prefix = "marketplace.kafka",
+        name = "enabled",
+        havingValue = "true",
+        matchIfMissing = true)
 @ConditionalOnBean(KafkaAdmin.class)
 public class AuditKafkaTopicConfig {
 

@@ -1,8 +1,10 @@
 package com.enterprise.marketplace.identityservice.infrastructure.redis;
 
+import java.util.UUID;
+
 import com.enterprise.marketplace.identityservice.domain.OnboardingStep;
 import com.enterprise.marketplace.identityservice.domain.UserType;
-import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -1,5 +1,12 @@
 package com.enterprise.marketplace.productservice.validation;
 
+import java.io.InputStream;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Component;
+
 import com.enterprise.marketplace.common.exception.ErrorCode;
 import com.enterprise.marketplace.common.exception.MarketplaceException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -8,12 +15,8 @@ import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
-import java.io.InputStream;
-import java.util.Set;
-import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
@@ -34,16 +37,20 @@ public class JsonSchemaValidationStep implements ValidationStep {
             JsonNode requestNode = objectMapper.valueToTree(context.request());
             Set<ValidationMessage> errors = schema().validate(requestNode);
             if (!errors.isEmpty()) {
-                String message = errors.stream()
-                        .map(ValidationMessage::getMessage)
-                        .collect(Collectors.joining("; "));
-                throw new MarketplaceException(ErrorCode.VALIDATION_ERROR, "JSON schema validation failed: " + message);
+                String message =
+                        errors.stream()
+                                .map(ValidationMessage::getMessage)
+                                .collect(Collectors.joining("; "));
+                throw new MarketplaceException(
+                        ErrorCode.VALIDATION_ERROR, "JSON schema validation failed: " + message);
             }
         } catch (MarketplaceException ex) {
             throw ex;
         } catch (Exception ex) {
             throw new MarketplaceException(
-                    ErrorCode.VALIDATION_ERROR, "Unable to validate request against JSON schema", ex);
+                    ErrorCode.VALIDATION_ERROR,
+                    "Unable to validate request against JSON schema",
+                    ex);
         }
     }
 
@@ -51,8 +58,10 @@ public class JsonSchemaValidationStep implements ValidationStep {
         if (jsonSchema == null) {
             synchronized (this) {
                 if (jsonSchema == null) {
-                    try (InputStream inputStream = new ClassPathResource(SCHEMA_PATH).getInputStream()) {
-                        JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
+                    try (InputStream inputStream =
+                            new ClassPathResource(SCHEMA_PATH).getInputStream()) {
+                        JsonSchemaFactory factory =
+                                JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
                         jsonSchema = factory.getSchema(inputStream);
                     }
                 }

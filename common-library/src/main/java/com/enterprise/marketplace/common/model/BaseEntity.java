@@ -1,5 +1,8 @@
 package com.enterprise.marketplace.common.model;
 
+import java.time.Instant;
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
@@ -9,19 +12,17 @@ import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Version;
-import java.time.Instant;
-import java.util.UUID;
-import lombok.Getter;
-import lombok.Setter;
+
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-/**
- * Base JPA entity with UUID primary key, optimistic locking, and audit columns.
- */
+import lombok.Getter;
+import lombok.Setter;
+
+/** Base JPA entity with UUID primary key, optimistic locking, and audit columns. */
 @Getter
 @Setter
 @MappedSuperclass

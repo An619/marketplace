@@ -1,5 +1,11 @@
 package com.enterprise.marketplace.notificationservice.channel;
 
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Component;
+
 import com.enterprise.marketplace.common.exception.ErrorCode;
 import com.enterprise.marketplace.common.exception.MarketplaceException;
 import com.enterprise.marketplace.notificationservice.entity.NotificationEntity;
@@ -8,10 +14,6 @@ import com.enterprise.marketplace.notificationservice.provider.NotificationProvi
 import com.enterprise.marketplace.notificationservice.provider.ProviderDeliveryResult;
 import com.enterprise.marketplace.notificationservice.provider.email.SesEmailProvider;
 import com.enterprise.marketplace.notificationservice.provider.email.SmtpEmailProvider;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import org.springframework.stereotype.Component;
 
 @Component
 public class NotificationChannelDispatcher {

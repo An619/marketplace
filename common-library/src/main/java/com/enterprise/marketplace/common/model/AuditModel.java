@@ -1,17 +1,17 @@
 package com.enterprise.marketplace.common.model;
 
+import java.time.Instant;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import java.time.Instant;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * Embeddable audit metadata for entities requiring explicit audit trail columns.
- */
+/** Embeddable audit metadata for entities requiring explicit audit trail columns. */
 @Getter
 @Setter
 @Builder
@@ -50,7 +50,8 @@ public class AuditModel {
     @Column(name = "audit_remarks", length = 1024)
     private String remarks;
 
-    public static AuditModel fromCurrentContext(String action, String actor, String actorType, String source) {
+    public static AuditModel fromCurrentContext(
+            String action, String actor, String actorType, String source) {
         return AuditModel.builder()
                 .action(action)
                 .actor(actor)

@@ -2,13 +2,12 @@ package com.enterprise.marketplace.sellerservice.domain.model;
 
 import java.time.Instant;
 import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Value;
 import lombok.With;
 
-/**
- * Seller aggregate root (domain model — no framework dependencies).
- */
+/** Seller aggregate root (domain model — no framework dependencies). */
 @Value
 @Builder(toBuilder = true)
 @With

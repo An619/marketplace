@@ -1,11 +1,13 @@
 package com.enterprise.marketplace.notificationservice.channel;
 
+import org.springframework.stereotype.Component;
+
 import com.enterprise.marketplace.notificationservice.entity.NotificationEntity;
 import com.enterprise.marketplace.notificationservice.entity.NotificationInboxEntity;
 import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
 import com.enterprise.marketplace.notificationservice.repository.NotificationInboxRepository;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
@@ -27,6 +29,7 @@ public class InAppChannelHandler implements NotificationChannelHandler {
         inbox.setBody(notification.getBody());
         inbox.setReadFlag(Boolean.FALSE);
         inboxRepository.save(inbox);
-        return ChannelDeliveryResult.success("In-app notification saved to inbox id=" + inbox.getId());
+        return ChannelDeliveryResult.success(
+                "In-app notification saved to inbox id=" + inbox.getId());
     }
 }

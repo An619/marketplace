@@ -1,8 +1,10 @@
 package com.enterprise.marketplace.workflowservice.dto;
 
-import com.enterprise.marketplace.workflowservice.enums.WorkflowStatus;
 import java.time.Instant;
 import java.util.UUID;
+
+import com.enterprise.marketplace.workflowservice.enums.WorkflowStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

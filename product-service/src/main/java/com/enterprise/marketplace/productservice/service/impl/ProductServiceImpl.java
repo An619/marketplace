@@ -1,5 +1,22 @@
 package com.enterprise.marketplace.productservice.service.impl;
 
+import java.time.Instant;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import com.enterprise.marketplace.common.context.RequestContext;
 import com.enterprise.marketplace.common.exception.ErrorCode;
 import com.enterprise.marketplace.common.exception.MarketplaceException;
@@ -21,7 +38,6 @@ import com.enterprise.marketplace.productservice.dto.canonical.WorkflowSectionDt
 import com.enterprise.marketplace.productservice.entity.OutboxEventEntity;
 import com.enterprise.marketplace.productservice.entity.ProductAttributeEntity;
 import com.enterprise.marketplace.productservice.entity.ProductAuditEntity;
-import com.enterprise.marketplace.productservice.entity.ProductDocumentEntity;
 import com.enterprise.marketplace.productservice.entity.ProductEntity;
 import com.enterprise.marketplace.productservice.entity.ProductImageEntity;
 import com.enterprise.marketplace.productservice.entity.ProductInventoryEntity;
@@ -48,21 +64,6 @@ import com.enterprise.marketplace.productservice.validation.ProductValidationPip
 import com.enterprise.marketplace.productservice.validation.ValidationOperation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 @Service
 @Transactional(readOnly = true)
@@ -114,23 +115,33 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public ProductDetailResponse createProduct(CanonicalProductRequest request) {
         applyRequestContext(request.getRequestInfo(), request.getHeader().getTenantId());
-        validationPipeline.validate(new ProductValidationContext(request, ValidationOperation.CREATE, null));
+        validationPipeline.validate(
+                new ProductValidationContext(request, ValidationOperation.CREATE, null));
 
         ProductEntity product = productMapper.toEntity(request);
         ProductEntity savedProduct = productRepository.save(product);
 
         ProductPriceEntity price = savePrice(savedProduct.getId(), request.getPricing());
-        ProductInventoryEntity inventory = saveInventory(savedProduct.getId(), request.getInventory());
-        List<ProductAttributeEntity> attributes = saveAttributes(savedProduct.getId(), request.getAttributes());
+        ProductInventoryEntity inventory =
+                saveInventory(savedProduct.getId(), request.getInventory());
+        List<ProductAttributeEntity> attributes =
+                saveAttributes(savedProduct.getId(), request.getAttributes());
         List<ProductImageEntity> images = saveImages(savedProduct.getId(), request.getMedia());
 
-        ProductWorkflowEntity workflow = newWorkflow(savedProduct.getId(), ProductWorkflowStatus.INITIAL, null);
+        ProductWorkflowEntity workflow =
+                newWorkflow(savedProduct.getId(), ProductWorkflowStatus.INITIAL, null);
         transitionWorkflow(workflow, ProductWorkflowStatus.VALIDATING, "Starting validation");
-        transitionWorkflow(workflow, ProductWorkflowStatus.BUSINESS_VALIDATED, "Validation complete");
+        transitionWorkflow(
+                workflow, ProductWorkflowStatus.BUSINESS_VALIDATED, "Validation complete");
         transitionWorkflow(workflow, ProductWorkflowStatus.PERSISTED, "Product persisted");
 
         Map<String, String> tags = extractTags(request.getMetadata());
-        saveAudit(savedProduct.getId(), AuditOperation.CREATE, null, savedProduct, request.getRequestInfo());
+        saveAudit(
+                savedProduct.getId(),
+                AuditOperation.CREATE,
+                null,
+                savedProduct,
+                request.getRequestInfo());
         saveOutboxEvent(
                 savedProduct.getId(),
                 "product-created",
@@ -149,14 +160,22 @@ public class ProductServiceImpl implements ProductService {
         productWorkflowRepository.save(workflow);
 
         return productMapper.toDetailResponse(
-                savedProduct, price, inventory, attributes, images, Collections.emptyList(), workflow, tags);
+                savedProduct,
+                price,
+                inventory,
+                attributes,
+                images,
+                Collections.emptyList(),
+                workflow,
+                tags);
     }
 
     @Override
     public ProductDetailResponse getProduct(UUID id) {
-        ProductEntity product = productRepository
-                .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product", id));
+        ProductEntity product =
+                productRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Product", id));
         return buildDetailResponse(product);
     }
 
@@ -169,9 +188,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductPageResponse searchProducts(ProductSearchRequest request) {
-        Specification<ProductEntity> spec = ProductSpecifications.withCriteria(
-                request.getStatus(), request.getSellerId(), request.getCategoryId(), request.getKeyword());
-        Pageable pageable = PageRequest.of(request.getPage(), request.getSize(), parseSort(request.getSort()));
+        Specification<ProductEntity> spec =
+                ProductSpecifications.withCriteria(
+                        request.getStatus(),
+                        request.getSellerId(),
+                        request.getCategoryId(),
+                        request.getKeyword());
+        Pageable pageable =
+                PageRequest.of(request.getPage(), request.getSize(), parseSort(request.getSort()));
         Page<ProductEntity> result = productRepository.findAll(spec, pageable);
         return toPageResponse(result);
     }
@@ -180,12 +204,14 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public ProductDetailResponse updateProduct(UUID id, CanonicalProductRequest request) {
         applyRequestContext(request.getRequestInfo(), request.getHeader().getTenantId());
-        ProductEntity existing = productRepository
-                .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product", id));
+        ProductEntity existing =
+                productRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Product", id));
         ensureNotArchived(existing);
 
-        validationPipeline.validate(new ProductValidationContext(request, ValidationOperation.UPDATE, id));
+        validationPipeline.validate(
+                new ProductValidationContext(request, ValidationOperation.UPDATE, id));
 
         String beforeState = serialize(existing);
         ProductEntity updated = productMapper.toEntity(request);
@@ -206,8 +232,16 @@ public class ProductServiceImpl implements ProductService {
         ProductWorkflowEntity workflow = updateWorkflow(id, request.getWorkflow());
 
         saveAudit(id, AuditOperation.UPDATE, beforeState, savedProduct, request.getRequestInfo());
-        saveOutboxEvent(id, "product-updated", ProductKafkaTopics.PRODUCT_UPDATED, buildEventPayload(savedProduct, "UPDATED"));
-        saveOutboxEvent(id, "search-index", ProductKafkaTopics.SEARCH_INDEX, buildSearchIndexPayload(savedProduct, "UPDATE"));
+        saveOutboxEvent(
+                id,
+                "product-updated",
+                ProductKafkaTopics.PRODUCT_UPDATED,
+                buildEventPayload(savedProduct, "UPDATED"));
+        saveOutboxEvent(
+                id,
+                "search-index",
+                ProductKafkaTopics.SEARCH_INDEX,
+                buildSearchIndexPayload(savedProduct, "UPDATE"));
 
         return productMapper.toDetailResponse(
                 savedProduct,
@@ -228,26 +262,28 @@ public class ProductServiceImpl implements ProductService {
                     request.getRequestInfo(),
                     request.getHeader() != null ? request.getHeader().getTenantId() : null);
         }
-        ProductEntity existing = productRepository
-                .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product", id));
+        ProductEntity existing =
+                productRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Product", id));
         ensureNotArchived(existing);
 
-        validationPipeline.validate(new ProductValidationContext(request, ValidationOperation.PATCH, id));
+        validationPipeline.validate(
+                new ProductValidationContext(request, ValidationOperation.PATCH, id));
 
         String beforeState = serialize(existing);
         patchProductEntity(existing, request);
         ProductEntity savedProduct = productRepository.save(existing);
 
-        ProductPriceEntity price = productPriceRepository
-                .findFirstByProductIdOrderByValidFromDesc(id)
-                .orElse(null);
+        ProductPriceEntity price =
+                productPriceRepository.findFirstByProductIdOrderByValidFromDesc(id).orElse(null);
         if (request.getPricing() != null) {
             productPriceRepository.deleteByProductId(id);
             price = savePrice(id, request.getPricing());
         }
 
-        ProductInventoryEntity inventory = productInventoryRepository.findByProductId(id).orElse(null);
+        ProductInventoryEntity inventory =
+                productInventoryRepository.findByProductId(id).orElse(null);
         if (request.getInventory() != null) {
             inventory = updateOrCreateInventory(id, request.getInventory());
         }
@@ -258,7 +294,8 @@ public class ProductServiceImpl implements ProductService {
             attributes = saveAttributes(id, request.getAttributes());
         }
 
-        List<ProductImageEntity> images = productImageRepository.findByProductIdOrderByDisplayOrderAsc(id);
+        List<ProductImageEntity> images =
+                productImageRepository.findByProductIdOrderByDisplayOrderAsc(id);
         if (request.getMedia() != null) {
             productImageRepository.deleteByProductId(id);
             images = saveImages(id, request.getMedia());
@@ -266,8 +303,16 @@ public class ProductServiceImpl implements ProductService {
 
         ProductWorkflowEntity workflow = updateWorkflow(id, request.getWorkflow());
         saveAudit(id, AuditOperation.PATCH, beforeState, savedProduct, request.getRequestInfo());
-        saveOutboxEvent(id, "product-updated", ProductKafkaTopics.PRODUCT_UPDATED, buildEventPayload(savedProduct, "PATCHED"));
-        saveOutboxEvent(id, "search-index", ProductKafkaTopics.SEARCH_INDEX, buildSearchIndexPayload(savedProduct, "UPDATE"));
+        saveOutboxEvent(
+                id,
+                "product-updated",
+                ProductKafkaTopics.PRODUCT_UPDATED,
+                buildEventPayload(savedProduct, "PATCHED"));
+        saveOutboxEvent(
+                id,
+                "search-index",
+                ProductKafkaTopics.SEARCH_INDEX,
+                buildSearchIndexPayload(savedProduct, "UPDATE"));
 
         return productMapper.toDetailResponse(
                 savedProduct,
@@ -283,9 +328,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public void deleteProduct(UUID id) {
-        ProductEntity existing = productRepository
-                .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product", id));
+        ProductEntity existing =
+                productRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Product", id));
         if (existing.getStatus() == ProductStatus.ARCHIVED) {
             return;
         }
@@ -294,22 +340,33 @@ public class ProductServiceImpl implements ProductService {
         existing.setStatus(ProductStatus.ARCHIVED);
         ProductEntity savedProduct = productRepository.save(existing);
 
-        ProductWorkflowEntity workflow = productWorkflowRepository
-                .findByProductId(id)
-                .orElseGet(() -> newWorkflow(id, ProductWorkflowStatus.INITIAL, null));
+        ProductWorkflowEntity workflow =
+                productWorkflowRepository
+                        .findByProductId(id)
+                        .orElseGet(() -> newWorkflow(id, ProductWorkflowStatus.INITIAL, null));
         transitionWorkflow(workflow, ProductWorkflowStatus.CANCELLED, "Product archived");
         productWorkflowRepository.save(workflow);
 
         saveAudit(id, AuditOperation.DELETE, beforeState, savedProduct, null);
-        saveOutboxEvent(id, "product-deleted", ProductKafkaTopics.PRODUCT_DELETED, buildEventPayload(savedProduct, "DELETED"));
-        saveOutboxEvent(id, "search-index", ProductKafkaTopics.SEARCH_INDEX, buildSearchIndexPayload(savedProduct, "DELETE"));
+        saveOutboxEvent(
+                id,
+                "product-deleted",
+                ProductKafkaTopics.PRODUCT_DELETED,
+                buildEventPayload(savedProduct, "DELETED"));
+        saveOutboxEvent(
+                id,
+                "search-index",
+                ProductKafkaTopics.SEARCH_INDEX,
+                buildSearchIndexPayload(savedProduct, "DELETE"));
     }
 
     private ProductDetailResponse buildDetailResponse(ProductEntity product) {
         UUID productId = product.getId();
         return productMapper.toDetailResponse(
                 product,
-                productPriceRepository.findFirstByProductIdOrderByValidFromDesc(productId).orElse(null),
+                productPriceRepository
+                        .findFirstByProductIdOrderByValidFromDesc(productId)
+                        .orElse(null),
                 productInventoryRepository.findByProductId(productId).orElse(null),
                 productAttributeRepository.findByProductId(productId),
                 productImageRepository.findByProductIdOrderByDisplayOrderAsc(productId),
@@ -319,9 +376,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private ProductPageResponse toPageResponse(Page<ProductEntity> page) {
-        List<ProductDetailResponse> content = page.getContent().stream()
-                .map(this::buildDetailResponse)
-                .toList();
+        List<ProductDetailResponse> content =
+                page.getContent().stream().map(this::buildDetailResponse).toList();
         return ProductPageResponse.builder()
                 .content(content)
                 .totalElements(page.getTotalElements())
@@ -353,33 +409,46 @@ public class ProductServiceImpl implements ProductService {
         return productInventoryRepository.save(entity);
     }
 
-    private ProductInventoryEntity updateOrCreateInventory(UUID productId, InventorySectionDto inventory) {
+    private ProductInventoryEntity updateOrCreateInventory(
+            UUID productId, InventorySectionDto inventory) {
         return productInventoryRepository
                 .findByProductId(productId)
-                .map(existing -> {
-                    existing.setQuantityAvailable(defaultInt(inventory.getQuantityAvailable(), existing.getQuantityAvailable()));
-                    existing.setQuantityReserved(defaultInt(inventory.getQuantityReserved(), existing.getQuantityReserved()));
-                    existing.setReorderLevel(defaultInt(inventory.getReorderLevel(), existing.getReorderLevel()));
-                    if (inventory.getWarehouseCode() != null) {
-                        existing.setWarehouseCode(inventory.getWarehouseCode());
-                    }
-                    return productInventoryRepository.save(existing);
-                })
+                .map(
+                        existing -> {
+                            existing.setQuantityAvailable(
+                                    defaultInt(
+                                            inventory.getQuantityAvailable(),
+                                            existing.getQuantityAvailable()));
+                            existing.setQuantityReserved(
+                                    defaultInt(
+                                            inventory.getQuantityReserved(),
+                                            existing.getQuantityReserved()));
+                            existing.setReorderLevel(
+                                    defaultInt(
+                                            inventory.getReorderLevel(),
+                                            existing.getReorderLevel()));
+                            if (inventory.getWarehouseCode() != null) {
+                                existing.setWarehouseCode(inventory.getWarehouseCode());
+                            }
+                            return productInventoryRepository.save(existing);
+                        })
                 .orElseGet(() -> saveInventory(productId, inventory));
     }
 
-    private List<ProductAttributeEntity> saveAttributes(UUID productId, List<AttributeSectionDto> attributes) {
+    private List<ProductAttributeEntity> saveAttributes(
+            UUID productId, List<AttributeSectionDto> attributes) {
         if (attributes == null || attributes.isEmpty()) {
             return Collections.emptyList();
         }
         return attributes.stream()
-                .map(dto -> {
-                    ProductAttributeEntity entity = new ProductAttributeEntity();
-                    entity.setProductId(productId);
-                    entity.setAttrKey(dto.getKey());
-                    entity.setAttrValue(dto.getValue());
-                    return productAttributeRepository.save(entity);
-                })
+                .map(
+                        dto -> {
+                            ProductAttributeEntity entity = new ProductAttributeEntity();
+                            entity.setProductId(productId);
+                            entity.setAttrKey(dto.getKey());
+                            entity.setAttrValue(dto.getValue());
+                            return productAttributeRepository.save(entity);
+                        })
                 .toList();
     }
 
@@ -401,10 +470,13 @@ public class ProductServiceImpl implements ProductService {
         return saved;
     }
 
-    private ProductWorkflowEntity updateWorkflow(UUID productId, WorkflowSectionDto workflowSection) {
-        ProductWorkflowEntity workflow = productWorkflowRepository
-                .findByProductId(productId)
-                .orElseGet(() -> newWorkflow(productId, ProductWorkflowStatus.INITIAL, null));
+    private ProductWorkflowEntity updateWorkflow(
+            UUID productId, WorkflowSectionDto workflowSection) {
+        ProductWorkflowEntity workflow =
+                productWorkflowRepository
+                        .findByProductId(productId)
+                        .orElseGet(
+                                () -> newWorkflow(productId, ProductWorkflowStatus.INITIAL, null));
         transitionWorkflow(
                 workflow,
                 resolveTargetWorkflowStatus(workflowSection, ProductWorkflowStatus.AMENDED),
@@ -412,7 +484,8 @@ public class ProductServiceImpl implements ProductService {
         return productWorkflowRepository.save(workflow);
     }
 
-    private ProductWorkflowEntity newWorkflow(UUID productId, ProductWorkflowStatus status, String message) {
+    private ProductWorkflowEntity newWorkflow(
+            UUID productId, ProductWorkflowStatus status, String message) {
         ProductWorkflowEntity workflow = new ProductWorkflowEntity();
         workflow.setProductId(productId);
         workflow.setStatus(status);
@@ -458,7 +531,8 @@ public class ProductServiceImpl implements ProductService {
         productAuditRepository.save(audit);
     }
 
-    private void saveOutboxEvent(UUID aggregateId, String eventType, String topic, Map<String, Object> payload) {
+    private void saveOutboxEvent(
+            UUID aggregateId, String eventType, String topic, Map<String, Object> payload) {
         OutboxEventEntity event = new OutboxEventEntity();
         event.setAggregateType(AGGREGATE_TYPE);
         event.setAggregateId(aggregateId);
@@ -583,7 +657,8 @@ public class ProductServiceImpl implements ProductService {
 
     private void ensureNotArchived(ProductEntity product) {
         if (product.getStatus() == ProductStatus.ARCHIVED) {
-            throw new MarketplaceException(ErrorCode.BUSINESS_RULE_VIOLATION, "Archived products cannot be modified");
+            throw new MarketplaceException(
+                    ErrorCode.BUSINESS_RULE_VIOLATION, "Archived products cannot be modified");
         }
     }
 
@@ -616,7 +691,8 @@ public class ProductServiceImpl implements ProductService {
         try {
             return objectMapper.writeValueAsString(value);
         } catch (JsonProcessingException ex) {
-            throw new MarketplaceException(ErrorCode.INTERNAL_ERROR, "Unable to serialize entity state", ex);
+            throw new MarketplaceException(
+                    ErrorCode.INTERNAL_ERROR, "Unable to serialize entity state", ex);
         }
     }
 }

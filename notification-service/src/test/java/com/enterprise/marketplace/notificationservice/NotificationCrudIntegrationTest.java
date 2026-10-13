@@ -2,11 +2,8 @@ package com.enterprise.marketplace.notificationservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.enterprise.marketplace.notificationservice.dto.CreateNotificationRequest;
-import com.enterprise.marketplace.notificationservice.dto.NotificationResponse;
-import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
-import com.enterprise.marketplace.notificationservice.enums.NotificationType;
 import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,21 +21,29 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import com.enterprise.marketplace.notificationservice.dto.CreateNotificationRequest;
+import com.enterprise.marketplace.notificationservice.dto.NotificationResponse;
+import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
+import com.enterprise.marketplace.notificationservice.enums.NotificationType;
+
 @Testcontainers(disabledWithoutDocker = true)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
-    "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration,"
-            + "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
-            + "org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration,"
-            + "org.springframework.boot.autoconfigure.mail.MailSenderAutoConfiguration",
-    "marketplace.security.enabled=false",
-    "marketplace.kafka.enabled=false",
-    "marketplace.redis.enabled=false",
-    "marketplace.outbox.enabled=false"
-})
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = {
+            "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration,"
+                    + "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
+                    + "org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration,"
+                    + "org.springframework.boot.autoconfigure.mail.MailSenderAutoConfiguration",
+            "marketplace.security.enabled=false",
+            "marketplace.kafka.enabled=false",
+            "marketplace.redis.enabled=false",
+            "marketplace.outbox.enabled=false"
+        })
 class NotificationCrudIntegrationTest {
 
     @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"));
+    static PostgreSQLContainer<?> postgres =
+            new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"));
 
     @DynamicPropertySource
     static void registerProperties(DynamicPropertyRegistry registry) {
@@ -48,33 +53,34 @@ class NotificationCrudIntegrationTest {
         registry.add("spring.flyway.enabled", () -> "true");
     }
 
-    @Autowired
-    private TestRestTemplate restTemplate;
+    @Autowired private TestRestTemplate restTemplate;
 
     @Test
     void shouldCreateAndRetrieveInAppNotification() {
         String requestId = "int-notif-" + System.currentTimeMillis();
 
-        CreateNotificationRequest request = CreateNotificationRequest.builder()
-                .requestId(requestId)
-                .correlationId(UUID.randomUUID().toString())
-                .notificationType(NotificationType.WORKFLOW_COMPLETED)
-                .channel(NotificationChannel.IN_APP)
-                .recipientId("integration-user")
-                .subject("Workflow Completed")
-                .body("Your workflow has completed successfully.")
-                .templateCode("WORKFLOW_COMPLETED")
-                .build();
+        CreateNotificationRequest request =
+                CreateNotificationRequest.builder()
+                        .requestId(requestId)
+                        .correlationId(UUID.randomUUID().toString())
+                        .notificationType(NotificationType.WORKFLOW_COMPLETED)
+                        .channel(NotificationChannel.IN_APP)
+                        .recipientId("integration-user")
+                        .subject("Workflow Completed")
+                        .body("Your workflow has completed successfully.")
+                        .templateCode("WORKFLOW_COMPLETED")
+                        .build();
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Idempotency-Key", UUID.randomUUID().toString());
 
-        ResponseEntity<com.enterprise.marketplace.common.api.ApiResponse<NotificationResponse>> createResponse =
-                restTemplate.exchange(
-                        "/api/v1/notifications",
-                        HttpMethod.POST,
-                        new HttpEntity<>(request, headers),
-                        new ParameterizedTypeReference<>() {});
+        ResponseEntity<com.enterprise.marketplace.common.api.ApiResponse<NotificationResponse>>
+                createResponse =
+                        restTemplate.exchange(
+                                "/api/v1/notifications",
+                                HttpMethod.POST,
+                                new HttpEntity<>(request, headers),
+                                new ParameterizedTypeReference<>() {});
 
         assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(createResponse.getBody()).isNotNull();
@@ -82,12 +88,13 @@ class NotificationCrudIntegrationTest {
 
         UUID notificationId = createResponse.getBody().getData().getId();
 
-        ResponseEntity<com.enterprise.marketplace.common.api.ApiResponse<NotificationResponse>> getResponse =
-                restTemplate.exchange(
-                        "/api/v1/notifications/" + notificationId,
-                        HttpMethod.GET,
-                        null,
-                        new ParameterizedTypeReference<>() {});
+        ResponseEntity<com.enterprise.marketplace.common.api.ApiResponse<NotificationResponse>>
+                getResponse =
+                        restTemplate.exchange(
+                                "/api/v1/notifications/" + notificationId,
+                                HttpMethod.GET,
+                                null,
+                                new ParameterizedTypeReference<>() {});
 
         assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(getResponse.getBody().getData().getRecipientId()).isEqualTo("integration-user");

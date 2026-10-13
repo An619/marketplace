@@ -3,21 +3,20 @@ package com.enterprise.marketplace.searchservice.kafka;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 
-import com.enterprise.marketplace.searchservice.service.SearchService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.enterprise.marketplace.searchservice.service.SearchService;
+
 @ExtendWith(MockitoExtension.class)
 class SearchKafkaEventConsumerTest {
 
-    @Mock
-    private SearchService searchService;
+    @Mock private SearchService searchService;
 
-    @InjectMocks
-    private SearchKafkaEventConsumer consumer;
+    @InjectMocks private SearchKafkaEventConsumer consumer;
 
     @Test
     void shouldProcessSearchIndexEvent() {

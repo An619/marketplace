@@ -1,23 +1,28 @@
 package com.enterprise.marketplace.inventoryservice.domain.service;
 
-import com.enterprise.marketplace.inventoryservice.domain.model.Inventory;
-import com.enterprise.marketplace.inventoryservice.domain.model.InventoryStatus;
 import org.springframework.util.StringUtils;
 
-/**
- * Pure domain rules for inventory validation and stock transitions.
- */
+import com.enterprise.marketplace.inventoryservice.domain.model.Inventory;
+import com.enterprise.marketplace.inventoryservice.domain.model.InventoryStatus;
+
+/** Pure domain rules for inventory validation and stock transitions. */
 public final class InventoryDomainService {
 
     private InventoryDomainService() {}
 
     public static void validateForCreate(Inventory inventory) {
         validateIdentity(inventory);
-        validateQuantities(inventory.getQuantityAvailable(), inventory.getQuantityReserved(), inventory.getReorderLevel());
+        validateQuantities(
+                inventory.getQuantityAvailable(),
+                inventory.getQuantityReserved(),
+                inventory.getReorderLevel());
     }
 
     public static void validateForUpdate(Inventory inventory) {
-        validateQuantities(inventory.getQuantityAvailable(), inventory.getQuantityReserved(), inventory.getReorderLevel());
+        validateQuantities(
+                inventory.getQuantityAvailable(),
+                inventory.getQuantityReserved(),
+                inventory.getReorderLevel());
     }
 
     public static InventoryStatus deriveStatus(Integer quantityAvailable, Integer reorderLevel) {
@@ -39,12 +44,14 @@ public final class InventoryDomainService {
         if (inventory.getSellerId() == null) {
             throw new IllegalArgumentException("Seller ID is required");
         }
-        if (StringUtils.hasText(inventory.getWarehouseCode()) && inventory.getWarehouseCode().length() > 32) {
+        if (StringUtils.hasText(inventory.getWarehouseCode())
+                && inventory.getWarehouseCode().length() > 32) {
             throw new IllegalArgumentException("Warehouse code must be at most 32 characters");
         }
     }
 
-    private static void validateQuantities(Integer quantityAvailable, Integer quantityReserved, Integer reorderLevel) {
+    private static void validateQuantities(
+            Integer quantityAvailable, Integer quantityReserved, Integer reorderLevel) {
         int available = quantityAvailable == null ? 0 : quantityAvailable;
         int reserved = quantityReserved == null ? 0 : quantityReserved;
         int reorder = reorderLevel == null ? 0 : reorderLevel;

@@ -2,9 +2,7 @@ package com.enterprise.marketplace.common.exception;
 
 import lombok.Getter;
 
-/**
- * Base runtime exception for domain and application errors.
- */
+/** Base runtime exception for domain and application errors. */
 @Getter
 public class MarketplaceException extends RuntimeException {
 

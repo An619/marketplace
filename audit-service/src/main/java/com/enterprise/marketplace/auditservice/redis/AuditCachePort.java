@@ -1,9 +1,10 @@
 package com.enterprise.marketplace.auditservice.redis;
 
-import com.enterprise.marketplace.auditservice.dto.AuditResponse;
-import com.enterprise.marketplace.auditservice.dto.AuditTimelineResponse;
 import java.util.Optional;
 import java.util.UUID;
+
+import com.enterprise.marketplace.auditservice.dto.AuditResponse;
+import com.enterprise.marketplace.auditservice.dto.AuditTimelineResponse;
 
 public interface AuditCachePort {
 

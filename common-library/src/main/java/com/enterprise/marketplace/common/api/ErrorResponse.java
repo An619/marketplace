@@ -1,16 +1,16 @@
 package com.enterprise.marketplace.common.api;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.Instant;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Standard error response structure returned by the global exception handler.
- */
+/** Standard error response structure returned by the global exception handler. */
 @Data
 @Builder
 @NoArgsConstructor

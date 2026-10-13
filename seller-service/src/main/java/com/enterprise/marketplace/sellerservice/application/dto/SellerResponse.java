@@ -1,8 +1,10 @@
 package com.enterprise.marketplace.sellerservice.application.dto;
 
-import com.enterprise.marketplace.sellerservice.domain.model.SellerStatus;
 import java.time.Instant;
 import java.util.UUID;
+
+import com.enterprise.marketplace.sellerservice.domain.model.SellerStatus;
+
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;

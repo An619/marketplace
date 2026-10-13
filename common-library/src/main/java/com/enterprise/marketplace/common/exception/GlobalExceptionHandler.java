@@ -1,5 +1,10 @@
 package com.enterprise.marketplace.common.exception;
 
+import java.time.Instant;
+import java.util.List;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -13,14 +18,9 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import com.enterprise.marketplace.common.api.ErrorResponse;
 import com.enterprise.marketplace.common.context.RequestContext;
 
-import jakarta.servlet.http.HttpServletRequest;
-import java.time.Instant;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * Centralized exception handling for all marketplace microservices.
- */
+/** Centralized exception handling for all marketplace microservices. */
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -45,11 +45,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(
             MethodArgumentNotValidException ex, HttpServletRequest request) {
-        List<ErrorResponse.FieldError> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
-                .map(this::mapFieldError)
-                .toList();
+        List<ErrorResponse.FieldError> fieldErrors =
+                ex.getBindingResult().getFieldErrors().stream().map(this::mapFieldError).toList();
 
-        log.warn("Validation failed on path={}: {} error(s)", request.getRequestURI(), fieldErrors.size());
+        log.warn(
+                "Validation failed on path={}: {} error(s)",
+                request.getRequestURI(),
+                fieldErrors.size());
 
         return buildResponse(
                 ErrorCode.VALIDATION_ERROR.getCode(),
@@ -63,7 +65,8 @@ public class GlobalExceptionHandler {
         HttpMessageNotReadableException.class,
         MethodArgumentTypeMismatchException.class
     })
-    public ResponseEntity<ErrorResponse> handleBadRequest(Exception ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleBadRequest(
+            Exception ex, HttpServletRequest request) {
         log.warn("Bad request on path={}: {}", request.getRequestURI(), ex.getMessage());
 
         return buildResponse(
@@ -86,7 +89,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleGenericException(
+            Exception ex, HttpServletRequest request) {
         log.error("Unhandled exception on path={}", request.getRequestURI(), ex);
 
         return buildResponse(
@@ -111,16 +115,17 @@ public class GlobalExceptionHandler {
             int status,
             String path,
             List<ErrorResponse.FieldError> fieldErrors) {
-        ErrorResponse body = ErrorResponse.builder()
-                .code(code)
-                .message(message)
-                .status(status)
-                .path(path)
-                .correlationId(RequestContext.getCorrelationId())
-                .requestId(RequestContext.getRequestId())
-                .timestamp(Instant.now())
-                .fieldErrors(fieldErrors)
-                .build();
+        ErrorResponse body =
+                ErrorResponse.builder()
+                        .code(code)
+                        .message(message)
+                        .status(status)
+                        .path(path)
+                        .correlationId(RequestContext.getCorrelationId())
+                        .requestId(RequestContext.getRequestId())
+                        .timestamp(Instant.now())
+                        .fieldErrors(fieldErrors)
+                        .build();
 
         return ResponseEntity.status(status).body(body);
     }

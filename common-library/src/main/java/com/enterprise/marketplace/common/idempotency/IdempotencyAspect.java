@@ -1,18 +1,13 @@
 package com.enterprise.marketplace.common.idempotency;
 
-import com.enterprise.marketplace.common.constant.HttpHeaders;
-import com.enterprise.marketplace.common.context.RequestContext;
-import com.enterprise.marketplace.common.exception.ErrorCode;
-import com.enterprise.marketplace.common.exception.MarketplaceException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -22,9 +17,16 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-/**
- * AOP interceptor enforcing idempotency semantics on annotated controller methods.
- */
+import com.enterprise.marketplace.common.constant.HttpHeaders;
+import com.enterprise.marketplace.common.context.RequestContext;
+import com.enterprise.marketplace.common.exception.ErrorCode;
+import com.enterprise.marketplace.common.exception.MarketplaceException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+/** AOP interceptor enforcing idempotency semantics on annotated controller methods. */
 @Slf4j
 @Aspect
 @Component
@@ -35,7 +37,8 @@ public class IdempotencyAspect {
     private final ObjectMapper objectMapper;
 
     @Around("@annotation(idempotent)")
-    public Object enforceIdempotency(ProceedingJoinPoint joinPoint, Idempotent idempotent) throws Throwable {
+    public Object enforceIdempotency(ProceedingJoinPoint joinPoint, Idempotent idempotent)
+            throws Throwable {
         HttpServletRequest request = currentRequest();
         String idempotencyKey = request.getHeader(HttpHeaders.IDEMPOTENCY_KEY);
 
@@ -67,7 +70,8 @@ public class IdempotencyAspect {
             Object result = joinPoint.proceed();
             if (result instanceof ResponseEntity<?> responseEntity) {
                 String body = objectMapper.writeValueAsString(responseEntity.getBody());
-                idempotencyStore.complete(idempotencyKey, responseEntity.getStatusCode().value(), body);
+                idempotencyStore.complete(
+                        idempotencyKey, responseEntity.getStatusCode().value(), body);
             } else {
                 String body = objectMapper.writeValueAsString(result);
                 idempotencyStore.complete(idempotencyKey, 200, body);
@@ -98,7 +102,8 @@ public class IdempotencyAspect {
         } catch (NoSuchAlgorithmException ex) {
             throw new IllegalStateException("SHA-256 not available", ex);
         } catch (Exception ex) {
-            throw new MarketplaceException(ErrorCode.INTERNAL_ERROR, "Failed to hash idempotency payload", ex);
+            throw new MarketplaceException(
+                    ErrorCode.INTERNAL_ERROR, "Failed to hash idempotency payload", ex);
         }
     }
 }

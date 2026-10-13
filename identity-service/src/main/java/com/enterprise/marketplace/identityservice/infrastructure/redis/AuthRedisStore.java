@@ -1,22 +1,29 @@
 package com.enterprise.marketplace.identityservice.infrastructure.redis;
 
-import com.enterprise.marketplace.common.exception.ErrorCode;
-import com.enterprise.marketplace.common.exception.MarketplaceException;
-import com.enterprise.marketplace.identityservice.config.AuthProperties;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import com.enterprise.marketplace.common.exception.ErrorCode;
+import com.enterprise.marketplace.common.exception.MarketplaceException;
+import com.enterprise.marketplace.identityservice.config.AuthProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.RequiredArgsConstructor;
+
 @Component
-@ConditionalOnProperty(prefix = "marketplace.auth", name = "session-store", havingValue = "redis", matchIfMissing = true)
+@ConditionalOnProperty(
+        prefix = "marketplace.auth",
+        name = "session-store",
+        havingValue = "redis",
+        matchIfMissing = true)
 @ConditionalOnBean(RedisConnectionFactory.class)
 @RequiredArgsConstructor
 public class AuthRedisStore implements AuthSessionStore {
@@ -50,7 +57,10 @@ public class AuthRedisStore implements AuthSessionStore {
         if (data.getToken() == null) {
             data.setToken(UUID.randomUUID().toString());
         }
-        write(VERIFY_KEY + data.getToken(), data, authProperties.getToken().getVerificationTtlSeconds());
+        write(
+                VERIFY_KEY + data.getToken(),
+                data,
+                authProperties.getToken().getVerificationTtlSeconds());
         return data.getToken();
     }
 
@@ -85,9 +95,15 @@ public class AuthRedisStore implements AuthSessionStore {
 
     private void write(String key, Object value, long ttlSeconds) {
         try {
-            redisTemplate.opsForValue().set(key, objectMapper.writeValueAsString(value), Duration.ofSeconds(ttlSeconds));
+            redisTemplate
+                    .opsForValue()
+                    .set(
+                            key,
+                            objectMapper.writeValueAsString(value),
+                            Duration.ofSeconds(ttlSeconds));
         } catch (JsonProcessingException ex) {
-            throw new MarketplaceException(ErrorCode.INTERNAL_ERROR, "Failed to serialize auth session", ex);
+            throw new MarketplaceException(
+                    ErrorCode.INTERNAL_ERROR, "Failed to serialize auth session", ex);
         }
     }
 
@@ -99,7 +115,8 @@ public class AuthRedisStore implements AuthSessionStore {
         try {
             return Optional.of(objectMapper.readValue(json, type));
         } catch (JsonProcessingException ex) {
-            throw new MarketplaceException(ErrorCode.INTERNAL_ERROR, "Failed to deserialize auth session", ex);
+            throw new MarketplaceException(
+                    ErrorCode.INTERNAL_ERROR, "Failed to deserialize auth session", ex);
         }
     }
 }

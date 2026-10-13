@@ -1,14 +1,15 @@
 package com.enterprise.marketplace.common.util;
 
-import com.enterprise.marketplace.common.constant.MdcKeys;
-import com.enterprise.marketplace.common.context.RequestContext;
 import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
+
 import org.slf4j.MDC;
 
-/**
- * Structured logging helpers aligned with platform logging standards.
- */
+import com.enterprise.marketplace.common.constant.MdcKeys;
+import com.enterprise.marketplace.common.context.RequestContext;
+
+import lombok.extern.slf4j.Slf4j;
+
+/** Structured logging helpers aligned with platform logging standards. */
 @Slf4j
 public final class LoggingUtility {
 
@@ -40,7 +41,11 @@ public final class LoggingUtility {
         MDC.put("event", event);
         try {
             attributes.forEach((key, value) -> MDC.put(key, String.valueOf(value)));
-            log.info("event={} correlationId={} requestId={}", event, RequestContext.getCorrelationId(), RequestContext.getRequestId());
+            log.info(
+                    "event={} correlationId={} requestId={}",
+                    event,
+                    RequestContext.getCorrelationId(),
+                    RequestContext.getRequestId());
         } finally {
             MDC.remove("event");
             attributes.keySet().forEach(MDC::remove);

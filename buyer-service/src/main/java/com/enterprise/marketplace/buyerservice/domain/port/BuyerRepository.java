@@ -1,14 +1,13 @@
 package com.enterprise.marketplace.buyerservice.domain.port;
 
-import com.enterprise.marketplace.buyerservice.domain.model.Buyer;
-import com.enterprise.marketplace.buyerservice.domain.model.BuyerPage;
-import com.enterprise.marketplace.buyerservice.domain.model.BuyerSearchCriteria;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Outbound port for buyer persistence.
- */
+import com.enterprise.marketplace.buyerservice.domain.model.Buyer;
+import com.enterprise.marketplace.buyerservice.domain.model.BuyerPage;
+import com.enterprise.marketplace.buyerservice.domain.model.BuyerSearchCriteria;
+
+/** Outbound port for buyer persistence. */
 public interface BuyerRepository {
 
     Buyer save(Buyer buyer);

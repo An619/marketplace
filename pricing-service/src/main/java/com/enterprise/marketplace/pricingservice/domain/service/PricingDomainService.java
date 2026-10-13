@@ -1,19 +1,18 @@
 package com.enterprise.marketplace.pricingservice.domain.service;
 
-import com.enterprise.marketplace.pricingservice.domain.model.Pricing;
-import com.enterprise.marketplace.pricingservice.domain.model.PricingStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
+
 import org.springframework.util.StringUtils;
 
-/**
- * Pure domain rules for pricing validation and status transitions.
- */
+import com.enterprise.marketplace.pricingservice.domain.model.Pricing;
+import com.enterprise.marketplace.pricingservice.domain.model.PricingStatus;
+
+/** Pure domain rules for pricing validation and status transitions. */
 public final class PricingDomainService {
 
-    private PricingDomainService() {
-    }
+    private PricingDomainService() {}
 
     public static void validateForCreate(Pricing pricing) {
         validateProductId(pricing.getProductId());

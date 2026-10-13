@@ -6,6 +6,17 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Optional;
+import java.util.UUID;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.enterprise.marketplace.common.exception.ErrorCode;
 import com.enterprise.marketplace.common.exception.MarketplaceException;
 import com.enterprise.marketplace.common.exception.ResourceNotFoundException;
@@ -16,45 +27,36 @@ import com.enterprise.marketplace.inventoryservice.application.mapper.InventoryM
 import com.enterprise.marketplace.inventoryservice.domain.model.Inventory;
 import com.enterprise.marketplace.inventoryservice.domain.model.InventoryStatus;
 import com.enterprise.marketplace.inventoryservice.domain.port.InventoryRepository;
-import java.util.Optional;
-import java.util.UUID;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mapstruct.factory.Mappers;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class InventoryApplicationServiceTest {
 
-    @Mock
-    private InventoryRepository inventoryRepository;
+    @Mock private InventoryRepository inventoryRepository;
 
-    @Spy
-    private InventoryMapper inventoryMapper = Mappers.getMapper(InventoryMapper.class);
+    @Spy private InventoryMapper inventoryMapper = Mappers.getMapper(InventoryMapper.class);
 
-    @InjectMocks
-    private InventoryApplicationService inventoryApplicationService;
+    @InjectMocks private InventoryApplicationService inventoryApplicationService;
 
     @Test
     void shouldCreateInventoryWhenUniqueCombination() {
-        CreateInventoryRequest request = CreateInventoryRequest.builder()
-                .productId(UUID.randomUUID())
-                .sellerId(UUID.randomUUID())
-                .quantityAvailable(120)
-                .reorderLevel(20)
-                .warehouseCode("BLR-01")
-                .build();
+        CreateInventoryRequest request =
+                CreateInventoryRequest.builder()
+                        .productId(UUID.randomUUID())
+                        .sellerId(UUID.randomUUID())
+                        .quantityAvailable(120)
+                        .reorderLevel(20)
+                        .warehouseCode("BLR-01")
+                        .build();
 
         when(inventoryRepository.existsByProductIdAndSellerIdAndWarehouseCode(
                         request.getProductId(), request.getSellerId(), request.getWarehouseCode()))
                 .thenReturn(false);
-        when(inventoryRepository.save(any(Inventory.class))).thenAnswer(invocation -> {
-            Inventory inventory = invocation.getArgument(0);
-            return inventory.toBuilder().id(UUID.randomUUID()).version(0L).build();
-        });
+        when(inventoryRepository.save(any(Inventory.class)))
+                .thenAnswer(
+                        invocation -> {
+                            Inventory inventory = invocation.getArgument(0);
+                            return inventory.toBuilder().id(UUID.randomUUID()).version(0L).build();
+                        });
 
         var response = inventoryApplicationService.createInventory(request);
 
@@ -64,12 +66,13 @@ class InventoryApplicationServiceTest {
 
     @Test
     void shouldThrowConflictWhenDuplicateCombinationExists() {
-        CreateInventoryRequest request = CreateInventoryRequest.builder()
-                .productId(UUID.randomUUID())
-                .sellerId(UUID.randomUUID())
-                .quantityAvailable(30)
-                .warehouseCode("MUM-02")
-                .build();
+        CreateInventoryRequest request =
+                CreateInventoryRequest.builder()
+                        .productId(UUID.randomUUID())
+                        .sellerId(UUID.randomUUID())
+                        .quantityAvailable(30)
+                        .warehouseCode("MUM-02")
+                        .build();
 
         when(inventoryRepository.existsByProductIdAndSellerIdAndWarehouseCode(
                         request.getProductId(), request.getSellerId(), request.getWarehouseCode()))
@@ -93,28 +96,32 @@ class InventoryApplicationServiceTest {
     @Test
     void shouldReserveAndReleaseInventory() {
         UUID id = UUID.randomUUID();
-        Inventory existing = Inventory.builder()
-                .id(id)
-                .productId(UUID.randomUUID())
-                .sellerId(UUID.randomUUID())
-                .quantityAvailable(50)
-                .quantityReserved(10)
-                .reorderLevel(20)
-                .warehouseCode("DEL-01")
-                .status(InventoryStatus.IN_STOCK)
-                .version(1L)
-                .build();
+        Inventory existing =
+                Inventory.builder()
+                        .id(id)
+                        .productId(UUID.randomUUID())
+                        .sellerId(UUID.randomUUID())
+                        .quantityAvailable(50)
+                        .quantityReserved(10)
+                        .reorderLevel(20)
+                        .warehouseCode("DEL-01")
+                        .status(InventoryStatus.IN_STOCK)
+                        .version(1L)
+                        .build();
 
         when(inventoryRepository.findById(id)).thenReturn(Optional.of(existing));
-        when(inventoryRepository.save(any(Inventory.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(inventoryRepository.save(any(Inventory.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
-        var reserveResponse = inventoryApplicationService.reserveQuantity(
-                id, AdjustInventoryQuantityRequest.builder().quantity(15).build());
+        var reserveResponse =
+                inventoryApplicationService.reserveQuantity(
+                        id, AdjustInventoryQuantityRequest.builder().quantity(15).build());
         assertThat(reserveResponse.getQuantityAvailable()).isEqualTo(35);
         assertThat(reserveResponse.getQuantityReserved()).isEqualTo(25);
 
-        var releaseResponse = inventoryApplicationService.releaseQuantity(
-                id, AdjustInventoryQuantityRequest.builder().quantity(5).build());
+        var releaseResponse =
+                inventoryApplicationService.releaseQuantity(
+                        id, AdjustInventoryQuantityRequest.builder().quantity(5).build());
         assertThat(releaseResponse.getQuantityAvailable()).isEqualTo(55);
         assertThat(releaseResponse.getQuantityReserved()).isEqualTo(5);
     }
@@ -122,25 +129,25 @@ class InventoryApplicationServiceTest {
     @Test
     void shouldUpdateInventoryAndDeriveStatus() {
         UUID id = UUID.randomUUID();
-        Inventory existing = Inventory.builder()
-                .id(id)
-                .productId(UUID.randomUUID())
-                .sellerId(UUID.randomUUID())
-                .quantityAvailable(100)
-                .quantityReserved(0)
-                .reorderLevel(10)
-                .warehouseCode("HYD-01")
-                .status(InventoryStatus.IN_STOCK)
-                .version(1L)
-                .build();
+        Inventory existing =
+                Inventory.builder()
+                        .id(id)
+                        .productId(UUID.randomUUID())
+                        .sellerId(UUID.randomUUID())
+                        .quantityAvailable(100)
+                        .quantityReserved(0)
+                        .reorderLevel(10)
+                        .warehouseCode("HYD-01")
+                        .status(InventoryStatus.IN_STOCK)
+                        .version(1L)
+                        .build();
 
         when(inventoryRepository.findById(id)).thenReturn(Optional.of(existing));
-        when(inventoryRepository.save(any(Inventory.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(inventoryRepository.save(any(Inventory.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
-        UpdateInventoryRequest request = UpdateInventoryRequest.builder()
-                .quantityAvailable(5)
-                .reorderLevel(15)
-                .build();
+        UpdateInventoryRequest request =
+                UpdateInventoryRequest.builder().quantityAvailable(5).reorderLevel(15).build();
 
         var response = inventoryApplicationService.updateInventory(id, request);
         assertThat(response.getStatus()).isEqualTo(InventoryStatus.LOW_STOCK);

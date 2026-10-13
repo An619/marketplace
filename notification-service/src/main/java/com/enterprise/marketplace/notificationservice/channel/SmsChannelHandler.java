@@ -1,17 +1,20 @@
 package com.enterprise.marketplace.notificationservice.channel;
 
-import com.enterprise.marketplace.notificationservice.config.NotificationProperties;
-import com.enterprise.marketplace.notificationservice.entity.NotificationEntity;
-import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
 import java.util.HashMap;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
+
+import com.enterprise.marketplace.notificationservice.config.NotificationProperties;
+import com.enterprise.marketplace.notificationservice.entity.NotificationEntity;
+import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -34,20 +37,20 @@ public class SmsChannelHandler implements NotificationChannelHandler {
             return ChannelDeliveryResult.failure("Recipient phone number is required");
         }
         try {
-            RestClient restClient = RestClient.builder()
-                    .baseUrl(notificationProperties.getSmsGatewayUrl())
-                    .build();
+            RestClient restClient =
+                    RestClient.builder().baseUrl(notificationProperties.getSmsGatewayUrl()).build();
             Map<String, Object> payload = new HashMap<>();
             payload.put("to", notification.getRecipientAddress());
             payload.put("message", notification.getBody());
             payload.put("notificationId", notification.getId().toString());
 
-            ResponseEntity<String> response = restClient
-                    .post()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(payload)
-                    .retrieve()
-                    .toEntity(String.class);
+            ResponseEntity<String> response =
+                    restClient
+                            .post()
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .body(payload)
+                            .retrieve()
+                            .toEntity(String.class);
 
             return ChannelDeliveryResult.success(
                     "SMS gateway responded with status " + response.getStatusCode().value());

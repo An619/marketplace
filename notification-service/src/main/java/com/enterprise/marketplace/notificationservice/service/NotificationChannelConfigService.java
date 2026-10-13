@@ -1,14 +1,17 @@
 package com.enterprise.marketplace.notificationservice.service;
 
+import java.util.Map;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.enterprise.marketplace.notificationservice.entity.NotificationChannelEntity;
 import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
 import com.enterprise.marketplace.notificationservice.redis.NotificationCachePort;
 import com.enterprise.marketplace.notificationservice.repository.NotificationChannelRepository;
-import java.util.Map;
-import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,10 +24,15 @@ public class NotificationChannelConfigService {
     public Optional<NotificationChannelEntity> getEnabledChannel(NotificationChannel channel) {
         return cachePort
                 .getChannelConfig(channel.name())
-                .or(() -> channelRepository.findByChannelAndEnabledTrue(channel).map(entity -> {
-                    cachePort.cacheChannelConfig(entity);
-                    return entity;
-                }));
+                .or(
+                        () ->
+                                channelRepository
+                                        .findByChannelAndEnabledTrue(channel)
+                                        .map(
+                                                entity -> {
+                                                    cachePort.cacheChannelConfig(entity);
+                                                    return entity;
+                                                }));
     }
 
     @Transactional(readOnly = true)

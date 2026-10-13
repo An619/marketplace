@@ -1,5 +1,22 @@
 package com.enterprise.marketplace.notificationservice.controller;
 
+import java.util.UUID;
+
+import jakarta.validation.Valid;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.enterprise.marketplace.common.api.ApiResponse;
 import com.enterprise.marketplace.common.constant.HttpHeaders;
 import com.enterprise.marketplace.common.idempotency.Idempotent;
@@ -13,24 +30,11 @@ import com.enterprise.marketplace.notificationservice.dto.StatusUpdateRequest;
 import com.enterprise.marketplace.notificationservice.dto.UpdateNotificationRequest;
 import com.enterprise.marketplace.notificationservice.enums.NotificationStatus;
 import com.enterprise.marketplace.notificationservice.service.NotificationService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/notifications")
@@ -70,27 +74,35 @@ public class NotificationController {
     @Operation(summary = "Retry one or more failed notifications")
     public ResponseEntity<ApiResponse<RetryNotificationResponse>> retryNotifications(
             @Valid @RequestBody RetryNotificationRequest request) {
-        return ResponseEntity.ok(ApiResponse.success(
-                notificationService.retryNotifications(request), "Notification retry processed"));
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        notificationService.retryNotifications(request),
+                        "Notification retry processed"));
     }
 
     @GetMapping
     @Operation(summary = "List notifications")
     public ResponseEntity<ApiResponse<NotificationPageResponse>> listNotifications(
-            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(ApiResponse.success(notificationService.listNotifications(page, size)));
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(
+                ApiResponse.success(notificationService.listNotifications(page, size)));
     }
 
     @GetMapping("/{notificationId}")
     @Operation(summary = "Get notification by ID")
-    public ResponseEntity<ApiResponse<NotificationResponse>> getNotification(@PathVariable UUID notificationId) {
-        return ResponseEntity.ok(ApiResponse.success(notificationService.getNotification(notificationId)));
+    public ResponseEntity<ApiResponse<NotificationResponse>> getNotification(
+            @PathVariable UUID notificationId) {
+        return ResponseEntity.ok(
+                ApiResponse.success(notificationService.getNotification(notificationId)));
     }
 
     @GetMapping("/request/{requestId}")
     @Operation(summary = "Search notification by request ID")
-    public ResponseEntity<ApiResponse<NotificationResponse>> getByRequestId(@PathVariable String requestId) {
-        return ResponseEntity.ok(ApiResponse.success(notificationService.getByRequestId(requestId)));
+    public ResponseEntity<ApiResponse<NotificationResponse>> getByRequestId(
+            @PathVariable String requestId) {
+        return ResponseEntity.ok(
+                ApiResponse.success(notificationService.getByRequestId(requestId)));
     }
 
     @GetMapping("/recipient/{recipientId}")
@@ -99,7 +111,8 @@ public class NotificationController {
             @PathVariable String recipientId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(ApiResponse.success(notificationService.getByRecipientId(recipientId, page, size)));
+        return ResponseEntity.ok(
+                ApiResponse.success(notificationService.getByRecipientId(recipientId, page, size)));
     }
 
     @GetMapping("/status/{status}")
@@ -108,16 +121,20 @@ public class NotificationController {
             @PathVariable NotificationStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(ApiResponse.success(notificationService.getByStatus(status, page, size)));
+        return ResponseEntity.ok(
+                ApiResponse.success(notificationService.getByStatus(status, page, size)));
     }
 
     @PutMapping("/{notificationId}")
     @Idempotent
     @Operation(summary = "Update notification")
     public ResponseEntity<ApiResponse<NotificationResponse>> updateNotification(
-            @PathVariable UUID notificationId, @Valid @RequestBody UpdateNotificationRequest request) {
-        return ResponseEntity.ok(ApiResponse.success(
-                notificationService.updateNotification(notificationId, request), "Notification updated successfully"));
+            @PathVariable UUID notificationId,
+            @Valid @RequestBody UpdateNotificationRequest request) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        notificationService.updateNotification(notificationId, request),
+                        "Notification updated successfully"));
     }
 
     @PatchMapping("/{notificationId}/status")
@@ -125,16 +142,21 @@ public class NotificationController {
     @Operation(summary = "Update notification status")
     public ResponseEntity<ApiResponse<NotificationResponse>> updateStatus(
             @PathVariable UUID notificationId, @Valid @RequestBody StatusUpdateRequest request) {
-        return ResponseEntity.ok(ApiResponse.success(
-                notificationService.updateStatus(notificationId, request), "Notification status updated successfully"));
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        notificationService.updateStatus(notificationId, request),
+                        "Notification status updated successfully"));
     }
 
     @PostMapping("/{notificationId}/retry")
     @Idempotent
     @Operation(summary = "Retry failed notification")
-    public ResponseEntity<ApiResponse<NotificationResponse>> retryNotification(@PathVariable UUID notificationId) {
-        return ResponseEntity.ok(ApiResponse.success(
-                notificationService.retryNotification(notificationId), "Notification retry scheduled successfully"));
+    public ResponseEntity<ApiResponse<NotificationResponse>> retryNotification(
+            @PathVariable UUID notificationId) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        notificationService.retryNotification(notificationId),
+                        "Notification retry scheduled successfully"));
     }
 
     @DeleteMapping("/{notificationId}")

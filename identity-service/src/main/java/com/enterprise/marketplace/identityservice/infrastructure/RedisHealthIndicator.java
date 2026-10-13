@@ -1,10 +1,11 @@
 package com.enterprise.marketplace.identityservice.infrastructure;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.stereotype.Component;
+
 import lombok.RequiredArgsConstructor;
 
 @Component

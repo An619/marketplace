@@ -2,13 +2,12 @@ package com.enterprise.marketplace.inventoryservice.domain.model;
 
 import java.time.Instant;
 import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Value;
 import lombok.With;
 
-/**
- * Inventory aggregate root.
- */
+/** Inventory aggregate root. */
 @Value
 @Builder(toBuilder = true)
 @With

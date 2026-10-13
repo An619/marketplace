@@ -1,18 +1,20 @@
 package com.enterprise.marketplace.buyerservice.infrastructure.persistence;
 
-import com.enterprise.marketplace.buyerservice.domain.model.BuyerSearchCriteria;
-import com.enterprise.marketplace.buyerservice.domain.model.BuyerStatus;
-import com.enterprise.marketplace.buyerservice.infrastructure.persistence.entity.BuyerEntity;
-import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.persistence.criteria.Predicate;
+
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
+import com.enterprise.marketplace.buyerservice.domain.model.BuyerSearchCriteria;
+import com.enterprise.marketplace.buyerservice.domain.model.BuyerStatus;
+import com.enterprise.marketplace.buyerservice.infrastructure.persistence.entity.BuyerEntity;
+
 final class BuyerSpecifications {
 
-    private BuyerSpecifications() {
-    }
+    private BuyerSpecifications() {}
 
     static Specification<BuyerEntity> fromCriteria(BuyerSearchCriteria criteria) {
         return (root, query, cb) -> {
@@ -24,21 +26,27 @@ final class BuyerSpecifications {
                 predicates.add(cb.notEqual(root.get("status"), BuyerStatus.ARCHIVED));
             }
             if (StringUtils.hasText(criteria.getCity())) {
-                predicates.add(cb.equal(cb.lower(root.get("city")), criteria.getCity().toLowerCase()));
+                predicates.add(
+                        cb.equal(cb.lower(root.get("city")), criteria.getCity().toLowerCase()));
             }
             if (StringUtils.hasText(criteria.getState())) {
-                predicates.add(cb.equal(cb.lower(root.get("state")), criteria.getState().toLowerCase()));
+                predicates.add(
+                        cb.equal(cb.lower(root.get("state")), criteria.getState().toLowerCase()));
             }
             if (StringUtils.hasText(criteria.getCountry())) {
-                predicates.add(cb.equal(cb.lower(root.get("country")), criteria.getCountry().toLowerCase()));
+                predicates.add(
+                        cb.equal(
+                                cb.lower(root.get("country")),
+                                criteria.getCountry().toLowerCase()));
             }
             if (StringUtils.hasText(criteria.getKeyword())) {
                 String pattern = "%" + criteria.getKeyword().toLowerCase() + "%";
-                predicates.add(cb.or(
-                        cb.like(cb.lower(root.get("companyName")), pattern),
-                        cb.like(cb.lower(root.get("contactPerson")), pattern),
-                        cb.like(cb.lower(root.get("email")), pattern),
-                        cb.like(cb.lower(root.get("phone")), pattern)));
+                predicates.add(
+                        cb.or(
+                                cb.like(cb.lower(root.get("companyName")), pattern),
+                                cb.like(cb.lower(root.get("contactPerson")), pattern),
+                                cb.like(cb.lower(root.get("email")), pattern),
+                                cb.like(cb.lower(root.get("phone")), pattern)));
             }
 
             return cb.and(predicates.toArray(Predicate[]::new));

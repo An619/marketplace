@@ -1,20 +1,23 @@
 package com.enterprise.marketplace.sellerservice.infrastructure.persistence;
 
-import com.enterprise.marketplace.sellerservice.domain.model.Seller;
-import com.enterprise.marketplace.sellerservice.domain.model.SellerPage;
-import com.enterprise.marketplace.sellerservice.domain.model.SellerSearchCriteria;
-import com.enterprise.marketplace.sellerservice.domain.port.SellerRepository;
-import com.enterprise.marketplace.sellerservice.infrastructure.persistence.entity.SellerEntity;
-import com.enterprise.marketplace.sellerservice.infrastructure.persistence.mapper.SellerPersistenceMapper;
 import java.util.Optional;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+
+import com.enterprise.marketplace.sellerservice.domain.model.Seller;
+import com.enterprise.marketplace.sellerservice.domain.model.SellerPage;
+import com.enterprise.marketplace.sellerservice.domain.model.SellerSearchCriteria;
+import com.enterprise.marketplace.sellerservice.domain.port.SellerRepository;
+import com.enterprise.marketplace.sellerservice.infrastructure.persistence.entity.SellerEntity;
+import com.enterprise.marketplace.sellerservice.infrastructure.persistence.mapper.SellerPersistenceMapper;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
@@ -25,15 +28,17 @@ public class SellerRepositoryAdapter implements SellerRepository {
 
     @Override
     public Seller save(Seller seller) {
-        SellerEntity entity = seller.getId() == null
-                ? sellerPersistenceMapper.toEntity(seller)
-                : sellerJpaRepository
-                        .findById(seller.getId())
-                        .map(existing -> {
-                            sellerPersistenceMapper.updateEntity(existing, seller);
-                            return existing;
-                        })
-                        .orElseGet(() -> sellerPersistenceMapper.toEntity(seller));
+        SellerEntity entity =
+                seller.getId() == null
+                        ? sellerPersistenceMapper.toEntity(seller)
+                        : sellerJpaRepository
+                                .findById(seller.getId())
+                                .map(
+                                        existing -> {
+                                            sellerPersistenceMapper.updateEntity(existing, seller);
+                                            return existing;
+                                        })
+                                .orElseGet(() -> sellerPersistenceMapper.toEntity(seller));
 
         return sellerPersistenceMapper.toDomain(sellerJpaRepository.save(entity));
     }
@@ -59,9 +64,11 @@ public class SellerRepositoryAdapter implements SellerRepository {
     }
 
     @Override
-    public SellerPage<Seller> search(SellerSearchCriteria criteria, int page, int size, String sort) {
+    public SellerPage<Seller> search(
+            SellerSearchCriteria criteria, int page, int size, String sort) {
         Pageable pageable = PageRequest.of(page, size, parseSort(sort));
-        Page<SellerEntity> result = sellerJpaRepository.findAll(SellerSpecifications.fromCriteria(criteria), pageable);
+        Page<SellerEntity> result =
+                sellerJpaRepository.findAll(SellerSpecifications.fromCriteria(criteria), pageable);
 
         return new SellerPage<>(
                 result.getContent().stream().map(sellerPersistenceMapper::toDomain).toList(),
@@ -83,7 +90,9 @@ public class SellerRepositoryAdapter implements SellerRepository {
         String[] parts = sort.split(",");
         String property = parts[0];
         Sort.Direction direction =
-                parts.length > 1 && "asc".equalsIgnoreCase(parts[1]) ? Sort.Direction.ASC : Sort.Direction.DESC;
+                parts.length > 1 && "asc".equalsIgnoreCase(parts[1])
+                        ? Sort.Direction.ASC
+                        : Sort.Direction.DESC;
         return Sort.by(direction, property);
     }
 }

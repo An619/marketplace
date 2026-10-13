@@ -1,5 +1,18 @@
 package com.enterprise.marketplace.aiservice.service.impl;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.enterprise.marketplace.aiservice.constants.AiKafkaTopics;
 import com.enterprise.marketplace.aiservice.dto.ChatMessageDto;
 import com.enterprise.marketplace.aiservice.dto.ChatRequest;
@@ -38,19 +51,9 @@ import com.enterprise.marketplace.common.exception.ErrorCode;
 import com.enterprise.marketplace.common.exception.MarketplaceException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -86,7 +89,8 @@ public class AiServiceImpl implements AiService {
         ensureFeatureEnabled();
         AiPromptTemplateEntity template = loadTemplate(AiUseCase.BUYER_CHAT);
         String sessionKey = resolveSessionKey(request.getSessionKey());
-        AiChatSessionEntity session = resolveSession(sessionKey, request.getUserId(), request.getUserRole());
+        AiChatSessionEntity session =
+                resolveSession(sessionKey, request.getUserId(), request.getUserRole());
 
         AiChatMessageEntity userMessage = new AiChatMessageEntity();
         userMessage.setSessionId(session.getId());
@@ -94,12 +98,22 @@ public class AiServiceImpl implements AiService {
         userMessage.setContent(request.getMessage());
         chatMessageRepository.save(userMessage);
 
-        List<OllamaMessage> messages = buildChatMessages(session.getId(), template, request.getMessage());
+        List<OllamaMessage> messages =
+                buildChatMessages(session.getId(), template, request.getMessage());
         OllamaResult result = invokeChat(template.getModel(), messages);
         if (!result.success()) {
-            logGeneration(AiUseCase.BUYER_CHAT.name(), template.getModel(), request.getUserId(), null, request.getMessage(),
-                    null, AiGenerationStatus.FAILED, result.latencyMs(), result.error());
-            throw new MarketplaceException(ErrorCode.INTERNAL_ERROR, "AI chat failed: " + result.error());
+            logGeneration(
+                    AiUseCase.BUYER_CHAT.name(),
+                    template.getModel(),
+                    request.getUserId(),
+                    null,
+                    request.getMessage(),
+                    null,
+                    AiGenerationStatus.FAILED,
+                    result.latencyMs(),
+                    result.error());
+            throw new MarketplaceException(
+                    ErrorCode.INTERNAL_ERROR, "AI chat failed: " + result.error());
         }
 
         AiChatMessageEntity assistantMessage = new AiChatMessageEntity();
@@ -109,8 +123,16 @@ public class AiServiceImpl implements AiService {
         assistantMessage.setModel(result.model());
         chatMessageRepository.save(assistantMessage);
 
-        logGeneration(AiUseCase.BUYER_CHAT.name(), result.model(), request.getUserId(), null, request.getMessage(),
-                result.content(), AiGenerationStatus.SUCCESS, result.latencyMs(), null);
+        logGeneration(
+                AiUseCase.BUYER_CHAT.name(),
+                result.model(),
+                request.getUserId(),
+                null,
+                request.getMessage(),
+                result.content(),
+                AiGenerationStatus.SUCCESS,
+                result.latencyMs(),
+                null);
         audit(AiAuditOperation.CHAT, request.getUserId(), Map.of("sessionKey", sessionKey));
 
         saveOutboxEvent(
@@ -125,10 +147,17 @@ public class AiServiceImpl implements AiService {
                         "model", result.model(),
                         "occurredAt", Instant.now().toString()));
 
-        List<ChatMessageDto> history = chatMessageRepository.findTop20BySessionIdOrderByCreatedAtAsc(session.getId())
-                .stream()
-                .map(m -> ChatMessageDto.builder().role(m.getRole().name()).content(m.getContent()).build())
-                .toList();
+        List<ChatMessageDto> history =
+                chatMessageRepository
+                        .findTop20BySessionIdOrderByCreatedAtAsc(session.getId())
+                        .stream()
+                        .map(
+                                m ->
+                                        ChatMessageDto.builder()
+                                                .role(m.getRole().name())
+                                                .content(m.getContent())
+                                                .build())
+                        .toList();
 
         return ChatResponse.builder()
                 .sessionKey(sessionKey)
@@ -147,20 +176,45 @@ public class AiServiceImpl implements AiService {
         Map<String, String> vars = new HashMap<>();
         vars.put("name", request.getName());
         vars.put("sku", request.getSku() != null ? request.getSku() : "");
-        vars.put("categoryId", request.getCategoryId() != null ? request.getCategoryId().toString() : "");
-        vars.put("attributes", request.getAttributes() != null ? request.getAttributes().toString() : "{}");
+        vars.put(
+                "categoryId",
+                request.getCategoryId() != null ? request.getCategoryId().toString() : "");
+        vars.put(
+                "attributes",
+                request.getAttributes() != null ? request.getAttributes().toString() : "{}");
 
         String prompt = templateEngine.render(template.getUserPrompt(), vars);
-        OllamaResult result = invokeGenerate(prompt, template.getSystemPrompt(), template.getModel());
+        OllamaResult result =
+                invokeGenerate(prompt, template.getSystemPrompt(), template.getModel());
         if (!result.success()) {
-            logGeneration(AiUseCase.PRODUCT_DESCRIPTION.name(), template.getModel(), null, request.getProductId(),
-                    prompt, null, AiGenerationStatus.FAILED, result.latencyMs(), result.error());
-            throw new MarketplaceException(ErrorCode.INTERNAL_ERROR, "Description generation failed");
+            logGeneration(
+                    AiUseCase.PRODUCT_DESCRIPTION.name(),
+                    template.getModel(),
+                    null,
+                    request.getProductId(),
+                    prompt,
+                    null,
+                    AiGenerationStatus.FAILED,
+                    result.latencyMs(),
+                    result.error());
+            throw new MarketplaceException(
+                    ErrorCode.INTERNAL_ERROR, "Description generation failed");
         }
 
-        logGeneration(AiUseCase.PRODUCT_DESCRIPTION.name(), result.model(), null, request.getProductId(), prompt,
-                result.content(), AiGenerationStatus.SUCCESS, result.latencyMs(), null);
-        audit(AiAuditOperation.GENERATE, null, Map.of("productId", request.getProductId().toString()));
+        logGeneration(
+                AiUseCase.PRODUCT_DESCRIPTION.name(),
+                result.model(),
+                null,
+                request.getProductId(),
+                prompt,
+                result.content(),
+                AiGenerationStatus.SUCCESS,
+                result.latencyMs(),
+                null);
+        audit(
+                AiAuditOperation.GENERATE,
+                null,
+                Map.of("productId", request.getProductId().toString()));
 
         saveOutboxEvent(
                 request.getProductId(),
@@ -186,10 +240,14 @@ public class AiServiceImpl implements AiService {
     public SearchInterpretResponse interpretSearch(SearchInterpretRequest request) {
         ensureFeatureEnabled();
         AiPromptTemplateEntity template = loadTemplate(AiUseCase.SEARCH_INTERPRET);
-        String prompt = templateEngine.render(template.getUserPrompt(), Map.of("query", request.getQuery()));
-        OllamaResult result = invokeGenerate(prompt, template.getSystemPrompt(), template.getModel());
+        String prompt =
+                templateEngine.render(
+                        template.getUserPrompt(), Map.of("query", request.getQuery()));
+        OllamaResult result =
+                invokeGenerate(prompt, template.getSystemPrompt(), template.getModel());
         if (!result.success()) {
-            throw new MarketplaceException(ErrorCode.INTERNAL_ERROR, "Search interpretation failed");
+            throw new MarketplaceException(
+                    ErrorCode.INTERNAL_ERROR, "Search interpretation failed");
         }
 
         audit(AiAuditOperation.INTERPRET, null, Map.of("query", request.getQuery()));
@@ -203,11 +261,18 @@ public class AiServiceImpl implements AiService {
         int resolvedLimit = Math.min(Math.max(limit, 1), 10);
         List<RecommendedProductDto> recommendations = new ArrayList<>();
 
-        String prompt = "Suggest " + resolvedLimit + " B2B product types for buyer "
-                + (buyerId != null ? buyerId : "anonymous")
-                + (categoryId != null ? " in category " + categoryId : "")
-                + ". Return one product name per line with a short reason after a dash.";
-        OllamaResult result = invokeGenerate(prompt, "You are a B2B marketplace recommendation assistant.", defaultModel);
+        String prompt =
+                "Suggest "
+                        + resolvedLimit
+                        + " B2B product types for buyer "
+                        + (buyerId != null ? buyerId : "anonymous")
+                        + (categoryId != null ? " in category " + categoryId : "")
+                        + ". Return one product name per line with a short reason after a dash.";
+        OllamaResult result =
+                invokeGenerate(
+                        prompt,
+                        "You are a B2B marketplace recommendation assistant.",
+                        defaultModel);
 
         if (result.success() && result.content() != null) {
             for (String line : result.content().split("\n")) {
@@ -222,18 +287,22 @@ public class AiServiceImpl implements AiService {
                     name = trimmed.substring(0, dash).trim();
                     reason = trimmed.substring(dash + 1).trim();
                 }
-                recommendations.add(RecommendedProductDto.builder()
-                        .productId(null)
-                        .name(name)
-                        .reason(reason)
-                        .build());
+                recommendations.add(
+                        RecommendedProductDto.builder()
+                                .productId(null)
+                                .name(name)
+                                .reason(reason)
+                                .build());
                 if (recommendations.size() >= resolvedLimit) {
                     break;
                 }
             }
         }
 
-        audit(AiAuditOperation.RECOMMEND, buyerId, Map.of("categoryId", categoryId != null ? categoryId.toString() : ""));
+        audit(
+                AiAuditOperation.RECOMMEND,
+                buyerId,
+                Map.of("categoryId", categoryId != null ? categoryId.toString() : ""));
         return RecommendationResponse.builder()
                 .buyerId(buyerId)
                 .recommendations(recommendations)
@@ -260,17 +329,21 @@ public class AiServiceImpl implements AiService {
             if ("product-created".equals(eventSource) && isFeatureEnabled()) {
                 String description = textOrNull(root, "description");
                 String name = textOrNull(root, "name");
-                if ((description == null || description.isBlank()) && name != null && productId != null) {
-                    GenerateDescriptionRequest req = GenerateDescriptionRequest.builder()
-                            .productId(UUID.fromString(productId))
-                            .name(name)
-                            .sku(textOrNull(root, "sku"))
-                            .categoryId(parseUuid(textOrNull(root, "categoryId")))
-                            .build();
+                if ((description == null || description.isBlank())
+                        && name != null
+                        && productId != null) {
+                    GenerateDescriptionRequest req =
+                            GenerateDescriptionRequest.builder()
+                                    .productId(UUID.fromString(productId))
+                                    .name(name)
+                                    .sku(textOrNull(root, "sku"))
+                                    .categoryId(parseUuid(textOrNull(root, "categoryId")))
+                                    .build();
                     try {
                         generateDescription(req);
                     } catch (Exception ex) {
-                        log.warn("Auto description generation failed for product {}", productId, ex);
+                        log.warn(
+                                "Auto description generation failed for product {}", productId, ex);
                     }
                 }
             }
@@ -287,7 +360,10 @@ public class AiServiceImpl implements AiService {
         JsonNode enabledNode = root.get("enabled");
         if (enabledNode != null && enabledNode.isBoolean()) {
             cachePort.setFeatureEnabled(enabledNode.asBoolean());
-            audit(AiAuditOperation.FEATURE_TOGGLE, null, Map.of("enabled", enabledNode.asBoolean()));
+            audit(
+                    AiAuditOperation.FEATURE_TOGGLE,
+                    null,
+                    Map.of("enabled", enabledNode.asBoolean()));
         }
     }
 
@@ -323,10 +399,14 @@ public class AiServiceImpl implements AiService {
     private AiPromptTemplateEntity loadTemplate(AiUseCase useCase) {
         return promptTemplateRepository
                 .findFirstByUseCaseAndActiveTrue(useCase)
-                .orElseThrow(() -> new MarketplaceException(ErrorCode.RESOURCE_NOT_FOUND, "Prompt template not found"));
+                .orElseThrow(
+                        () ->
+                                new MarketplaceException(
+                                        ErrorCode.RESOURCE_NOT_FOUND, "Prompt template not found"));
     }
 
-    private List<OllamaMessage> buildChatMessages(UUID sessionId, AiPromptTemplateEntity template, String latestUserMessage) {
+    private List<OllamaMessage> buildChatMessages(
+            UUID sessionId, AiPromptTemplateEntity template, String latestUserMessage) {
         List<OllamaMessage> messages = new ArrayList<>();
         if (template.getSystemPrompt() != null && !template.getSystemPrompt().isBlank()) {
             messages.add(new OllamaMessage("system", template.getSystemPrompt()));
@@ -338,31 +418,38 @@ public class AiServiceImpl implements AiService {
             AiChatMessageEntity msg = history.get(i);
             messages.add(new OllamaMessage(msg.getRole().name().toLowerCase(), msg.getContent()));
         }
-        if (messages.stream().noneMatch(m -> "user".equals(m.role()) && latestUserMessage.equals(m.content()))) {
+        if (messages.stream()
+                .noneMatch(m -> "user".equals(m.role()) && latestUserMessage.equals(m.content()))) {
             messages.add(new OllamaMessage("user", latestUserMessage));
         }
         return messages;
     }
 
     private AiChatSessionEntity resolveSession(String sessionKey, String userId, String userRole) {
-        return chatSessionRepository.findBySessionKey(sessionKey).orElseGet(() -> {
-            AiChatSessionEntity session = new AiChatSessionEntity();
-            session.setSessionKey(sessionKey);
-            session.setUserId(userId != null ? userId : "anonymous");
-            session.setUserRole(userRole != null ? userRole : "BUYER");
-            session.setTitle("Marketplace Assistant");
-            return chatSessionRepository.save(session);
-        });
+        return chatSessionRepository
+                .findBySessionKey(sessionKey)
+                .orElseGet(
+                        () -> {
+                            AiChatSessionEntity session = new AiChatSessionEntity();
+                            session.setSessionKey(sessionKey);
+                            session.setUserId(userId != null ? userId : "anonymous");
+                            session.setUserRole(userRole != null ? userRole : "BUYER");
+                            session.setTitle("Marketplace Assistant");
+                            return chatSessionRepository.save(session);
+                        });
     }
 
     private String resolveSessionKey(String sessionKey) {
-        return sessionKey != null && !sessionKey.isBlank() ? sessionKey : UUID.randomUUID().toString();
+        return sessionKey != null && !sessionKey.isBlank()
+                ? sessionKey
+                : UUID.randomUUID().toString();
     }
 
     private OllamaResult invokeChat(String model, List<OllamaMessage> messages) {
         OllamaProvider provider = ollamaProvider.getIfAvailable();
         if (provider == null) {
-            return OllamaResult.failure("Ollama provider not available", model != null ? model : defaultModel, 0);
+            return OllamaResult.failure(
+                    "Ollama provider not available", model != null ? model : defaultModel, 0);
         }
         return provider.chat(messages, model);
     }
@@ -370,7 +457,8 @@ public class AiServiceImpl implements AiService {
     private OllamaResult invokeGenerate(String prompt, String systemPrompt, String model) {
         OllamaProvider provider = ollamaProvider.getIfAvailable();
         if (provider == null) {
-            return OllamaResult.failure("Ollama provider not available", model != null ? model : defaultModel, 0);
+            return OllamaResult.failure(
+                    "Ollama provider not available", model != null ? model : defaultModel, 0);
         }
         return provider.generate(prompt, systemPrompt, model);
     }
@@ -396,7 +484,10 @@ public class AiServiceImpl implements AiService {
             long latencyMs,
             String error) {
         AiGenerationLogEntity logEntity = new AiGenerationLogEntity();
-        logEntity.setRequestId(RequestContext.getRequestId() != null ? RequestContext.getRequestId() : UUID.randomUUID().toString());
+        logEntity.setRequestId(
+                RequestContext.getRequestId() != null
+                        ? RequestContext.getRequestId()
+                        : UUID.randomUUID().toString());
         logEntity.setCorrelationId(RequestContext.getCorrelationId());
         logEntity.setUseCase(useCase);
         logEntity.setModel(model != null ? model : defaultModel);
@@ -425,7 +516,12 @@ public class AiServiceImpl implements AiService {
         }
     }
 
-    private void saveOutboxEvent(UUID aggregateId, String aggregateType, String eventType, String topic, Map<String, Object> payload) {
+    private void saveOutboxEvent(
+            UUID aggregateId,
+            String aggregateType,
+            String eventType,
+            String topic,
+            Map<String, Object> payload) {
         try {
             OutboxEventEntity event = new OutboxEventEntity();
             event.setAggregateId(aggregateId);

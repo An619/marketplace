@@ -1,19 +1,9 @@
 package com.enterprise.marketplace.sellerservice.bootstrap.controller;
 
-import com.enterprise.marketplace.common.api.ApiResponse;
-import com.enterprise.marketplace.common.idempotency.Idempotent;
-import com.enterprise.marketplace.sellerservice.application.dto.CreateSellerRequest;
-import com.enterprise.marketplace.sellerservice.application.dto.SellerPageResponse;
-import com.enterprise.marketplace.sellerservice.application.dto.SellerResponse;
-import com.enterprise.marketplace.sellerservice.application.dto.UpdateSellerRequest;
-import com.enterprise.marketplace.sellerservice.application.dto.UpdateSellerStatusRequest;
-import com.enterprise.marketplace.sellerservice.application.service.SellerApplicationService;
-import com.enterprise.marketplace.sellerservice.domain.model.SellerStatus;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
+
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,6 +17,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.enterprise.marketplace.common.api.ApiResponse;
+import com.enterprise.marketplace.common.idempotency.Idempotent;
+import com.enterprise.marketplace.sellerservice.application.dto.CreateSellerRequest;
+import com.enterprise.marketplace.sellerservice.application.dto.SellerPageResponse;
+import com.enterprise.marketplace.sellerservice.application.dto.SellerResponse;
+import com.enterprise.marketplace.sellerservice.application.dto.UpdateSellerRequest;
+import com.enterprise.marketplace.sellerservice.application.dto.UpdateSellerStatusRequest;
+import com.enterprise.marketplace.sellerservice.application.service.SellerApplicationService;
+import com.enterprise.marketplace.sellerservice.domain.model.SellerStatus;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/api/v1/sellers")
 @RequiredArgsConstructor
@@ -38,7 +42,8 @@ public class SellerController {
     @PostMapping
     @Idempotent
     @Operation(summary = "Create a seller")
-    public ResponseEntity<ApiResponse<SellerResponse>> createSeller(@Valid @RequestBody CreateSellerRequest request) {
+    public ResponseEntity<ApiResponse<SellerResponse>> createSeller(
+            @Valid @RequestBody CreateSellerRequest request) {
         SellerResponse response = sellerApplicationService.createSeller(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(response, "Seller created successfully"));
@@ -58,7 +63,8 @@ public class SellerController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
-        SellerPageResponse response = sellerApplicationService.searchSellers(status, keyword, page, size, sort);
+        SellerPageResponse response =
+                sellerApplicationService.searchSellers(status, keyword, page, size, sort);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -68,7 +74,9 @@ public class SellerController {
     public ResponseEntity<ApiResponse<SellerResponse>> updateSeller(
             @PathVariable UUID id, @Valid @RequestBody UpdateSellerRequest request) {
         return ResponseEntity.ok(
-                ApiResponse.success(sellerApplicationService.updateSeller(id, request), "Seller updated successfully"));
+                ApiResponse.success(
+                        sellerApplicationService.updateSeller(id, request),
+                        "Seller updated successfully"));
     }
 
     @PatchMapping("/{id}/status")
@@ -76,9 +84,10 @@ public class SellerController {
     @Operation(summary = "Update seller status")
     public ResponseEntity<ApiResponse<SellerResponse>> updateSellerStatus(
             @PathVariable UUID id, @Valid @RequestBody UpdateSellerStatusRequest request) {
-        return ResponseEntity.ok(ApiResponse.success(
-                sellerApplicationService.updateSellerStatus(id, request.getStatus()),
-                "Seller status updated successfully"));
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        sellerApplicationService.updateSellerStatus(id, request.getStatus()),
+                        "Seller status updated successfully"));
     }
 
     @DeleteMapping("/{id}")

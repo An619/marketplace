@@ -1,8 +1,6 @@
 package com.enterprise.marketplace.common.constant;
 
-/**
- * Mapped Diagnostic Context keys for structured logging.
- */
+/** Mapped Diagnostic Context keys for structured logging. */
 public final class MdcKeys {
 
     public static final String CORRELATION_ID = "correlationId";

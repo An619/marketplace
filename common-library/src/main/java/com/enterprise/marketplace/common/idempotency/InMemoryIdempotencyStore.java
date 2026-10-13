@@ -4,9 +4,10 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+
 /**
- * In-memory idempotency store for bootstrap and local development.
- * Replace with Redis-backed implementation in production services.
+ * In-memory idempotency store for bootstrap and local development. Replace with Redis-backed
+ * implementation in production services.
  */
 public class InMemoryIdempotencyStore implements IdempotencyStore {
 
@@ -32,13 +33,14 @@ public class InMemoryIdempotencyStore implements IdempotencyStore {
             return false;
         }
 
-        IdempotencyRecord record = IdempotencyRecord.builder()
-                .key(key)
-                .requestHash(requestHash)
-                .status(IdempotencyRecord.Status.IN_PROGRESS)
-                .createdAt(now)
-                .expiresAt(expiresAt)
-                .build();
+        IdempotencyRecord record =
+                IdempotencyRecord.builder()
+                        .key(key)
+                        .requestHash(requestHash)
+                        .status(IdempotencyRecord.Status.IN_PROGRESS)
+                        .createdAt(now)
+                        .expiresAt(expiresAt)
+                        .build();
 
         return store.putIfAbsent(key, record) == null;
     }

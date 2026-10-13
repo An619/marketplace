@@ -1,15 +1,18 @@
 package com.enterprise.marketplace.notificationservice.mapper;
 
+import java.util.Collections;
+import java.util.Map;
+
+import org.springframework.stereotype.Component;
+
 import com.enterprise.marketplace.notificationservice.dto.InboxResponse;
 import com.enterprise.marketplace.notificationservice.dto.NotificationResponse;
 import com.enterprise.marketplace.notificationservice.entity.NotificationEntity;
 import com.enterprise.marketplace.notificationservice.entity.NotificationInboxEntity;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Collections;
-import java.util.Map;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor

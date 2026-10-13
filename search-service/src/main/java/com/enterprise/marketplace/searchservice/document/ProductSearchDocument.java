@@ -2,15 +2,17 @@ package com.enterprise.marketplace.searchservice.document;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.data.elasticsearch.annotations.Setting;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
@@ -20,8 +22,7 @@ import org.springframework.data.elasticsearch.annotations.Setting;
 @Setting(shards = 1, replicas = 0)
 public class ProductSearchDocument {
 
-    @Id
-    private String productId;
+    @Id private String productId;
 
     @Field(type = FieldType.Keyword)
     private String sku;

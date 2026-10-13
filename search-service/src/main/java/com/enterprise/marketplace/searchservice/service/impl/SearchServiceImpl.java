@@ -1,5 +1,27 @@
 package com.enterprise.marketplace.searchservice.service.impl;
 
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.HexFormat;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.query.Criteria;
+import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import com.enterprise.marketplace.common.context.RequestContext;
 import com.enterprise.marketplace.common.exception.ErrorCode;
 import com.enterprise.marketplace.common.exception.MarketplaceException;
@@ -24,29 +46,9 @@ import com.enterprise.marketplace.searchservice.repository.SearchSyncLogReposito
 import com.enterprise.marketplace.searchservice.service.SearchService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HexFormat;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.data.elasticsearch.core.SearchHit;
-import org.springframework.data.elasticsearch.core.SearchHits;
-import org.springframework.data.elasticsearch.core.query.Criteria;
-import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 @Slf4j
 @Service
@@ -75,19 +77,24 @@ public class SearchServiceImpl implements SearchService {
 
         Criteria criteria = buildSearchCriteria(request);
         Sort sort = parseSort(request.getSort());
-        CriteriaQuery query = new CriteriaQuery(criteria).setPageable(PageRequest.of(request.getPage(), request.getSize(), sort));
+        CriteriaQuery query =
+                new CriteriaQuery(criteria)
+                        .setPageable(PageRequest.of(request.getPage(), request.getSize(), sort));
 
-        SearchHits<ProductSearchDocument> hits = elasticsearchOperations.search(query, ProductSearchDocument.class);
-        List<ProductSearchResult> content = hits.getSearchHits().stream().map(this::toResult).toList();
+        SearchHits<ProductSearchDocument> hits =
+                elasticsearchOperations.search(query, ProductSearchDocument.class);
+        List<ProductSearchResult> content =
+                hits.getSearchHits().stream().map(this::toResult).toList();
 
-        ProductSearchPageResponse response = ProductSearchPageResponse.builder()
-                .content(content)
-                .page(request.getPage())
-                .size(request.getSize())
-                .totalElements(hits.getTotalHits())
-                .totalPages(calculateTotalPages(hits.getTotalHits(), request.getSize()))
-                .query(request.getQ())
-                .build();
+        ProductSearchPageResponse response =
+                ProductSearchPageResponse.builder()
+                        .content(content)
+                        .page(request.getPage())
+                        .size(request.getSize())
+                        .totalElements(hits.getTotalHits())
+                        .totalPages(calculateTotalPages(hits.getTotalHits(), request.getSize()))
+                        .query(request.getQ())
+                        .build();
 
         cachePort.cacheSearchResult(cacheKey, response);
         auditService.record(
@@ -95,7 +102,11 @@ public class SearchServiceImpl implements SearchService {
                 null,
                 request.getQ(),
                 content.size(),
-                Map.of("sellerId", String.valueOf(request.getSellerId()), "categoryId", String.valueOf(request.getCategoryId())));
+                Map.of(
+                        "sellerId",
+                        String.valueOf(request.getSellerId()),
+                        "categoryId",
+                        String.valueOf(request.getCategoryId())));
 
         log.info("Product search q={} hits={}", request.getQ(), hits.getTotalHits());
         return response;
@@ -103,9 +114,13 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public ProductSearchResult getProductById(UUID productId) {
-        ProductSearchDocument document = productSearchRepository
-                .findById(productId.toString())
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found in search index: " + productId));
+        ProductSearchDocument document =
+                productSearchRepository
+                        .findById(productId.toString())
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "Product not found in search index: " + productId));
         return toResult(document, null);
     }
 
@@ -135,7 +150,8 @@ public class SearchServiceImpl implements SearchService {
             indexProduct(productId, root, payload, mapOperation(action));
         } catch (Exception ex) {
             log.error("Failed to process search index event source={}", eventSource, ex);
-            throw new MarketplaceException(ErrorCode.INTERNAL_ERROR, "Failed to process search index event");
+            throw new MarketplaceException(
+                    ErrorCode.INTERNAL_ERROR, "Failed to process search index event");
         }
     }
 
@@ -146,7 +162,8 @@ public class SearchServiceImpl implements SearchService {
         return getProductById(productId);
     }
 
-    private void indexProduct(UUID productId, JsonNode root, String payload, SyncOperation operation) {
+    private void indexProduct(
+            UUID productId, JsonNode root, String payload, SyncOperation operation) {
         SearchSyncLogEntity syncLog = createSyncLog(productId, operation, payload, root);
         try {
             ProductSearchDocument document = buildDocument(productId, root);
@@ -155,15 +172,28 @@ public class SearchServiceImpl implements SearchService {
             syncLog.setProcessedAt(Instant.now());
             syncLogRepository.save(syncLog);
 
-            auditService.record(SearchAuditOperation.INDEX, productId, null, 1, Map.of("operation", operation.name()));
-            publishOutbox(productId, "SEARCH_INDEXED", SearchKafkaTopics.SEARCH_INDEXED, buildIndexedPayload(document));
+            auditService.record(
+                    SearchAuditOperation.INDEX,
+                    productId,
+                    null,
+                    1,
+                    Map.of("operation", operation.name()));
+            publishOutbox(
+                    productId,
+                    "SEARCH_INDEXED",
+                    SearchKafkaTopics.SEARCH_INDEXED,
+                    buildIndexedPayload(document));
             log.info("Indexed product id={} operation={}", productId, operation);
         } catch (Exception ex) {
             syncLog.setStatus(SyncStatus.FAILED);
             syncLog.setErrorMessage(truncate(ex.getMessage(), 2000));
             syncLog.setProcessedAt(Instant.now());
             syncLogRepository.save(syncLog);
-            publishOutbox(productId, "SEARCH_FAILED", SearchKafkaTopics.SEARCH_FAILED, Map.of("productId", productId.toString(), "error", ex.getMessage()));
+            publishOutbox(
+                    productId,
+                    "SEARCH_FAILED",
+                    SearchKafkaTopics.SEARCH_FAILED,
+                    Map.of("productId", productId.toString(), "error", ex.getMessage()));
             throw ex;
         }
     }
@@ -176,7 +206,11 @@ public class SearchServiceImpl implements SearchService {
             syncLog.setProcessedAt(Instant.now());
             syncLogRepository.save(syncLog);
             auditService.record(SearchAuditOperation.DELETE, productId, null, 0, Map.of());
-            publishOutbox(productId, "SEARCH_INDEXED", SearchKafkaTopics.SEARCH_INDEXED, Map.of("productId", productId.toString(), "action", "DELETE"));
+            publishOutbox(
+                    productId,
+                    "SEARCH_INDEXED",
+                    SearchKafkaTopics.SEARCH_INDEXED,
+                    Map.of("productId", productId.toString(), "action", "DELETE"));
             log.info("Deleted product from search index id={}", productId);
         } catch (Exception ex) {
             syncLog.setStatus(SyncStatus.FAILED);
@@ -187,7 +221,8 @@ public class SearchServiceImpl implements SearchService {
         }
     }
 
-    private SearchSyncLogEntity createSyncLog(UUID productId, SyncOperation operation, String payload, JsonNode root) {
+    private SearchSyncLogEntity createSyncLog(
+            UUID productId, SyncOperation operation, String payload, JsonNode root) {
         SearchSyncLogEntity syncLog = new SearchSyncLogEntity();
         syncLog.setProductId(productId);
         syncLog.setOperation(operation);
@@ -219,21 +254,26 @@ public class SearchServiceImpl implements SearchService {
     private Criteria buildSearchCriteria(ProductSearchRequest request) {
         Criteria criteria = new Criteria();
         if (StringUtils.hasText(request.getQ())) {
-            criteria = criteria.and(new Criteria("name").contains(request.getQ())
-                    .or(new Criteria("description").contains(request.getQ()))
-                    .or(new Criteria("sku").is(request.getQ())));
+            criteria =
+                    criteria.and(
+                            new Criteria("name")
+                                    .contains(request.getQ())
+                                    .or(new Criteria("description").contains(request.getQ()))
+                                    .or(new Criteria("sku").is(request.getQ())));
         }
         if (request.getSellerId() != null) {
             criteria = criteria.and(new Criteria("sellerId").is(request.getSellerId().toString()));
         }
         if (request.getCategoryId() != null) {
-            criteria = criteria.and(new Criteria("categoryId").is(request.getCategoryId().toString()));
+            criteria =
+                    criteria.and(new Criteria("categoryId").is(request.getCategoryId().toString()));
         }
         if (StringUtils.hasText(request.getStatus())) {
             criteria = criteria.and(new Criteria("status").is(request.getStatus()));
         }
         if (request.getMinPrice() != null) {
-            criteria = criteria.and(new Criteria("unitPrice").greaterThanEqual(request.getMinPrice()));
+            criteria =
+                    criteria.and(new Criteria("unitPrice").greaterThanEqual(request.getMinPrice()));
         }
         if (request.getMaxPrice() != null) {
             criteria = criteria.and(new Criteria("unitPrice").lessThanEqual(request.getMaxPrice()));
@@ -263,7 +303,8 @@ public class SearchServiceImpl implements SearchService {
                 .build();
     }
 
-    private void publishOutbox(UUID productId, String eventType, String topic, Map<String, Object> payload) {
+    private void publishOutbox(
+            UUID productId, String eventType, String topic, Map<String, Object> payload) {
         OutboxEventEntity event = new OutboxEventEntity();
         event.setAggregateType("ProductSearch");
         event.setAggregateId(productId);
@@ -356,9 +397,10 @@ public class SearchServiceImpl implements SearchService {
         }
         String[] parts = sort.split(",");
         String property = parts[0];
-        Sort.Direction direction = parts.length > 1 && "asc".equalsIgnoreCase(parts[1])
-                ? Sort.Direction.ASC
-                : Sort.Direction.DESC;
+        Sort.Direction direction =
+                parts.length > 1 && "asc".equalsIgnoreCase(parts[1])
+                        ? Sort.Direction.ASC
+                        : Sort.Direction.DESC;
         return Sort.by(direction, property);
     }
 

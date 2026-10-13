@@ -1,19 +1,26 @@
 package com.enterprise.marketplace.aiservice.redis;
 
-import com.enterprise.marketplace.aiservice.constants.AiCacheKeys;
 import java.time.Duration;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import com.enterprise.marketplace.aiservice.constants.AiCacheKeys;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "marketplace.redis", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+        prefix = "marketplace.redis",
+        name = "enabled",
+        havingValue = "true",
+        matchIfMissing = true)
 public class AiRedisCacheService implements AiCachePort {
 
     private final StringRedisTemplate redisTemplate;
@@ -29,7 +36,10 @@ public class AiRedisCacheService implements AiCachePort {
         try {
             redisTemplate
                     .opsForValue()
-                    .set(AiCacheKeys.PROMPT_PREFIX + templateCode, json, Duration.ofSeconds(promptCacheTtlSeconds));
+                    .set(
+                            AiCacheKeys.PROMPT_PREFIX + templateCode,
+                            json,
+                            Duration.ofSeconds(promptCacheTtlSeconds));
         } catch (Exception ex) {
             log.warn("Failed to cache prompt template code={}", templateCode, ex);
         }
@@ -38,7 +48,8 @@ public class AiRedisCacheService implements AiCachePort {
     @Override
     public Optional<String> getPromptTemplate(String templateCode) {
         try {
-            return Optional.ofNullable(redisTemplate.opsForValue().get(AiCacheKeys.PROMPT_PREFIX + templateCode));
+            return Optional.ofNullable(
+                    redisTemplate.opsForValue().get(AiCacheKeys.PROMPT_PREFIX + templateCode));
         } catch (Exception ex) {
             log.debug("Prompt cache miss code={}", templateCode, ex);
             return Optional.empty();
@@ -50,7 +61,10 @@ public class AiRedisCacheService implements AiCachePort {
         try {
             redisTemplate
                     .opsForValue()
-                    .set(AiCacheKeys.PRODUCT_PREFIX + productId, json, Duration.ofSeconds(productCacheTtlSeconds));
+                    .set(
+                            AiCacheKeys.PRODUCT_PREFIX + productId,
+                            json,
+                            Duration.ofSeconds(productCacheTtlSeconds));
         } catch (Exception ex) {
             log.warn("Failed to cache product snapshot id={}", productId, ex);
         }
@@ -59,7 +73,8 @@ public class AiRedisCacheService implements AiCachePort {
     @Override
     public Optional<String> getProductSnapshot(String productId) {
         try {
-            return Optional.ofNullable(redisTemplate.opsForValue().get(AiCacheKeys.PRODUCT_PREFIX + productId));
+            return Optional.ofNullable(
+                    redisTemplate.opsForValue().get(AiCacheKeys.PRODUCT_PREFIX + productId));
         } catch (Exception ex) {
             return Optional.empty();
         }

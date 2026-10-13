@@ -1,26 +1,33 @@
 package com.enterprise.marketplace.notificationservice.redis;
 
+import java.time.Duration;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Service;
+
 import com.enterprise.marketplace.notificationservice.constants.NotificationCacheKeys;
 import com.enterprise.marketplace.notificationservice.dto.NotificationResponse;
 import com.enterprise.marketplace.notificationservice.entity.NotificationChannelEntity;
 import com.enterprise.marketplace.notificationservice.entity.NotificationTemplateEntity;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Duration;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "marketplace.redis", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+        prefix = "marketplace.redis",
+        name = "enabled",
+        havingValue = "true",
+        matchIfMissing = true)
 public class NotificationRedisCacheService implements NotificationCachePort {
 
     private final StringRedisTemplate redisTemplate;
@@ -44,7 +51,10 @@ public class NotificationRedisCacheService implements NotificationCachePort {
             String key = NotificationCacheKeys.notificationKey(response.getId());
             redisTemplate
                     .opsForValue()
-                    .set(key, objectMapper.writeValueAsString(response), Duration.ofSeconds(notificationCacheTtlSeconds));
+                    .set(
+                            key,
+                            objectMapper.writeValueAsString(response),
+                            Duration.ofSeconds(notificationCacheTtlSeconds));
         } catch (Exception ex) {
             log.warn("Failed to cache notification id={}", response.getId(), ex);
         }
@@ -58,10 +68,15 @@ public class NotificationRedisCacheService implements NotificationCachePort {
     @Override
     public void cacheTemplate(NotificationTemplateEntity template) {
         try {
-            String key = NotificationCacheKeys.templateKey(template.getTemplateCode(), template.getChannel().name());
+            String key =
+                    NotificationCacheKeys.templateKey(
+                            template.getTemplateCode(), template.getChannel().name());
             redisTemplate
                     .opsForValue()
-                    .set(key, objectMapper.writeValueAsString(template), Duration.ofSeconds(templateCacheTtlSeconds));
+                    .set(
+                            key,
+                            objectMapper.writeValueAsString(template),
+                            Duration.ofSeconds(templateCacheTtlSeconds));
         } catch (Exception ex) {
             log.warn("Failed to cache template code={}", template.getTemplateCode(), ex);
         }
@@ -71,7 +86,9 @@ public class NotificationRedisCacheService implements NotificationCachePort {
     public Optional<NotificationTemplateEntity> getTemplate(String templateCode, String channel) {
         try {
             String cached =
-                    redisTemplate.opsForValue().get(NotificationCacheKeys.templateKey(templateCode, channel));
+                    redisTemplate
+                            .opsForValue()
+                            .get(NotificationCacheKeys.templateKey(templateCode, channel));
             if (cached == null || cached.isBlank()) {
                 return Optional.empty();
             }
@@ -99,7 +116,8 @@ public class NotificationRedisCacheService implements NotificationCachePort {
     @Override
     public Optional<NotificationChannelEntity> getChannelConfig(String channel) {
         try {
-            String cached = redisTemplate.opsForValue().get(NotificationCacheKeys.channelKey(channel));
+            String cached =
+                    redisTemplate.opsForValue().get(NotificationCacheKeys.channelKey(channel));
             if (cached == null || cached.isBlank()) {
                 return Optional.empty();
             }
@@ -150,7 +168,10 @@ public class NotificationRedisCacheService implements NotificationCachePort {
     @Override
     public Optional<Map<String, Object>> getUserPreferences(String userId) {
         try {
-            String cached = redisTemplate.opsForValue().get(NotificationCacheKeys.userPreferenceKey(userId));
+            String cached =
+                    redisTemplate
+                            .opsForValue()
+                            .get(NotificationCacheKeys.userPreferenceKey(userId));
             if (cached == null || cached.isBlank()) {
                 return Optional.empty();
             }

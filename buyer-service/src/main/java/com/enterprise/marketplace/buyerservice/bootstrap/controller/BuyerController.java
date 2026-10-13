@@ -1,19 +1,9 @@
 package com.enterprise.marketplace.buyerservice.bootstrap.controller;
 
-import com.enterprise.marketplace.buyerservice.application.dto.BuyerPageResponse;
-import com.enterprise.marketplace.buyerservice.application.dto.BuyerResponse;
-import com.enterprise.marketplace.buyerservice.application.dto.CreateBuyerRequest;
-import com.enterprise.marketplace.buyerservice.application.dto.UpdateBuyerRequest;
-import com.enterprise.marketplace.buyerservice.application.dto.UpdateBuyerStatusRequest;
-import com.enterprise.marketplace.buyerservice.application.service.BuyerApplicationService;
-import com.enterprise.marketplace.buyerservice.domain.model.BuyerStatus;
-import com.enterprise.marketplace.common.api.ApiResponse;
-import com.enterprise.marketplace.common.idempotency.Idempotent;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
+
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,6 +17,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.enterprise.marketplace.buyerservice.application.dto.BuyerPageResponse;
+import com.enterprise.marketplace.buyerservice.application.dto.BuyerResponse;
+import com.enterprise.marketplace.buyerservice.application.dto.CreateBuyerRequest;
+import com.enterprise.marketplace.buyerservice.application.dto.UpdateBuyerRequest;
+import com.enterprise.marketplace.buyerservice.application.dto.UpdateBuyerStatusRequest;
+import com.enterprise.marketplace.buyerservice.application.service.BuyerApplicationService;
+import com.enterprise.marketplace.buyerservice.domain.model.BuyerStatus;
+import com.enterprise.marketplace.common.api.ApiResponse;
+import com.enterprise.marketplace.common.idempotency.Idempotent;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/api/v1/buyers")
 @RequiredArgsConstructor
@@ -38,9 +42,11 @@ public class BuyerController {
     @PostMapping
     @Idempotent
     @Operation(summary = "Create a buyer")
-    public ResponseEntity<ApiResponse<BuyerResponse>> createBuyer(@Valid @RequestBody CreateBuyerRequest request) {
+    public ResponseEntity<ApiResponse<BuyerResponse>> createBuyer(
+            @Valid @RequestBody CreateBuyerRequest request) {
         BuyerResponse response = buyerApplicationService.createBuyer(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "Buyer created successfully"));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(response, "Buyer created successfully"));
     }
 
     @GetMapping("/{id}")
@@ -61,7 +67,8 @@ public class BuyerController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
         BuyerPageResponse response =
-                buyerApplicationService.searchBuyers(status, city, state, country, keyword, page, size, sort);
+                buyerApplicationService.searchBuyers(
+                        status, city, state, country, keyword, page, size, sort);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -80,7 +87,8 @@ public class BuyerController {
     public ResponseEntity<ApiResponse<BuyerResponse>> updateBuyerStatus(
             @PathVariable UUID id, @Valid @RequestBody UpdateBuyerStatusRequest request) {
         BuyerResponse response = buyerApplicationService.updateBuyerStatus(id, request.getStatus());
-        return ResponseEntity.ok(ApiResponse.success(response, "Buyer status updated successfully"));
+        return ResponseEntity.ok(
+                ApiResponse.success(response, "Buyer status updated successfully"));
     }
 
     @DeleteMapping("/{id}")

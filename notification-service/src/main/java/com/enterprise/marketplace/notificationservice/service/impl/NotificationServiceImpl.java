@@ -1,5 +1,22 @@
 package com.enterprise.marketplace.notificationservice.service.impl;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import com.enterprise.marketplace.common.context.RequestContext;
 import com.enterprise.marketplace.common.exception.ErrorCode;
 import com.enterprise.marketplace.common.exception.MarketplaceException;
@@ -17,6 +34,7 @@ import com.enterprise.marketplace.notificationservice.dto.NotificationResponse;
 import com.enterprise.marketplace.notificationservice.dto.RetryNotificationRequest;
 import com.enterprise.marketplace.notificationservice.dto.RetryNotificationResponse;
 import com.enterprise.marketplace.notificationservice.dto.SendNotificationRequest;
+import com.enterprise.marketplace.notificationservice.dto.StatusUpdateRequest;
 import com.enterprise.marketplace.notificationservice.dto.UpdateNotificationRequest;
 import com.enterprise.marketplace.notificationservice.entity.NotificationDeliveryEntity;
 import com.enterprise.marketplace.notificationservice.entity.NotificationEntity;
@@ -36,33 +54,18 @@ import com.enterprise.marketplace.notificationservice.repository.NotificationInb
 import com.enterprise.marketplace.notificationservice.repository.NotificationRepository;
 import com.enterprise.marketplace.notificationservice.repository.NotificationTemplateRepository;
 import com.enterprise.marketplace.notificationservice.repository.OutboxEventRepository;
-import com.enterprise.marketplace.notificationservice.service.NotificationService;
-import com.enterprise.marketplace.notificationservice.dto.StatusUpdateRequest;
 import com.enterprise.marketplace.notificationservice.service.NotificationChannelConfigService;
 import com.enterprise.marketplace.notificationservice.service.NotificationRateLimitService;
 import com.enterprise.marketplace.notificationservice.service.NotificationRetryService;
+import com.enterprise.marketplace.notificationservice.service.NotificationService;
 import com.enterprise.marketplace.notificationservice.template.NotificationTemplateEngine;
 import com.enterprise.marketplace.notificationservice.util.TemplateRenderer;
 import com.enterprise.marketplace.notificationservice.validation.NotificationRequestValidator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 @Slf4j
 @Service
@@ -71,10 +74,16 @@ import org.springframework.util.StringUtils;
 public class NotificationServiceImpl implements NotificationService {
 
     private static final List<NotificationStatus> DISPATCHABLE_STATUSES =
-            List.of(NotificationStatus.CREATED, NotificationStatus.QUEUED, NotificationStatus.RETRYING);
+            List.of(
+                    NotificationStatus.CREATED,
+                    NotificationStatus.QUEUED,
+                    NotificationStatus.RETRYING);
 
     private static final List<NotificationStatus> EXPIRABLE_STATUSES =
-            List.of(NotificationStatus.CREATED, NotificationStatus.QUEUED, NotificationStatus.RETRYING);
+            List.of(
+                    NotificationStatus.CREATED,
+                    NotificationStatus.QUEUED,
+                    NotificationStatus.RETRYING);
 
     private final NotificationRepository notificationRepository;
     private final NotificationTemplateRepository templateRepository;
@@ -103,8 +112,13 @@ public class NotificationServiceImpl implements NotificationService {
     public NotificationResponse createNotification(CreateNotificationRequest request) {
         requestValidator.validateCreateRequest(request);
         applyRequestContext(request);
-        channelConfigService.getEnabledChannel(request.getChannel()).orElseThrow(() ->
-                new MarketplaceException(ErrorCode.BUSINESS_RULE_VIOLATION, "Channel disabled: " + request.getChannel()));
+        channelConfigService
+                .getEnabledChannel(request.getChannel())
+                .orElseThrow(
+                        () ->
+                                new MarketplaceException(
+                                        ErrorCode.BUSINESS_RULE_VIOLATION,
+                                        "Channel disabled: " + request.getChannel()));
         rateLimitService.validateRateLimit(request.getRecipientId(), request.getChannel());
 
         NotificationEntity notification = new NotificationEntity();
@@ -125,7 +139,8 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setRetryCount(0);
         notification.setMaxRetries(notificationProperties.getMaxDeliveryRetries());
         notification.setActive(true);
-        notification.setExpiresAt(Instant.now().plus(notificationProperties.getExpiryHours(), ChronoUnit.HOURS));
+        notification.setExpiresAt(
+                Instant.now().plus(notificationProperties.getExpiryHours(), ChronoUnit.HOURS));
 
         applyTemplate(notification, request.getTemplateCode(), request.getTemplateVariables());
         requestValidator.validateChannelRequirements(
@@ -144,10 +159,19 @@ public class NotificationServiceImpl implements NotificationService {
                 null,
                 notificationMapper.toResponse(saved),
                 resolveActor());
-        historyService.recordHistory(saved, "CREATED", NotificationStatus.CREATED, "Notification created");
+        historyService.recordHistory(
+                saved, "CREATED", NotificationStatus.CREATED, "Notification created");
 
-        saveOutboxEvent(saved, "NOTIFICATION_CREATED", NotificationKafkaTopics.NOTIFICATION_CREATED, buildEventPayload(saved));
-        saveOutboxEvent(saved, "AUDIT_CREATED", NotificationKafkaTopics.AUDIT_CREATED, buildAuditPayload(saved, AuditOperation.CREATE));
+        saveOutboxEvent(
+                saved,
+                "NOTIFICATION_CREATED",
+                NotificationKafkaTopics.NOTIFICATION_CREATED,
+                buildEventPayload(saved));
+        saveOutboxEvent(
+                saved,
+                "AUDIT_CREATED",
+                NotificationKafkaTopics.AUDIT_CREATED,
+                buildAuditPayload(saved, AuditOperation.CREATE));
 
         NotificationResponse response = notificationMapper.toResponse(saved);
         cachePort.cacheNotification(response);
@@ -162,22 +186,23 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional
     public NotificationResponse sendNotification(SendNotificationRequest request) {
-        CreateNotificationRequest createRequest = CreateNotificationRequest.builder()
-                .requestId(request.getRequestId())
-                .correlationId(request.getCorrelationId())
-                .workflowId(request.getWorkflowId())
-                .aggregateType(request.getAggregateType())
-                .aggregateId(request.getAggregateId())
-                .notificationType(request.getNotificationType())
-                .channel(request.getChannel())
-                .recipientId(request.getRecipientId())
-                .recipientAddress(request.getRecipientAddress())
-                .subject(request.getSubject())
-                .body(request.getBody())
-                .templateCode(request.getTemplateCode())
-                .templateVariables(request.getTemplateVariables())
-                .metadata(request.getMetadata())
-                .build();
+        CreateNotificationRequest createRequest =
+                CreateNotificationRequest.builder()
+                        .requestId(request.getRequestId())
+                        .correlationId(request.getCorrelationId())
+                        .workflowId(request.getWorkflowId())
+                        .aggregateType(request.getAggregateType())
+                        .aggregateId(request.getAggregateId())
+                        .notificationType(request.getNotificationType())
+                        .channel(request.getChannel())
+                        .recipientId(request.getRecipientId())
+                        .recipientAddress(request.getRecipientAddress())
+                        .subject(request.getSubject())
+                        .body(request.getBody())
+                        .templateCode(request.getTemplateCode())
+                        .templateVariables(request.getTemplateVariables())
+                        .metadata(request.getMetadata())
+                        .build();
         NotificationResponse created = createNotification(createRequest);
         NotificationEntity notification = findActiveNotification(created.getId());
         notification.setStatus(NotificationStatus.QUEUED);
@@ -188,8 +213,9 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public NotificationPageResponse listNotifications(int page, int size) {
-        Page<NotificationEntity> result = notificationRepository.findByActiveTrue(
-                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+        Page<NotificationEntity> result =
+                notificationRepository.findByActiveTrue(
+                        PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
         return toPageResponse(result);
     }
 
@@ -201,30 +227,40 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public NotificationResponse getByRequestId(String requestId) {
-        NotificationEntity notification = notificationRepository
-                .findByRequestIdAndActiveTrue(requestId)
-                .orElseThrow(() -> new ResourceNotFoundException("Notification not found for requestId " + requestId));
+        NotificationEntity notification =
+                notificationRepository
+                        .findByRequestIdAndActiveTrue(requestId)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "Notification not found for requestId "
+                                                        + requestId));
         return notificationMapper.toResponse(notification);
     }
 
     @Override
     public NotificationPageResponse getByRecipientId(String recipientId, int page, int size) {
-        Page<NotificationEntity> result = notificationRepository.findByRecipientIdAndActiveTrue(
-                recipientId, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+        Page<NotificationEntity> result =
+                notificationRepository.findByRecipientIdAndActiveTrue(
+                        recipientId,
+                        PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
         return toPageResponse(result);
     }
 
     @Override
     public NotificationPageResponse getByStatus(NotificationStatus status, int page, int size) {
-        Page<NotificationEntity> result = notificationRepository.findByStatusAndActiveTrue(
-                status, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+        Page<NotificationEntity> result =
+                notificationRepository.findByStatusAndActiveTrue(
+                        status,
+                        PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
         return toPageResponse(result);
     }
 
     @Override
     public InboxPageResponse getInboxByRecipientId(String recipientId, int page, int size) {
-        Page<NotificationInboxEntity> result = inboxRepository.findByRecipientIdOrderByCreatedAtDesc(
-                recipientId, PageRequest.of(page, size));
+        Page<NotificationInboxEntity> result =
+                inboxRepository.findByRecipientIdOrderByCreatedAtDesc(
+                        recipientId, PageRequest.of(page, size));
         List<com.enterprise.marketplace.notificationservice.dto.InboxResponse> content =
                 result.getContent().stream().map(notificationMapper::toInboxResponse).toList();
         return InboxPageResponse.builder()
@@ -238,7 +274,8 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
-    public NotificationResponse updateNotification(UUID notificationId, UpdateNotificationRequest request) {
+    public NotificationResponse updateNotification(
+            UUID notificationId, UpdateNotificationRequest request) {
         NotificationEntity notification = findActiveNotification(notificationId);
         NotificationResponse before = notificationMapper.toResponse(notification);
 
@@ -291,7 +328,11 @@ public class NotificationServiceImpl implements NotificationService {
                 notificationMapper.toResponse(saved),
                 resolveActor());
 
-        saveOutboxEvent(saved, "NOTIFICATION_UPDATED", NotificationKafkaTopics.NOTIFICATION_CREATED, buildEventPayload(saved));
+        saveOutboxEvent(
+                saved,
+                "NOTIFICATION_UPDATED",
+                NotificationKafkaTopics.NOTIFICATION_CREATED,
+                buildEventPayload(saved));
 
         NotificationResponse response = notificationMapper.toResponse(saved);
         cachePort.evictNotification(saved.getId());
@@ -341,7 +382,9 @@ public class NotificationServiceImpl implements NotificationService {
     public NotificationResponse retryNotification(UUID notificationId) {
         NotificationEntity notification = findActiveNotification(notificationId);
         requestValidator.validateRetryAllowed(
-                notification.getStatus(), notification.getRetryCount(), notification.getMaxRetries());
+                notification.getStatus(),
+                notification.getRetryCount(),
+                notification.getMaxRetries());
 
         NotificationStatus fromStatus = notification.getStatus();
         NotificationResponse before = notificationMapper.toResponse(notification);
@@ -359,9 +402,14 @@ public class NotificationServiceImpl implements NotificationService {
                 before,
                 notificationMapper.toResponse(saved),
                 resolveActor());
-        historyService.recordHistory(saved, "RETRY", NotificationStatus.RETRYING, "Manual retry scheduled");
+        historyService.recordHistory(
+                saved, "RETRY", NotificationStatus.RETRYING, "Manual retry scheduled");
 
-        saveOutboxEvent(saved, "NOTIFICATION_RETRY", NotificationKafkaTopics.NOTIFICATION_RETRY, buildEventPayload(saved));
+        saveOutboxEvent(
+                saved,
+                "NOTIFICATION_RETRY",
+                NotificationKafkaTopics.NOTIFICATION_RETRY,
+                buildEventPayload(saved));
 
         NotificationResponse response = notificationMapper.toResponse(saved);
         cachePort.evictNotification(saved.getId());
@@ -380,7 +428,8 @@ public class NotificationServiceImpl implements NotificationService {
             ids.addAll(request.getNotificationIds());
         }
         if (ids.isEmpty()) {
-            throw new MarketplaceException(ErrorCode.VALIDATION_ERROR, "At least one notificationId is required");
+            throw new MarketplaceException(
+                    ErrorCode.VALIDATION_ERROR, "At least one notificationId is required");
         }
         List<NotificationResponse> retried = new java.util.ArrayList<>();
         int failures = 0;
@@ -410,13 +459,20 @@ public class NotificationServiceImpl implements NotificationService {
                 return;
             }
 
-            String notificationRequestId = resolveKafkaNotificationRequestId(sourceRequestId, eventSource, root);
-            if (notificationRepository.findByRequestIdAndActiveTrue(notificationRequestId).isPresent()) {
-                log.debug("Notification already exists for requestId={}, skipping {}", notificationRequestId, eventSource);
+            String notificationRequestId =
+                    resolveKafkaNotificationRequestId(sourceRequestId, eventSource, root);
+            if (notificationRepository
+                    .findByRequestIdAndActiveTrue(notificationRequestId)
+                    .isPresent()) {
+                log.debug(
+                        "Notification already exists for requestId={}, skipping {}",
+                        notificationRequestId,
+                        eventSource);
                 return;
             }
 
-            CreateNotificationRequest request = buildCreateRequestFromKafka(root, eventSource, notificationRequestId);
+            CreateNotificationRequest request =
+                    buildCreateRequestFromKafka(root, eventSource, notificationRequestId);
             if (request == null) {
                 return;
             }
@@ -439,7 +495,8 @@ public class NotificationServiceImpl implements NotificationService {
             throw ex;
         } catch (Exception ex) {
             log.error("Failed to process kafka event {}", eventSource, ex);
-            throw new MarketplaceException(ErrorCode.INTERNAL_ERROR, "Failed to process kafka event: " + eventSource);
+            throw new MarketplaceException(
+                    ErrorCode.INTERNAL_ERROR, "Failed to process kafka event: " + eventSource);
         }
     }
 
@@ -448,7 +505,8 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional
     public void dispatchPendingNotifications() {
         List<NotificationEntity> pending =
-                notificationRepository.findTop50ByStatusInAndActiveTrueOrderByCreatedAtAsc(DISPATCHABLE_STATUSES);
+                notificationRepository.findTop50ByStatusInAndActiveTrueOrderByCreatedAtAsc(
+                        DISPATCHABLE_STATUSES);
         for (NotificationEntity notification : pending) {
             dispatchSingle(notification);
         }
@@ -499,7 +557,11 @@ public class NotificationServiceImpl implements NotificationService {
                 null,
                 notificationMapper.toResponse(notification),
                 "scheduler");
-        historyService.recordHistory(notification, "DISPATCH", targetStatus, result.success() ? "Delivered" : result.errorMessage());
+        historyService.recordHistory(
+                notification,
+                "DISPATCH",
+                targetStatus,
+                result.success() ? "Delivered" : result.errorMessage());
 
         publishDispatchOutboxEvents(notification, targetStatus, result);
 
@@ -514,7 +576,10 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     private NotificationResponse transitionStatus(
-            NotificationEntity notification, NotificationStatus targetStatus, String message, String actor) {
+            NotificationEntity notification,
+            NotificationStatus targetStatus,
+            String message,
+            String actor) {
         NotificationStatus fromStatus = notification.getStatus();
         requestValidator.validateTransition(fromStatus, targetStatus);
 
@@ -547,12 +612,18 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     private void publishStatusOutboxEvents(
-            NotificationEntity notification, NotificationStatus fromStatus, NotificationStatus targetStatus) {
+            NotificationEntity notification,
+            NotificationStatus fromStatus,
+            NotificationStatus targetStatus) {
         Map<String, Object> payload = buildEventPayload(notification);
         payload.put("previousStatus", fromStatus.name());
         payload.put("status", targetStatus.name());
 
-        saveOutboxEvent(notification, "NOTIFICATION_UPDATED", NotificationKafkaTopics.NOTIFICATION_CREATED, payload);
+        saveOutboxEvent(
+                notification,
+                "NOTIFICATION_UPDATED",
+                NotificationKafkaTopics.NOTIFICATION_CREATED,
+                payload);
         saveOutboxEvent(
                 notification,
                 "AUDIT_CREATED",
@@ -560,29 +631,61 @@ public class NotificationServiceImpl implements NotificationService {
                 buildAuditPayload(notification, AuditOperation.STATUS_CHANGE));
 
         if (targetStatus == NotificationStatus.SENT) {
-            saveOutboxEvent(notification, "NOTIFICATION_SENT", NotificationKafkaTopics.NOTIFICATION_SENT, payload);
+            saveOutboxEvent(
+                    notification,
+                    "NOTIFICATION_SENT",
+                    NotificationKafkaTopics.NOTIFICATION_SENT,
+                    payload);
         } else if (targetStatus == NotificationStatus.DELIVERED) {
-            saveOutboxEvent(notification, "NOTIFICATION_DELIVERED", NotificationKafkaTopics.NOTIFICATION_DELIVERED, payload);
-        } else if (targetStatus == NotificationStatus.FAILED || targetStatus == NotificationStatus.CANCELLED) {
-            saveOutboxEvent(notification, "NOTIFICATION_FAILED", NotificationKafkaTopics.NOTIFICATION_FAILED, payload);
+            saveOutboxEvent(
+                    notification,
+                    "NOTIFICATION_DELIVERED",
+                    NotificationKafkaTopics.NOTIFICATION_DELIVERED,
+                    payload);
+        } else if (targetStatus == NotificationStatus.FAILED
+                || targetStatus == NotificationStatus.CANCELLED) {
+            saveOutboxEvent(
+                    notification,
+                    "NOTIFICATION_FAILED",
+                    NotificationKafkaTopics.NOTIFICATION_FAILED,
+                    payload);
         }
     }
 
     private void publishDispatchOutboxEvents(
-            NotificationEntity notification, NotificationStatus targetStatus, ChannelDeliveryResult result) {
+            NotificationEntity notification,
+            NotificationStatus targetStatus,
+            ChannelDeliveryResult result) {
         Map<String, Object> payload = buildEventPayload(notification);
         payload.put("deliverySuccess", result.success());
         payload.put("deliveryResponse", result.response());
         payload.put("deliveryError", result.errorMessage());
 
         if (targetStatus == NotificationStatus.SENT) {
-            saveOutboxEvent(notification, "NOTIFICATION_SENT", NotificationKafkaTopics.NOTIFICATION_SENT, payload);
+            saveOutboxEvent(
+                    notification,
+                    "NOTIFICATION_SENT",
+                    NotificationKafkaTopics.NOTIFICATION_SENT,
+                    payload);
         } else if (targetStatus == NotificationStatus.DELIVERED) {
-            saveOutboxEvent(notification, "NOTIFICATION_DELIVERED", NotificationKafkaTopics.NOTIFICATION_DELIVERED, payload);
-        } else if (targetStatus == NotificationStatus.FAILED || targetStatus == NotificationStatus.RETRYING) {
-            saveOutboxEvent(notification, "NOTIFICATION_FAILED", NotificationKafkaTopics.NOTIFICATION_FAILED, payload);
+            saveOutboxEvent(
+                    notification,
+                    "NOTIFICATION_DELIVERED",
+                    NotificationKafkaTopics.NOTIFICATION_DELIVERED,
+                    payload);
+        } else if (targetStatus == NotificationStatus.FAILED
+                || targetStatus == NotificationStatus.RETRYING) {
+            saveOutboxEvent(
+                    notification,
+                    "NOTIFICATION_FAILED",
+                    NotificationKafkaTopics.NOTIFICATION_FAILED,
+                    payload);
             if (targetStatus == NotificationStatus.RETRYING) {
-                saveOutboxEvent(notification, "NOTIFICATION_RETRY", NotificationKafkaTopics.NOTIFICATION_RETRY, payload);
+                saveOutboxEvent(
+                        notification,
+                        "NOTIFICATION_RETRY",
+                        NotificationKafkaTopics.NOTIFICATION_RETRY,
+                        payload);
             }
         }
     }
@@ -591,14 +694,17 @@ public class NotificationServiceImpl implements NotificationService {
     @Scheduled(fixedDelayString = "${marketplace.notification.expiry-interval-ms:60000}")
     @Transactional
     public void expireStaleNotifications() {
-        List<NotificationEntity> expired = notificationRepository.findTop50ByStatusInAndExpiresAtBeforeAndActiveTrueOrderByCreatedAtAsc(
-                EXPIRABLE_STATUSES, Instant.now());
+        List<NotificationEntity> expired =
+                notificationRepository
+                        .findTop50ByStatusInAndExpiresAtBeforeAndActiveTrueOrderByCreatedAtAsc(
+                                EXPIRABLE_STATUSES, Instant.now());
         for (NotificationEntity notification : expired) {
             NotificationStatus fromStatus = notification.getStatus();
             notification.setPreviousStatus(fromStatus);
             notification.setStatus(NotificationStatus.EXPIRED);
             notificationRepository.save(notification);
-            historyService.recordHistory(notification, "EXPIRED", NotificationStatus.EXPIRED, "Notification expired");
+            historyService.recordHistory(
+                    notification, "EXPIRED", NotificationStatus.EXPIRED, "Notification expired");
             auditService.recordAudit(
                     notification,
                     AuditOperation.STATUS_CHANGE,
@@ -617,28 +723,54 @@ public class NotificationServiceImpl implements NotificationService {
             return buildFromNotificationCreatedEvent(root, notificationRequestId);
         }
         if ("workflow-completed".equals(eventSource)) {
-            return buildFromWorkflowEvent(root, notificationRequestId, NotificationType.WORKFLOW_COMPLETED);
+            return buildFromWorkflowEvent(
+                    root, notificationRequestId, NotificationType.WORKFLOW_COMPLETED);
         }
         if ("workflow-failed".equals(eventSource)) {
-            return buildFromWorkflowEvent(root, notificationRequestId, NotificationType.WORKFLOW_FAILED);
+            return buildFromWorkflowEvent(
+                    root, notificationRequestId, NotificationType.WORKFLOW_FAILED);
         }
         if ("product-created".equals(eventSource)) {
-            return buildFromDomainEvent(root, notificationRequestId, NotificationType.PRODUCT_CREATED, NotificationChannel.IN_APP);
+            return buildFromDomainEvent(
+                    root,
+                    notificationRequestId,
+                    NotificationType.PRODUCT_CREATED,
+                    NotificationChannel.IN_APP);
         }
         if ("product-updated".equals(eventSource)) {
-            return buildFromDomainEvent(root, notificationRequestId, NotificationType.PRODUCT_UPDATED, NotificationChannel.IN_APP);
+            return buildFromDomainEvent(
+                    root,
+                    notificationRequestId,
+                    NotificationType.PRODUCT_UPDATED,
+                    NotificationChannel.IN_APP);
         }
         if ("seller-approved".equals(eventSource)) {
-            return buildFromDomainEvent(root, notificationRequestId, NotificationType.SELLER_APPROVED, NotificationChannel.EMAIL);
+            return buildFromDomainEvent(
+                    root,
+                    notificationRequestId,
+                    NotificationType.SELLER_APPROVED,
+                    NotificationChannel.EMAIL);
         }
         if ("buyer-registered".equals(eventSource)) {
-            return buildFromDomainEvent(root, notificationRequestId, NotificationType.BUYER_REGISTERED, NotificationChannel.IN_APP);
+            return buildFromDomainEvent(
+                    root,
+                    notificationRequestId,
+                    NotificationType.BUYER_REGISTERED,
+                    NotificationChannel.IN_APP);
         }
         if ("inventory-low".equals(eventSource)) {
-            return buildFromDomainEvent(root, notificationRequestId, NotificationType.INVENTORY_LOW, NotificationChannel.EMAIL);
+            return buildFromDomainEvent(
+                    root,
+                    notificationRequestId,
+                    NotificationType.INVENTORY_LOW,
+                    NotificationChannel.EMAIL);
         }
         if ("subscription-expired".equals(eventSource)) {
-            return buildFromDomainEvent(root, notificationRequestId, NotificationType.SUBSCRIPTION_EXPIRED, NotificationChannel.EMAIL);
+            return buildFromDomainEvent(
+                    root,
+                    notificationRequestId,
+                    NotificationType.SUBSCRIPTION_EXPIRED,
+                    NotificationChannel.EMAIL);
         }
         log.warn("Unsupported kafka event source: {}", eventSource);
         return null;
@@ -665,7 +797,8 @@ public class NotificationServiceImpl implements NotificationService {
                 .build();
     }
 
-    private CreateNotificationRequest buildFromNotificationCreatedEvent(JsonNode root, String notificationRequestId) {
+    private CreateNotificationRequest buildFromNotificationCreatedEvent(
+            JsonNode root, String notificationRequestId) {
         CreateNotificationRequest request = new CreateNotificationRequest();
         request.setRequestId(notificationRequestId);
         request.setCorrelationId(extractText(root, "correlationId"));
@@ -745,7 +878,8 @@ public class NotificationServiceImpl implements NotificationService {
         return variables;
     }
 
-    private String resolveKafkaNotificationRequestId(String sourceRequestId, String eventSource, JsonNode root) {
+    private String resolveKafkaNotificationRequestId(
+            String sourceRequestId, String eventSource, JsonNode root) {
         String explicitId = extractText(root, "notificationRequestId");
         if (StringUtils.hasText(explicitId)) {
             return explicitId;
@@ -757,14 +891,19 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     private void applyTemplate(
-            NotificationEntity notification, String templateCode, Map<String, String> templateVariables) {
+            NotificationEntity notification,
+            String templateCode,
+            Map<String, String> templateVariables) {
         if (!StringUtils.hasText(templateCode)) {
             return;
         }
-        NotificationTemplateEntity template = resolveTemplate(templateCode, notification.getChannel());
-        Map<String, String> variables = templateRenderer.mergeVariables(
-                templateVariables, deserializeMetadataMap(notification.getMetadata()));
-        NotificationTemplateEngine.RenderedTemplate rendered = templateEngine.render(template, variables);
+        NotificationTemplateEntity template =
+                resolveTemplate(templateCode, notification.getChannel());
+        Map<String, String> variables =
+                templateRenderer.mergeVariables(
+                        templateVariables, deserializeMetadataMap(notification.getMetadata()));
+        NotificationTemplateEngine.RenderedTemplate rendered =
+                templateEngine.render(template, variables);
         if (!StringUtils.hasText(notification.getSubject())) {
             notification.setSubject(rendered.subject());
         } else {
@@ -778,23 +917,36 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setTemplateCode(templateCode);
     }
 
-    private NotificationTemplateEntity resolveTemplate(String templateCode, NotificationChannel channel) {
+    private NotificationTemplateEntity resolveTemplate(
+            String templateCode, NotificationChannel channel) {
         return cachePort
                 .getTemplate(templateCode, channel.name())
-                .orElseGet(() -> templateRepository
-                        .findByTemplateCodeAndChannelAndActiveTrue(templateCode, channel)
-                        .map(template -> {
-                            cachePort.cacheTemplate(template);
-                            return template;
-                        })
-                        .orElseThrow(() -> new ResourceNotFoundException(
-                                "Template not found: " + templateCode + " for channel " + channel)));
+                .orElseGet(
+                        () ->
+                                templateRepository
+                                        .findByTemplateCodeAndChannelAndActiveTrue(
+                                                templateCode, channel)
+                                        .map(
+                                                template -> {
+                                                    cachePort.cacheTemplate(template);
+                                                    return template;
+                                                })
+                                        .orElseThrow(
+                                                () ->
+                                                        new ResourceNotFoundException(
+                                                                "Template not found: "
+                                                                        + templateCode
+                                                                        + " for channel "
+                                                                        + channel)));
     }
 
     private NotificationEntity findActiveNotification(UUID notificationId) {
         return notificationRepository
                 .findByIdAndActiveTrue(notificationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Notification not found: " + notificationId));
+                .orElseThrow(
+                        () ->
+                                new ResourceNotFoundException(
+                                        "Notification not found: " + notificationId));
     }
 
     private NotificationPageResponse toPageResponse(Page<NotificationEntity> result) {
@@ -820,7 +972,9 @@ public class NotificationServiceImpl implements NotificationService {
             return explicit;
         }
         String fromContext = RequestContext.getCorrelationId();
-        return StringUtils.hasText(fromContext) ? fromContext : RequestContext.generateCorrelationId();
+        return StringUtils.hasText(fromContext)
+                ? fromContext
+                : RequestContext.generateCorrelationId();
     }
 
     private String resolveActor() {
@@ -828,7 +982,10 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     private void saveOutboxEvent(
-            NotificationEntity notification, String eventType, String topic, Map<String, Object> payload) {
+            NotificationEntity notification,
+            String eventType,
+            String topic,
+            Map<String, Object> payload) {
         OutboxEventEntity event = new OutboxEventEntity();
         event.setAggregateType("Notification");
         event.setAggregateId(notification.getId());
@@ -848,9 +1005,17 @@ public class NotificationServiceImpl implements NotificationService {
         payload.put("notificationId", notification.getId().toString());
         payload.put("requestId", notification.getRequestId());
         payload.put("correlationId", notification.getCorrelationId());
-        payload.put("workflowId", notification.getWorkflowId() != null ? notification.getWorkflowId().toString() : null);
+        payload.put(
+                "workflowId",
+                notification.getWorkflowId() != null
+                        ? notification.getWorkflowId().toString()
+                        : null);
         payload.put("aggregateType", notification.getAggregateType());
-        payload.put("aggregateId", notification.getAggregateId() != null ? notification.getAggregateId().toString() : null);
+        payload.put(
+                "aggregateId",
+                notification.getAggregateId() != null
+                        ? notification.getAggregateId().toString()
+                        : null);
         payload.put("notificationType", notification.getNotificationType().name());
         payload.put("channel", notification.getChannel().name());
         payload.put("recipientId", notification.getRecipientId());
@@ -858,12 +1023,17 @@ public class NotificationServiceImpl implements NotificationService {
         payload.put("subject", notification.getSubject());
         payload.put("body", notification.getBody());
         payload.put("status", notification.getStatus().name());
-        payload.put("previousStatus", notification.getPreviousStatus() != null ? notification.getPreviousStatus().name() : null);
+        payload.put(
+                "previousStatus",
+                notification.getPreviousStatus() != null
+                        ? notification.getPreviousStatus().name()
+                        : null);
         payload.put("templateCode", notification.getTemplateCode());
         return payload;
     }
 
-    private Map<String, Object> buildAuditPayload(NotificationEntity notification, AuditOperation operation) {
+    private Map<String, Object> buildAuditPayload(
+            NotificationEntity notification, AuditOperation operation) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("notificationId", notification.getId().toString());
         payload.put("requestId", notification.getRequestId());
@@ -890,7 +1060,8 @@ public class NotificationServiceImpl implements NotificationService {
             return Map.of();
         }
         try {
-            return objectMapper.readValue(metadata, new com.fasterxml.jackson.core.type.TypeReference<>() {});
+            return objectMapper.readValue(
+                    metadata, new com.fasterxml.jackson.core.type.TypeReference<>() {});
         } catch (Exception ex) {
             return Map.of();
         }
@@ -900,7 +1071,8 @@ public class NotificationServiceImpl implements NotificationService {
         try {
             return objectMapper.writeValueAsString(payload);
         } catch (Exception ex) {
-            throw new MarketplaceException(ErrorCode.INTERNAL_ERROR, "Failed to serialize outbox payload");
+            throw new MarketplaceException(
+                    ErrorCode.INTERNAL_ERROR, "Failed to serialize outbox payload");
         }
     }
 

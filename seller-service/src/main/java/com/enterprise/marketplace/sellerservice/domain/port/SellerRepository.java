@@ -1,14 +1,13 @@
 package com.enterprise.marketplace.sellerservice.domain.port;
 
-import com.enterprise.marketplace.sellerservice.domain.model.Seller;
-import com.enterprise.marketplace.sellerservice.domain.model.SellerPage;
-import com.enterprise.marketplace.sellerservice.domain.model.SellerSearchCriteria;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Outbound port for seller persistence.
- */
+import com.enterprise.marketplace.sellerservice.domain.model.Seller;
+import com.enterprise.marketplace.sellerservice.domain.model.SellerPage;
+import com.enterprise.marketplace.sellerservice.domain.model.SellerSearchCriteria;
+
+/** Outbound port for seller persistence. */
 public interface SellerRepository {
 
     Seller save(Seller seller);

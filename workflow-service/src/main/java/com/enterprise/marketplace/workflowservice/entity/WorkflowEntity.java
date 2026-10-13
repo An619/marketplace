@@ -1,15 +1,18 @@
 package com.enterprise.marketplace.workflowservice.entity;
 
-import com.enterprise.marketplace.common.model.BaseEntity;
-import com.enterprise.marketplace.workflowservice.enums.AggregateType;
-import com.enterprise.marketplace.workflowservice.enums.WorkflowOperationType;
-import com.enterprise.marketplace.workflowservice.enums.WorkflowStatus;
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
-import java.util.UUID;
+
+import com.enterprise.marketplace.common.model.BaseEntity;
+import com.enterprise.marketplace.workflowservice.enums.AggregateType;
+import com.enterprise.marketplace.workflowservice.enums.WorkflowOperationType;
+import com.enterprise.marketplace.workflowservice.enums.WorkflowStatus;
+
 import lombok.Getter;
 import lombok.Setter;
 

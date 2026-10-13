@@ -1,8 +1,9 @@
 package com.enterprise.marketplace.workflowservice.util;
 
-import com.enterprise.marketplace.workflowservice.entity.WorkflowEntity;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.enterprise.marketplace.workflowservice.entity.WorkflowEntity;
 
 public final class WorkflowPayloadBuilder {
 

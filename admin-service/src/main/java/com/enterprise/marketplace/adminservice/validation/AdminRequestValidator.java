@@ -1,5 +1,8 @@
 package com.enterprise.marketplace.adminservice.validation;
 
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
 import com.enterprise.marketplace.adminservice.dto.BulkPatchFeatureFlagsRequest;
 import com.enterprise.marketplace.adminservice.dto.CreateConfigRequest;
 import com.enterprise.marketplace.adminservice.dto.CreateSettingRequest;
@@ -9,9 +12,8 @@ import com.enterprise.marketplace.adminservice.repository.FeatureFlagRepository;
 import com.enterprise.marketplace.adminservice.repository.PlatformSettingRepository;
 import com.enterprise.marketplace.common.exception.ErrorCode;
 import com.enterprise.marketplace.common.exception.MarketplaceException;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 @Component
 @RequiredArgsConstructor
@@ -28,10 +30,14 @@ public class AdminRequestValidator {
         if (!StringUtils.hasText(request.getSettingValue())) {
             throw new MarketplaceException(ErrorCode.VALIDATION_ERROR, "settingValue is required");
         }
-        platformSettingRepository.findBySettingKey(request.getSettingKey().trim()).ifPresent(existing -> {
-            throw new MarketplaceException(
-                    ErrorCode.CONFLICT, "Setting already exists for key " + request.getSettingKey());
-        });
+        platformSettingRepository
+                .findBySettingKey(request.getSettingKey().trim())
+                .ifPresent(
+                        existing -> {
+                            throw new MarketplaceException(
+                                    ErrorCode.CONFLICT,
+                                    "Setting already exists for key " + request.getSettingKey());
+                        });
     }
 
     public void validateCreateConfig(CreateConfigRequest request) {
@@ -41,10 +47,14 @@ public class AdminRequestValidator {
         if (request.getConfigValue() == null || request.getConfigValue().isEmpty()) {
             throw new MarketplaceException(ErrorCode.VALIDATION_ERROR, "configValue is required");
         }
-        adminConfigRepository.findByConfigKey(request.getConfigKey().trim()).ifPresent(existing -> {
-            throw new MarketplaceException(
-                    ErrorCode.CONFLICT, "Config already exists for key " + request.getConfigKey());
-        });
+        adminConfigRepository
+                .findByConfigKey(request.getConfigKey().trim())
+                .ifPresent(
+                        existing -> {
+                            throw new MarketplaceException(
+                                    ErrorCode.CONFLICT,
+                                    "Config already exists for key " + request.getConfigKey());
+                        });
     }
 
     public void validatePatchFeatureFlag(PatchFeatureFlagRequest request) {
@@ -64,12 +74,14 @@ public class AdminRequestValidator {
     public void validateBulkPatchFeatureFlags(BulkPatchFeatureFlagsRequest request) {
         for (BulkPatchFeatureFlagsRequest.FeatureFlagPatchItem item : request.getUpdates()) {
             if (!StringUtils.hasText(item.getFlagKey())) {
-                throw new MarketplaceException(ErrorCode.VALIDATION_ERROR, "flagKey is required for each update");
+                throw new MarketplaceException(
+                        ErrorCode.VALIDATION_ERROR, "flagKey is required for each update");
             }
             if (item.getEnabled() == null && item.getRolloutPercentage() == null) {
                 throw new MarketplaceException(
                         ErrorCode.VALIDATION_ERROR,
-                        "At least enabled or rolloutPercentage must be provided for " + item.getFlagKey());
+                        "At least enabled or rolloutPercentage must be provided for "
+                                + item.getFlagKey());
             }
             if (item.getRolloutPercentage() != null
                     && (item.getRolloutPercentage() < 0 || item.getRolloutPercentage() > 100)) {
@@ -79,7 +91,8 @@ public class AdminRequestValidator {
             }
             if (!featureFlagRepository.findByFlagKey(item.getFlagKey()).isPresent()) {
                 throw new MarketplaceException(
-                        ErrorCode.RESOURCE_NOT_FOUND, "Feature flag not found: " + item.getFlagKey());
+                        ErrorCode.RESOURCE_NOT_FOUND,
+                        "Feature flag not found: " + item.getFlagKey());
             }
         }
     }

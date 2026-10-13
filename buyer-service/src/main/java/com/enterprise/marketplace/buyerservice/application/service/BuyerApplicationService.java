@@ -1,5 +1,12 @@
 package com.enterprise.marketplace.buyerservice.application.service;
 
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import com.enterprise.marketplace.buyerservice.application.dto.BuyerPageResponse;
 import com.enterprise.marketplace.buyerservice.application.dto.BuyerResponse;
 import com.enterprise.marketplace.buyerservice.application.dto.CreateBuyerRequest;
@@ -14,12 +21,8 @@ import com.enterprise.marketplace.buyerservice.domain.service.BuyerDomainService
 import com.enterprise.marketplace.common.exception.ErrorCode;
 import com.enterprise.marketplace.common.exception.MarketplaceException;
 import com.enterprise.marketplace.common.exception.ResourceNotFoundException;
-import java.util.List;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +37,8 @@ public class BuyerApplicationService {
     public BuyerResponse createBuyer(CreateBuyerRequest request) {
         String normalizedEmail = normalizeEmail(request.getEmail());
         if (buyerRepository.existsByEmail(normalizedEmail)) {
-            throw new MarketplaceException(ErrorCode.CONFLICT, "Buyer email already exists: " + normalizedEmail);
+            throw new MarketplaceException(
+                    ErrorCode.CONFLICT, "Buyer email already exists: " + normalizedEmail);
         }
 
         Buyer buyer = buyerMapper.toDomain(request).withEmail(normalizedEmail);
@@ -48,22 +52,34 @@ public class BuyerApplicationService {
     }
 
     public BuyerResponse getBuyerById(UUID id) {
-        Buyer buyer = buyerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Buyer", id));
+        Buyer buyer =
+                buyerRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Buyer", id));
         return buyerMapper.toResponse(buyer);
     }
 
     public BuyerPageResponse searchBuyers(
-            BuyerStatus status, String city, String state, String country, String keyword, int page, int size, String sort) {
-        BuyerSearchCriteria criteria = BuyerSearchCriteria.builder()
-                .status(status)
-                .city(normalizeNullable(city))
-                .state(normalizeNullable(state))
-                .country(normalizeNullable(country))
-                .keyword(StringUtils.hasText(keyword) ? keyword.trim() : null)
-                .build();
+            BuyerStatus status,
+            String city,
+            String state,
+            String country,
+            String keyword,
+            int page,
+            int size,
+            String sort) {
+        BuyerSearchCriteria criteria =
+                BuyerSearchCriteria.builder()
+                        .status(status)
+                        .city(normalizeNullable(city))
+                        .state(normalizeNullable(state))
+                        .country(normalizeNullable(country))
+                        .keyword(StringUtils.hasText(keyword) ? keyword.trim() : null)
+                        .build();
 
         BuyerPage<Buyer> result = buyerRepository.search(criteria, page, size, sort);
-        List<BuyerResponse> content = result.content().stream().map(buyerMapper::toResponse).toList();
+        List<BuyerResponse> content =
+                result.content().stream().map(buyerMapper::toResponse).toList();
 
         return BuyerPageResponse.builder()
                 .content(content)
@@ -76,26 +92,32 @@ public class BuyerApplicationService {
 
     @Transactional
     public BuyerResponse updateBuyer(UUID id, UpdateBuyerRequest request) {
-        Buyer existing = buyerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Buyer", id));
+        Buyer existing =
+                buyerRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Buyer", id));
         if (existing.getStatus() == BuyerStatus.ARCHIVED) {
-            throw new MarketplaceException(ErrorCode.BUSINESS_RULE_VIOLATION, "Archived buyers cannot be updated");
+            throw new MarketplaceException(
+                    ErrorCode.BUSINESS_RULE_VIOLATION, "Archived buyers cannot be updated");
         }
 
         String normalizedEmail = normalizeEmail(request.getEmail());
         if (buyerRepository.existsByEmailAndIdNot(normalizedEmail, id)) {
-            throw new MarketplaceException(ErrorCode.CONFLICT, "Buyer email already exists: " + normalizedEmail);
+            throw new MarketplaceException(
+                    ErrorCode.CONFLICT, "Buyer email already exists: " + normalizedEmail);
         }
 
-        Buyer updated = existing.toBuilder()
-                .companyName(request.getCompanyName().trim())
-                .contactPerson(request.getContactPerson().trim())
-                .email(normalizedEmail)
-                .phone(request.getPhone().trim())
-                .city(request.getCity().trim())
-                .state(request.getState().trim())
-                .country(normalizeCountry(request.getCountry()))
-                .pinCode(request.getPinCode().trim().toUpperCase())
-                .build();
+        Buyer updated =
+                existing.toBuilder()
+                        .companyName(request.getCompanyName().trim())
+                        .contactPerson(request.getContactPerson().trim())
+                        .email(normalizedEmail)
+                        .phone(request.getPhone().trim())
+                        .city(request.getCity().trim())
+                        .state(request.getState().trim())
+                        .country(normalizeCountry(request.getCountry()))
+                        .pinCode(request.getPinCode().trim().toUpperCase())
+                        .build();
 
         try {
             BuyerDomainService.validateForUpdate(updated);
@@ -107,7 +129,10 @@ public class BuyerApplicationService {
 
     @Transactional
     public BuyerResponse updateBuyerStatus(UUID id, BuyerStatus status) {
-        Buyer existing = buyerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Buyer", id));
+        Buyer existing =
+                buyerRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Buyer", id));
         try {
             BuyerDomainService.validateStatusTransition(existing.getStatus(), status);
         } catch (IllegalArgumentException ex) {

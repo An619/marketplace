@@ -1,9 +1,9 @@
-package com.enterprise.marketplace.reportservice.enums;
-
-public enum ReportJobStatus {
-    PENDING,
-    PROCESSING,
-    COMPLETED,
-    FAILED,
-    CANCELLED
-}
+package com.enterprise.marketplace.reportservice.enums;
+
+public enum ReportJobStatus {
+    PENDING,
+    PROCESSING,
+    COMPLETED,
+    FAILED,
+    CANCELLED
+}

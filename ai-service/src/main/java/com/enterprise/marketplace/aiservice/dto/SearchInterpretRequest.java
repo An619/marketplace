@@ -1,6 +1,7 @@
 package com.enterprise.marketplace.aiservice.dto;
 
 import jakarta.validation.constraints.NotBlank;
+
 import lombok.Builder;
 import lombok.Value;
 
@@ -8,6 +9,5 @@ import lombok.Value;
 @Builder
 public class SearchInterpretRequest {
 
-    @NotBlank
-    String query;
+    @NotBlank String query;
 }

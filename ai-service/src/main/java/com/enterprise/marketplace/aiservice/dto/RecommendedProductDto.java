@@ -1,6 +1,7 @@
 package com.enterprise.marketplace.aiservice.dto;
 
 import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Value;
 

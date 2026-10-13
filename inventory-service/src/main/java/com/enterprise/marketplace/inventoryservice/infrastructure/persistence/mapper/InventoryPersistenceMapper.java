@@ -1,12 +1,13 @@
 package com.enterprise.marketplace.inventoryservice.infrastructure.persistence.mapper;
 
-import com.enterprise.marketplace.inventoryservice.domain.model.Inventory;
-import com.enterprise.marketplace.inventoryservice.infrastructure.persistence.entity.InventoryEntity;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+
+import com.enterprise.marketplace.inventoryservice.domain.model.Inventory;
+import com.enterprise.marketplace.inventoryservice.infrastructure.persistence.entity.InventoryEntity;
 
 @Mapper(componentModel = "spring")
 public interface InventoryPersistenceMapper {

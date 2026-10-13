@@ -1,19 +1,21 @@
 package com.enterprise.marketplace.identityservice.infrastructure.redis;
 
-import com.enterprise.marketplace.identityservice.config.AuthProperties;
-import jakarta.annotation.PostConstruct;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
+import jakarta.annotation.PostConstruct;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-/**
- * In-memory OTP/token/QR store used when Redis is unavailable (standalone local profile).
- */
+import com.enterprise.marketplace.identityservice.config.AuthProperties;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+/** In-memory OTP/token/QR store used when Redis is unavailable (standalone local profile). */
 @Slf4j
 @Component
 @ConditionalOnProperty(prefix = "marketplace.auth", name = "session-store", havingValue = "memory")
@@ -22,7 +24,8 @@ public class InMemoryAuthSessionStore implements AuthSessionStore {
 
     private final AuthProperties authProperties;
     private final Map<String, TimedValue<OtpSessionData>> otpSessions = new ConcurrentHashMap<>();
-    private final Map<String, TimedValue<VerificationTokenData>> verificationTokens = new ConcurrentHashMap<>();
+    private final Map<String, TimedValue<VerificationTokenData>> verificationTokens =
+            new ConcurrentHashMap<>();
     private final Map<String, TimedValue<AccessTokenData>> accessTokens = new ConcurrentHashMap<>();
     private final Map<String, TimedValue<QrSessionData>> qrSessions = new ConcurrentHashMap<>();
 
@@ -51,7 +54,11 @@ public class InMemoryAuthSessionStore implements AuthSessionStore {
         if (data.getToken() == null) {
             data.setToken(UUID.randomUUID().toString());
         }
-        put(verificationTokens, data.getToken(), data, authProperties.getToken().getVerificationTtlSeconds());
+        put(
+                verificationTokens,
+                data.getToken(),
+                data,
+                authProperties.getToken().getVerificationTtlSeconds());
         return data.getToken();
     }
 

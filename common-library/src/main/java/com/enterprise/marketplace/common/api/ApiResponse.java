@@ -1,7 +1,9 @@
 package com.enterprise.marketplace.common.api;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.Instant;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,11 +29,7 @@ public class ApiResponse<T> {
     private Instant timestamp;
 
     public static <T> ApiResponse<T> success(T data) {
-        return ApiResponse.<T>builder()
-                .success(true)
-                .data(data)
-                .timestamp(Instant.now())
-                .build();
+        return ApiResponse.<T>builder().success(true).data(data).timestamp(Instant.now()).build();
     }
 
     public static <T> ApiResponse<T> success(T data, String message) {

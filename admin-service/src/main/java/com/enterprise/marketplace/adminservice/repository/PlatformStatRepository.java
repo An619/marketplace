@@ -1,10 +1,12 @@
 package com.enterprise.marketplace.adminservice.repository;
 
-import com.enterprise.marketplace.adminservice.entity.PlatformStatEntity;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.enterprise.marketplace.adminservice.entity.PlatformStatEntity;
 
 public interface PlatformStatRepository extends JpaRepository<PlatformStatEntity, UUID> {
 

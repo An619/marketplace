@@ -1,8 +1,10 @@
 package com.enterprise.marketplace.buyerservice.application.dto;
 
-import com.enterprise.marketplace.buyerservice.domain.model.BuyerStatus;
 import java.time.Instant;
 import java.util.UUID;
+
+import com.enterprise.marketplace.buyerservice.domain.model.BuyerStatus;
+
 import lombok.Builder;
 import lombok.Value;
 

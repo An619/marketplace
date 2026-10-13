@@ -1,23 +1,30 @@
 package com.enterprise.marketplace.auditservice.redis;
 
-import com.enterprise.marketplace.auditservice.constants.AuditCacheKeys;
-import com.enterprise.marketplace.auditservice.dto.AuditResponse;
-import com.enterprise.marketplace.auditservice.dto.AuditTimelineResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import com.enterprise.marketplace.auditservice.constants.AuditCacheKeys;
+import com.enterprise.marketplace.auditservice.dto.AuditResponse;
+import com.enterprise.marketplace.auditservice.dto.AuditTimelineResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "marketplace.redis", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+        prefix = "marketplace.redis",
+        name = "enabled",
+        havingValue = "true",
+        matchIfMissing = true)
 public class AuditRedisCacheService implements AuditCachePort {
 
     private final StringRedisTemplate redisTemplate;
@@ -32,7 +39,10 @@ public class AuditRedisCacheService implements AuditCachePort {
             String key = AuditCacheKeys.auditKey(response.getId());
             redisTemplate
                     .opsForValue()
-                    .set(key, objectMapper.writeValueAsString(response), Duration.ofSeconds(auditCacheTtlSeconds));
+                    .set(
+                            key,
+                            objectMapper.writeValueAsString(response),
+                            Duration.ofSeconds(auditCacheTtlSeconds));
         } catch (Exception ex) {
             log.warn("Failed to cache audit id={}", response.getId(), ex);
         }
@@ -49,7 +59,10 @@ public class AuditRedisCacheService implements AuditCachePort {
             String key = AuditCacheKeys.correlationTimelineKey(timeline.getCorrelationId());
             redisTemplate
                     .opsForValue()
-                    .set(key, objectMapper.writeValueAsString(timeline), Duration.ofSeconds(auditCacheTtlSeconds));
+                    .set(
+                            key,
+                            objectMapper.writeValueAsString(timeline),
+                            Duration.ofSeconds(auditCacheTtlSeconds));
         } catch (Exception ex) {
             log.warn("Failed to cache timeline correlationId={}", timeline.getCorrelationId(), ex);
         }
@@ -72,7 +85,10 @@ public class AuditRedisCacheService implements AuditCachePort {
     @Override
     public Optional<AuditTimelineResponse> getTimeline(String correlationId) {
         try {
-            String cached = redisTemplate.opsForValue().get(AuditCacheKeys.correlationTimelineKey(correlationId));
+            String cached =
+                    redisTemplate
+                            .opsForValue()
+                            .get(AuditCacheKeys.correlationTimelineKey(correlationId));
             if (cached == null || cached.isBlank()) {
                 return Optional.empty();
             }

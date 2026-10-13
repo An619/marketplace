@@ -1,10 +1,12 @@
 package com.enterprise.marketplace.auditservice.dto;
 
-import com.enterprise.marketplace.auditservice.enums.AuditOperation;
-import com.enterprise.marketplace.auditservice.enums.AuditStatus;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
+
+import com.enterprise.marketplace.auditservice.enums.AuditOperation;
+import com.enterprise.marketplace.auditservice.enums.AuditStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

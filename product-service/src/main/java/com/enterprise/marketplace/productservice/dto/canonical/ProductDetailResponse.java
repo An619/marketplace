@@ -1,13 +1,15 @@
 package com.enterprise.marketplace.productservice.dto.canonical;
 
-import com.enterprise.marketplace.productservice.enums.ProductStatus;
-import com.enterprise.marketplace.productservice.enums.ProductWorkflowStatus;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import com.enterprise.marketplace.productservice.enums.ProductStatus;
+import com.enterprise.marketplace.productservice.enums.ProductWorkflowStatus;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;

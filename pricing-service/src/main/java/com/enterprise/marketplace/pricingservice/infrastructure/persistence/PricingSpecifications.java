@@ -1,16 +1,18 @@
 package com.enterprise.marketplace.pricingservice.infrastructure.persistence;
 
-import com.enterprise.marketplace.pricingservice.domain.model.PricingSearchCriteria;
-import com.enterprise.marketplace.pricingservice.infrastructure.persistence.entity.PricingEntity;
-import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.persistence.criteria.Predicate;
+
 import org.springframework.data.jpa.domain.Specification;
+
+import com.enterprise.marketplace.pricingservice.domain.model.PricingSearchCriteria;
+import com.enterprise.marketplace.pricingservice.infrastructure.persistence.entity.PricingEntity;
 
 final class PricingSpecifications {
 
-    private PricingSpecifications() {
-    }
+    private PricingSpecifications() {}
 
     static Specification<PricingEntity> fromCriteria(PricingSearchCriteria criteria) {
         return (root, query, cb) -> {

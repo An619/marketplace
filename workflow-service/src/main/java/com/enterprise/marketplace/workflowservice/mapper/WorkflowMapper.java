@@ -1,16 +1,19 @@
 package com.enterprise.marketplace.workflowservice.mapper;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Component;
+
 import com.enterprise.marketplace.workflowservice.dto.WorkflowHistoryResponse;
 import com.enterprise.marketplace.workflowservice.dto.WorkflowResponse;
 import com.enterprise.marketplace.workflowservice.entity.WorkflowEntity;
 import com.enterprise.marketplace.workflowservice.entity.WorkflowHistoryEntity;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor

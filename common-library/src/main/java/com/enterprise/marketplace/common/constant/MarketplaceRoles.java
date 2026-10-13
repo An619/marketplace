@@ -1,8 +1,6 @@
 package com.enterprise.marketplace.common.constant;
 
-/**
- * Keycloak realm roles for Enterprise Marketplace Platform.
- */
+/** Keycloak realm roles for Enterprise Marketplace Platform. */
 public final class MarketplaceRoles {
 
     public static final String ADMIN = "ADMIN";

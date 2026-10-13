@@ -1,16 +1,19 @@
 package com.enterprise.marketplace.notificationservice.entity;
 
-import com.enterprise.marketplace.common.model.BaseEntity;
-import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
-import com.enterprise.marketplace.notificationservice.enums.NotificationStatus;
-import com.enterprise.marketplace.notificationservice.enums.NotificationType;
+import java.time.Instant;
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
-import java.time.Instant;
-import java.util.UUID;
+
+import com.enterprise.marketplace.common.model.BaseEntity;
+import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
+import com.enterprise.marketplace.notificationservice.enums.NotificationStatus;
+import com.enterprise.marketplace.notificationservice.enums.NotificationType;
+
 import lombok.Getter;
 import lombok.Setter;
 

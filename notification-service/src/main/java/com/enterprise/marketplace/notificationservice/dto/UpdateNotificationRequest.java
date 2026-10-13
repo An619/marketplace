@@ -1,9 +1,12 @@
 package com.enterprise.marketplace.notificationservice.dto;
 
-import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
-import jakarta.validation.constraints.Size;
 import java.util.Map;
 import java.util.UUID;
+
+import jakarta.validation.constraints.Size;
+
+import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,27 +20,21 @@ public class UpdateNotificationRequest {
 
     private UUID workflowId;
 
-    @Size(max = 64)
-    private String aggregateType;
+    @Size(max = 64) private String aggregateType;
 
     private UUID aggregateId;
 
     private NotificationChannel channel;
 
-    @Size(max = 128)
-    private String recipientId;
+    @Size(max = 128) private String recipientId;
 
-    @Size(max = 512)
-    private String recipientAddress;
+    @Size(max = 512) private String recipientAddress;
 
-    @Size(max = 500)
-    private String subject;
+    @Size(max = 500) private String subject;
 
-    @Size(max = 10000)
-    private String body;
+    @Size(max = 10000) private String body;
 
-    @Size(max = 64)
-    private String templateCode;
+    @Size(max = 64) private String templateCode;
 
     private Map<String, Object> metadata;
 

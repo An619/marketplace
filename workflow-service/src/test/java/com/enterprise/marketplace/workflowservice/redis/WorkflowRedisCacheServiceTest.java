@@ -5,15 +5,10 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.enterprise.marketplace.workflowservice.constants.WorkflowCacheKeys;
-import com.enterprise.marketplace.workflowservice.dto.WorkflowResponse;
-import com.enterprise.marketplace.workflowservice.entity.WorkflowTransitionEntity;
-import com.enterprise.marketplace.workflowservice.enums.WorkflowStatus;
-import com.enterprise.marketplace.workflowservice.repository.WorkflowTransitionRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,17 +19,21 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.enterprise.marketplace.workflowservice.constants.WorkflowCacheKeys;
+import com.enterprise.marketplace.workflowservice.dto.WorkflowResponse;
+import com.enterprise.marketplace.workflowservice.entity.WorkflowTransitionEntity;
+import com.enterprise.marketplace.workflowservice.enums.WorkflowStatus;
+import com.enterprise.marketplace.workflowservice.repository.WorkflowTransitionRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 @ExtendWith(MockitoExtension.class)
 class WorkflowRedisCacheServiceTest {
 
-    @Mock
-    private StringRedisTemplate redisTemplate;
+    @Mock private StringRedisTemplate redisTemplate;
 
-    @Mock
-    private ValueOperations<String, String> valueOperations;
+    @Mock private ValueOperations<String, String> valueOperations;
 
-    @Mock
-    private WorkflowTransitionRepository transitionRepository;
+    @Mock private WorkflowTransitionRepository transitionRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -42,23 +41,26 @@ class WorkflowRedisCacheServiceTest {
 
     @BeforeEach
     void setUp() {
-        cacheService = new WorkflowRedisCacheService(redisTemplate, objectMapper, transitionRepository);
+        cacheService =
+                new WorkflowRedisCacheService(redisTemplate, objectMapper, transitionRepository);
         ReflectionTestUtils.setField(cacheService, "cacheTtlSeconds", 3600L);
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
     }
 
     @Test
     void shouldCacheWorkflowResponse() throws Exception {
-        WorkflowResponse response = WorkflowResponse.builder()
-                .id(UUID.randomUUID())
-                .requestId("cache-req")
-                .status(WorkflowStatus.INITIAL)
-                .build();
+        WorkflowResponse response =
+                WorkflowResponse.builder()
+                        .id(UUID.randomUUID())
+                        .requestId("cache-req")
+                        .status(WorkflowStatus.INITIAL)
+                        .build();
 
         cacheService.cacheWorkflow(response);
 
         ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
-        verify(valueOperations).set(keyCaptor.capture(), anyString(), org.mockito.ArgumentMatchers.any());
+        verify(valueOperations)
+                .set(keyCaptor.capture(), anyString(), org.mockito.ArgumentMatchers.any());
         assertThat(keyCaptor.getValue()).isEqualTo(WorkflowCacheKeys.workflowKey(response.getId()));
     }
 
@@ -75,6 +77,10 @@ class WorkflowRedisCacheServiceTest {
 
         cacheService.refreshTransitionRules();
 
-        verify(valueOperations).set(org.mockito.ArgumentMatchers.eq(WorkflowCacheKeys.TRANSITION_RULES), anyString(), org.mockito.ArgumentMatchers.any());
+        verify(valueOperations)
+                .set(
+                        org.mockito.ArgumentMatchers.eq(WorkflowCacheKeys.TRANSITION_RULES),
+                        anyString(),
+                        org.mockito.ArgumentMatchers.any());
     }
 }

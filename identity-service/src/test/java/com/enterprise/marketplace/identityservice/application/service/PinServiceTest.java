@@ -6,6 +6,19 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Optional;
+import java.util.UUID;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
+
 import com.enterprise.marketplace.common.exception.MarketplaceException;
 import com.enterprise.marketplace.identityservice.application.dto.CreatePinRequest;
 import com.enterprise.marketplace.identityservice.application.dto.PinAuthResponse;
@@ -18,35 +31,20 @@ import com.enterprise.marketplace.identityservice.infrastructure.persistence.ent
 import com.enterprise.marketplace.identityservice.infrastructure.redis.AccessTokenData;
 import com.enterprise.marketplace.identityservice.infrastructure.redis.AuthSessionStore;
 import com.enterprise.marketplace.identityservice.infrastructure.redis.VerificationTokenData;
-import java.util.Optional;
-import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class PinServiceTest {
 
-    @Mock
-    private AuthSessionStore authRedisStore;
+    @Mock private AuthSessionStore authRedisStore;
 
-    @Mock
-    private MobileUserJpaRepository mobileUserJpaRepository;
+    @Mock private MobileUserJpaRepository mobileUserJpaRepository;
 
-    @Mock
-    private MobileUserService mobileUserService;
+    @Mock private MobileUserService mobileUserService;
 
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final AuthProperties authProperties = new AuthProperties();
 
-    @InjectMocks
-    private PinService pinService;
+    @InjectMocks private PinService pinService;
 
     @BeforeEach
     void setUp() {
@@ -57,13 +55,14 @@ class PinServiceTest {
     @Test
     void createPinHashesAndReturnsAccessToken() {
         UUID userId = UUID.randomUUID();
-        VerificationTokenData token = VerificationTokenData.builder()
-                .token("vt")
-                .countryCode("+91")
-                .mobileNumber("9876543210")
-                .userId(userId)
-                .userType(UserType.INDIVIDUAL)
-                .build();
+        VerificationTokenData token =
+                VerificationTokenData.builder()
+                        .token("vt")
+                        .countryCode("+91")
+                        .mobileNumber("9876543210")
+                        .userId(userId)
+                        .userType(UserType.INDIVIDUAL)
+                        .build();
         MobileUserEntity user = new MobileUserEntity();
         user.setId(userId);
         user.setCountryCode("+91");
@@ -96,7 +95,8 @@ class PinServiceTest {
         request.setVerificationToken("vt");
         request.setPin("258147");
         request.setConfirmPin("111111");
-        assertThatThrownBy(() -> pinService.createPin(request)).isInstanceOf(MarketplaceException.class);
+        assertThatThrownBy(() -> pinService.createPin(request))
+                .isInstanceOf(MarketplaceException.class);
     }
 
     @Test

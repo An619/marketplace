@@ -1,15 +1,17 @@
 package com.enterprise.marketplace.auditservice.repository;
 
-import com.enterprise.marketplace.auditservice.entity.AuditRecordEntity;
-import com.enterprise.marketplace.auditservice.enums.AuditOperation;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import com.enterprise.marketplace.auditservice.entity.AuditRecordEntity;
+import com.enterprise.marketplace.auditservice.enums.AuditOperation;
 
 public interface AuditRecordRepository extends JpaRepository<AuditRecordEntity, UUID> {
 
@@ -17,18 +19,21 @@ public interface AuditRecordRepository extends JpaRepository<AuditRecordEntity, 
 
     Optional<AuditRecordEntity> findByEventKey(String eventKey);
 
-    Optional<AuditRecordEntity> findTopByRequestIdAndActiveTrueOrderByCreatedAtDesc(String requestId);
+    Optional<AuditRecordEntity> findTopByRequestIdAndActiveTrueOrderByCreatedAtDesc(
+            String requestId);
 
     Page<AuditRecordEntity> findByRequestIdAndActiveTrue(String requestId, Pageable pageable);
 
-    Page<AuditRecordEntity> findBySourceServiceAndActiveTrue(String sourceService, Pageable pageable);
+    Page<AuditRecordEntity> findBySourceServiceAndActiveTrue(
+            String sourceService, Pageable pageable);
 
     Page<AuditRecordEntity> findByActorAndActiveTrue(String actor, Pageable pageable);
 
     Page<AuditRecordEntity> findByAggregateTypeAndAggregateIdAndActiveTrue(
             String aggregateType, UUID aggregateId, Pageable pageable);
 
-    Page<AuditRecordEntity> findByOperationAndActiveTrue(AuditOperation operation, Pageable pageable);
+    Page<AuditRecordEntity> findByOperationAndActiveTrue(
+            AuditOperation operation, Pageable pageable);
 
     @Query(
             """

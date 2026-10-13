@@ -2,9 +2,7 @@ package com.enterprise.marketplace.common.idempotency;
 
 import java.util.Optional;
 
-/**
- * Port for idempotency key storage. Implementations may use Redis or database.
- */
+/** Port for idempotency key storage. Implementations may use Redis or database. */
 public interface IdempotencyStore {
 
     Optional<IdempotencyRecord> findByKey(String key);

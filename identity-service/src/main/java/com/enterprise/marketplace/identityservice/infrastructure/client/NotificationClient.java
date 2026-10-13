@@ -1,14 +1,17 @@
 package com.enterprise.marketplace.identityservice.infrastructure.client;
 
-import com.enterprise.marketplace.identityservice.config.AuthProperties;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+
+import com.enterprise.marketplace.identityservice.config.AuthProperties;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -34,7 +37,9 @@ public class NotificationClient {
             body.put("recipientId", countryCode + mobileNumber);
             body.put("recipientAddress", countryCode + mobileNumber);
             body.put("subject", "KaratKart OTP");
-            body.put("body", "Your KaratKart verification code is " + otp + ". Valid for 5 minutes.");
+            body.put(
+                    "body",
+                    "Your KaratKart verification code is " + otp + ". Valid for 5 minutes.");
 
             restClientBuilder
                     .build()

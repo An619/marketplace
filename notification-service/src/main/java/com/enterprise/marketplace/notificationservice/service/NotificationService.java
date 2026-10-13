@@ -1,5 +1,7 @@
 package com.enterprise.marketplace.notificationservice.service;
 
+import java.util.UUID;
+
 import com.enterprise.marketplace.notificationservice.dto.CreateNotificationRequest;
 import com.enterprise.marketplace.notificationservice.dto.InboxPageResponse;
 import com.enterprise.marketplace.notificationservice.dto.NotificationPageResponse;
@@ -10,7 +12,6 @@ import com.enterprise.marketplace.notificationservice.dto.SendNotificationReques
 import com.enterprise.marketplace.notificationservice.dto.StatusUpdateRequest;
 import com.enterprise.marketplace.notificationservice.dto.UpdateNotificationRequest;
 import com.enterprise.marketplace.notificationservice.enums.NotificationStatus;
-import java.util.UUID;
 
 public interface NotificationService {
 

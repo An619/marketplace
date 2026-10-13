@@ -1,5 +1,7 @@
 package com.enterprise.marketplace.aiservice.service;
 
+import java.util.UUID;
+
 import com.enterprise.marketplace.aiservice.dto.ChatRequest;
 import com.enterprise.marketplace.aiservice.dto.ChatResponse;
 import com.enterprise.marketplace.aiservice.dto.GenerateDescriptionRequest;
@@ -7,7 +9,6 @@ import com.enterprise.marketplace.aiservice.dto.GenerateDescriptionResponse;
 import com.enterprise.marketplace.aiservice.dto.RecommendationResponse;
 import com.enterprise.marketplace.aiservice.dto.SearchInterpretRequest;
 import com.enterprise.marketplace.aiservice.dto.SearchInterpretResponse;
-import java.util.UUID;
 
 public interface AiService {
 

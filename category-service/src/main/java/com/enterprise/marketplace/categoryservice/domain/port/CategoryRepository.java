@@ -1,14 +1,13 @@
 package com.enterprise.marketplace.categoryservice.domain.port;
 
-import com.enterprise.marketplace.categoryservice.domain.model.Category;
-import com.enterprise.marketplace.categoryservice.domain.model.CategoryPage;
-import com.enterprise.marketplace.categoryservice.domain.model.CategorySearchCriteria;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Outbound port for category persistence.
- */
+import com.enterprise.marketplace.categoryservice.domain.model.Category;
+import com.enterprise.marketplace.categoryservice.domain.model.CategoryPage;
+import com.enterprise.marketplace.categoryservice.domain.model.CategorySearchCriteria;
+
+/** Outbound port for category persistence. */
 public interface CategoryRepository {
 
     Category save(Category category);

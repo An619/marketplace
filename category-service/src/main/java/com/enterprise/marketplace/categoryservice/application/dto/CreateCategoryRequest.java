@@ -1,10 +1,13 @@
 package com.enterprise.marketplace.categoryservice.application.dto;
 
-import com.enterprise.marketplace.categoryservice.domain.model.CategoryStatus;
+import java.util.UUID;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import java.util.UUID;
+
+import com.enterprise.marketplace.categoryservice.domain.model.CategoryStatus;
+
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -14,21 +17,15 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class CreateCategoryRequest {
 
-    @NotBlank
-    @Size(max = 120)
-    String slug;
+    @NotBlank @Size(max = 120) String slug;
 
-    @NotBlank
-    @Size(max = 255)
-    String name;
+    @NotBlank @Size(max = 255) String name;
 
-    @Size(max = 5000)
-    String description;
+    @Size(max = 5000) String description;
 
     UUID parentId;
 
-    @Min(0)
-    Integer displayOrder;
+    @Min(0) Integer displayOrder;
 
     CategoryStatus status;
 }

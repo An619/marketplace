@@ -1,5 +1,23 @@
 package com.enterprise.marketplace.auditservice.service.impl;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import com.enterprise.marketplace.auditservice.config.AuditProperties;
 import com.enterprise.marketplace.auditservice.constants.AuditKafkaTopics;
 import com.enterprise.marketplace.auditservice.dto.AuditPageResponse;
@@ -30,24 +48,9 @@ import com.enterprise.marketplace.common.exception.MarketplaceException;
 import com.enterprise.marketplace.common.exception.ResourceNotFoundException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 @Slf4j
 @Service
@@ -86,7 +89,8 @@ public class AuditServiceImpl implements AuditService {
 
         AuditRecordEntity saved = auditRecordRepository.save(record);
         appendTimelineEntry(saved);
-        saveOutboxEvent(saved, "AUDIT_INDEXED", AuditKafkaTopics.AUDIT_INDEXED, buildIndexedPayload(saved));
+        saveOutboxEvent(
+                saved, "AUDIT_INDEXED", AuditKafkaTopics.AUDIT_INDEXED, buildIndexedPayload(saved));
 
         saved.setStatus(AuditStatus.INDEXED);
         saved = auditRecordRepository.save(saved);
@@ -107,19 +111,24 @@ public class AuditServiceImpl implements AuditService {
     public AuditResponse getAudit(UUID auditId) {
         return cachePort
                 .getAudit(auditId)
-                .orElseGet(() -> {
-                    AuditRecordEntity record = findActiveRecord(auditId);
-                    AuditResponse response = auditMapper.toResponse(record);
-                    cachePort.cacheAudit(response);
-                    return response;
-                });
+                .orElseGet(
+                        () -> {
+                            AuditRecordEntity record = findActiveRecord(auditId);
+                            AuditResponse response = auditMapper.toResponse(record);
+                            cachePort.cacheAudit(response);
+                            return response;
+                        });
     }
 
     @Override
     public AuditResponse getByRequestId(String requestId) {
-        AuditRecordEntity record = auditRecordRepository
-                .findTopByRequestIdAndActiveTrueOrderByCreatedAtDesc(requestId)
-                .orElseThrow(() -> new ResourceNotFoundException("Audit not found for requestId " + requestId));
+        AuditRecordEntity record =
+                auditRecordRepository
+                        .findTopByRequestIdAndActiveTrueOrderByCreatedAtDesc(requestId)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "Audit not found for requestId " + requestId));
         return auditMapper.toResponse(record);
     }
 
@@ -131,9 +140,11 @@ public class AuditServiceImpl implements AuditService {
     }
 
     @Override
-    public AuditPageResponse getByAggregate(String aggregateType, UUID aggregateId, int page, int size) {
-        Page<AuditRecordEntity> result = auditRecordRepository.findByAggregateTypeAndAggregateIdAndActiveTrue(
-                aggregateType, aggregateId, pageable(page, size));
+    public AuditPageResponse getByAggregate(
+            String aggregateType, UUID aggregateId, int page, int size) {
+        Page<AuditRecordEntity> result =
+                auditRecordRepository.findByAggregateTypeAndAggregateIdAndActiveTrue(
+                        aggregateType, aggregateId, pageable(page, size));
         return toPageResponse(result);
     }
 
@@ -147,7 +158,8 @@ public class AuditServiceImpl implements AuditService {
     @Override
     public AuditPageResponse getBySourceService(String sourceService, int page, int size) {
         Page<AuditRecordEntity> result =
-                auditRecordRepository.findBySourceServiceAndActiveTrue(sourceService, pageable(page, size));
+                auditRecordRepository.findBySourceServiceAndActiveTrue(
+                        sourceService, pageable(page, size));
         return toPageResponse(result);
     }
 
@@ -155,13 +167,14 @@ public class AuditServiceImpl implements AuditService {
     public AuditPageResponse searchAudits(AuditSearchRequest request) {
         int page = Math.max(request.getPage(), 0);
         int size = normalizePageSize(request.getSize());
-        Page<AuditRecordEntity> result = auditRecordRepository.searchAudits(
-                request.getOperation(),
-                request.getSourceService(),
-                request.getActor(),
-                request.getFromDate(),
-                request.getToDate(),
-                pageable(page, size));
+        Page<AuditRecordEntity> result =
+                auditRecordRepository.searchAudits(
+                        request.getOperation(),
+                        request.getSourceService(),
+                        request.getActor(),
+                        request.getFromDate(),
+                        request.getToDate(),
+                        pageable(page, size));
         return toPageResponse(result);
     }
 
@@ -174,7 +187,11 @@ public class AuditServiceImpl implements AuditService {
         record.setStatus(AuditStatus.ARCHIVED);
         AuditRecordEntity saved = auditRecordRepository.save(record);
 
-        saveOutboxEvent(saved, "AUDIT_ARCHIVED", AuditKafkaTopics.AUDIT_ARCHIVED, buildArchivedPayload(saved));
+        saveOutboxEvent(
+                saved,
+                "AUDIT_ARCHIVED",
+                AuditKafkaTopics.AUDIT_ARCHIVED,
+                buildArchivedPayload(saved));
         cachePort.evictAudit(auditId);
         refreshTimelineCache(saved.getCorrelationId());
         log.info("Audit archived id={} eventKey={}", auditId, saved.getEventKey());
@@ -205,19 +222,25 @@ public class AuditServiceImpl implements AuditService {
             String eventKey = AuditEventKeyGenerator.generate(sourceService, requestId, operation);
 
             if (auditRecordRepository.findByEventKey(eventKey).isPresent()) {
-                log.debug("Audit already exists for eventKey={}, skipping {}", eventKey, eventSource);
+                log.debug(
+                        "Audit already exists for eventKey={}, skipping {}", eventKey, eventSource);
                 markEventLogProcessed(eventLog, null);
                 return;
             }
 
-            CreateAuditRequest request = buildCreateRequestFromKafka(root, sourceService, requestId, operation);
+            CreateAuditRequest request =
+                    buildCreateRequestFromKafka(root, sourceService, requestId, operation);
             AuditRecordEntity record = buildAuditRecord(request, eventKey);
             record.setStatus(AuditStatus.RECORDED);
             record.setActive(true);
 
             AuditRecordEntity saved = auditRecordRepository.save(record);
             appendTimelineEntry(saved);
-            saveOutboxEvent(saved, "AUDIT_INDEXED", AuditKafkaTopics.AUDIT_INDEXED, buildIndexedPayload(saved));
+            saveOutboxEvent(
+                    saved,
+                    "AUDIT_INDEXED",
+                    AuditKafkaTopics.AUDIT_INDEXED,
+                    buildIndexedPayload(saved));
 
             saved.setStatus(AuditStatus.INDEXED);
             saved = auditRecordRepository.save(saved);
@@ -242,7 +265,8 @@ public class AuditServiceImpl implements AuditService {
         } catch (Exception ex) {
             markEventLogFailed(eventLog, ex.getMessage());
             log.error("Failed to process kafka event {}", eventSource, ex);
-            throw new MarketplaceException(ErrorCode.INTERNAL_ERROR, "Failed to process kafka event: " + eventSource);
+            throw new MarketplaceException(
+                    ErrorCode.INTERNAL_ERROR, "Failed to process kafka event: " + eventSource);
         }
     }
 
@@ -250,7 +274,8 @@ public class AuditServiceImpl implements AuditService {
         List<AuditTimelineEntity> timelineEntries =
                 auditTimelineRepository.findByCorrelationIdOrderBySequenceNumberAsc(correlationId);
         if (timelineEntries.isEmpty()) {
-            throw new ResourceNotFoundException("Audit timeline not found for correlationId " + correlationId);
+            throw new ResourceNotFoundException(
+                    "Audit timeline not found for correlationId " + correlationId);
         }
 
         List<AuditResponse> entries = new ArrayList<>();
@@ -260,11 +285,12 @@ public class AuditServiceImpl implements AuditService {
                     .ifPresent(record -> entries.add(auditMapper.toResponse(record)));
         }
 
-        AuditTimelineResponse timeline = AuditTimelineResponse.builder()
-                .correlationId(correlationId)
-                .entries(entries)
-                .totalEntries(entries.size())
-                .build();
+        AuditTimelineResponse timeline =
+                AuditTimelineResponse.builder()
+                        .correlationId(correlationId)
+                        .entries(entries)
+                        .totalEntries(entries.size())
+                        .build();
         cachePort.cacheTimeline(timeline);
         return timeline;
     }
@@ -385,11 +411,13 @@ public class AuditServiceImpl implements AuditService {
 
     private Map<String, Object> extractStateMap(JsonNode root) {
         Map<String, Object> state = new HashMap<>();
-        root.fields().forEachRemaining(entry -> {
-            if (entry.getValue() != null && entry.getValue().isValueNode()) {
-                state.put(entry.getKey(), entry.getValue().asText());
-            }
-        });
+        root.fields()
+                .forEachRemaining(
+                        entry -> {
+                            if (entry.getValue() != null && entry.getValue().isValueNode()) {
+                                state.put(entry.getKey(), entry.getValue().asText());
+                            }
+                        });
         return state;
     }
 
@@ -410,7 +438,9 @@ public class AuditServiceImpl implements AuditService {
         if (!StringUtils.hasText(record.getCorrelationId())) {
             return;
         }
-        Long maxSequence = auditTimelineRepository.findMaxSequenceNumberByCorrelationId(record.getCorrelationId());
+        Long maxSequence =
+                auditTimelineRepository.findMaxSequenceNumberByCorrelationId(
+                        record.getCorrelationId());
         AuditTimelineEntity timeline = new AuditTimelineEntity();
         timeline.setCorrelationId(record.getCorrelationId());
         timeline.setAuditRecordId(record.getId());
@@ -442,9 +472,12 @@ public class AuditServiceImpl implements AuditService {
         payload.put("correlationId", record.getCorrelationId());
         payload.put("sourceService", record.getSourceService());
         payload.put("aggregateType", record.getAggregateType());
-        payload.put("aggregateId", record.getAggregateId() != null ? record.getAggregateId().toString() : null);
+        payload.put(
+                "aggregateId",
+                record.getAggregateId() != null ? record.getAggregateId().toString() : null);
         payload.put("entityType", record.getEntityType());
-        payload.put("entityId", record.getEntityId() != null ? record.getEntityId().toString() : null);
+        payload.put(
+                "entityId", record.getEntityId() != null ? record.getEntityId().toString() : null);
         payload.put("operation", record.getOperation().name());
         payload.put("actor", record.getActor());
         payload.put("status", record.getStatus().name());
@@ -464,7 +497,8 @@ public class AuditServiceImpl implements AuditService {
     }
 
     private AuditPageResponse toPageResponse(Page<AuditRecordEntity> result) {
-        List<AuditResponse> content = result.getContent().stream().map(auditMapper::toResponse).toList();
+        List<AuditResponse> content =
+                result.getContent().stream().map(auditMapper::toResponse).toList();
         return AuditPageResponse.builder()
                 .content(content)
                 .page(result.getNumber())
@@ -475,7 +509,8 @@ public class AuditServiceImpl implements AuditService {
     }
 
     private PageRequest pageable(int page, int size) {
-        return PageRequest.of(page, normalizePageSize(size), Sort.by(Sort.Direction.DESC, "createdAt"));
+        return PageRequest.of(
+                page, normalizePageSize(size), Sort.by(Sort.Direction.DESC, "createdAt"));
     }
 
     private int normalizePageSize(int size) {
@@ -504,7 +539,9 @@ public class AuditServiceImpl implements AuditService {
             return explicit;
         }
         String fromContext = RequestContext.getCorrelationId();
-        return StringUtils.hasText(fromContext) ? fromContext : RequestContext.generateCorrelationId();
+        return StringUtils.hasText(fromContext)
+                ? fromContext
+                : RequestContext.generateCorrelationId();
     }
 
     private String resolveActor(String explicit) {
@@ -523,9 +560,10 @@ public class AuditServiceImpl implements AuditService {
             throw new MarketplaceException(ErrorCode.FORBIDDEN, "Archive requires ADMIN role");
         }
         String adminAuthority = MarketplaceRoles.ROLE_PREFIX + MarketplaceRoles.ADMIN;
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .anyMatch(adminAuthority::equals);
+        boolean isAdmin =
+                authentication.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .anyMatch(adminAuthority::equals);
         if (!isAdmin) {
             throw new MarketplaceException(ErrorCode.FORBIDDEN, "Archive requires ADMIN role");
         }
@@ -560,7 +598,8 @@ public class AuditServiceImpl implements AuditService {
         try {
             return objectMapper.writeValueAsString(payload);
         } catch (Exception ex) {
-            throw new MarketplaceException(ErrorCode.INTERNAL_ERROR, "Failed to serialize outbox payload");
+            throw new MarketplaceException(
+                    ErrorCode.INTERNAL_ERROR, "Failed to serialize outbox payload");
         }
     }
 

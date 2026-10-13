@@ -1,120 +1,64 @@
 package com.enterprise.marketplace.reportservice.service.impl;
 
-
-
-import com.enterprise.marketplace.common.constant.MarketplaceRoles;
-
-import com.enterprise.marketplace.common.context.RequestContext;
-
-import com.enterprise.marketplace.common.exception.ErrorCode;
-
-import com.enterprise.marketplace.common.exception.MarketplaceException;
-
-import com.enterprise.marketplace.common.exception.ResourceNotFoundException;
-
-import com.enterprise.marketplace.reportservice.audit.ReportAuditService;
-
-import com.enterprise.marketplace.reportservice.config.ReportProperties;
-
-import com.enterprise.marketplace.reportservice.constants.ReportKafkaTopics;
-
-import com.enterprise.marketplace.reportservice.dto.CreateReportJobRequest;
-
-import com.enterprise.marketplace.reportservice.dto.ReportDefinitionResponse;
-
-import com.enterprise.marketplace.reportservice.dto.ReportJobPageResponse;
-
-import com.enterprise.marketplace.reportservice.dto.ReportJobResponse;
-
-import com.enterprise.marketplace.reportservice.dto.ReportJobSearchRequest;
-
-import com.enterprise.marketplace.reportservice.dto.ReportResultResponse;
-
-import com.enterprise.marketplace.reportservice.engine.ReportDataGenerator;
-
-import com.enterprise.marketplace.reportservice.engine.ReportEventBuffer;
-
-import com.enterprise.marketplace.reportservice.entity.OutboxEventEntity;
-
-import com.enterprise.marketplace.reportservice.entity.ReportDefinitionEntity;
-
-import com.enterprise.marketplace.reportservice.entity.ReportJobEntity;
-
-import com.enterprise.marketplace.reportservice.entity.ReportResultEntity;
-
-import com.enterprise.marketplace.reportservice.enums.OutboxEventStatus;
-
-import com.enterprise.marketplace.reportservice.enums.ReportAuditOperation;
-
-import com.enterprise.marketplace.reportservice.enums.ReportJobStatus;
-
-import com.enterprise.marketplace.reportservice.mapper.ReportMapper;
-
-import com.enterprise.marketplace.reportservice.redis.ReportCachePort;
-
-import com.enterprise.marketplace.reportservice.repository.OutboxEventRepository;
-
-import com.enterprise.marketplace.reportservice.repository.ReportDefinitionRepository;
-
-import com.enterprise.marketplace.reportservice.repository.ReportJobRepository;
-
-import com.enterprise.marketplace.reportservice.repository.ReportResultRepository;
-
-import com.enterprise.marketplace.reportservice.service.ReportService;
-
-import com.enterprise.marketplace.reportservice.validation.ReportRequestValidator;
-
-import com.fasterxml.jackson.databind.JsonNode;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.time.Instant;
-
 import java.util.HashMap;
-
 import java.util.List;
-
 import java.util.Map;
-
 import java.util.UUID;
 
-import lombok.RequiredArgsConstructor;
-
-import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Value;
-
 import org.springframework.data.domain.Page;
-
 import org.springframework.data.domain.PageRequest;
-
 import org.springframework.data.domain.Sort;
-
 import org.springframework.security.core.Authentication;
-
 import org.springframework.security.core.GrantedAuthority;
-
 import org.springframework.security.core.context.SecurityContextHolder;
-
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
-
 import org.springframework.util.StringUtils;
 
+import com.enterprise.marketplace.common.constant.MarketplaceRoles;
+import com.enterprise.marketplace.common.context.RequestContext;
+import com.enterprise.marketplace.common.exception.ErrorCode;
+import com.enterprise.marketplace.common.exception.MarketplaceException;
+import com.enterprise.marketplace.common.exception.ResourceNotFoundException;
+import com.enterprise.marketplace.reportservice.audit.ReportAuditService;
+import com.enterprise.marketplace.reportservice.config.ReportProperties;
+import com.enterprise.marketplace.reportservice.constants.ReportKafkaTopics;
+import com.enterprise.marketplace.reportservice.dto.CreateReportJobRequest;
+import com.enterprise.marketplace.reportservice.dto.ReportDefinitionResponse;
+import com.enterprise.marketplace.reportservice.dto.ReportJobPageResponse;
+import com.enterprise.marketplace.reportservice.dto.ReportJobResponse;
+import com.enterprise.marketplace.reportservice.dto.ReportJobSearchRequest;
+import com.enterprise.marketplace.reportservice.dto.ReportResultResponse;
+import com.enterprise.marketplace.reportservice.engine.ReportDataGenerator;
+import com.enterprise.marketplace.reportservice.engine.ReportEventBuffer;
+import com.enterprise.marketplace.reportservice.entity.OutboxEventEntity;
+import com.enterprise.marketplace.reportservice.entity.ReportDefinitionEntity;
+import com.enterprise.marketplace.reportservice.entity.ReportJobEntity;
+import com.enterprise.marketplace.reportservice.entity.ReportResultEntity;
+import com.enterprise.marketplace.reportservice.enums.OutboxEventStatus;
+import com.enterprise.marketplace.reportservice.enums.ReportAuditOperation;
+import com.enterprise.marketplace.reportservice.enums.ReportJobStatus;
+import com.enterprise.marketplace.reportservice.mapper.ReportMapper;
+import com.enterprise.marketplace.reportservice.redis.ReportCachePort;
+import com.enterprise.marketplace.reportservice.repository.OutboxEventRepository;
+import com.enterprise.marketplace.reportservice.repository.ReportDefinitionRepository;
+import com.enterprise.marketplace.reportservice.repository.ReportJobRepository;
+import com.enterprise.marketplace.reportservice.repository.ReportResultRepository;
+import com.enterprise.marketplace.reportservice.service.ReportService;
+import com.enterprise.marketplace.reportservice.validation.ReportRequestValidator;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-
 @Service
-
 @RequiredArgsConstructor
-
 @Transactional(readOnly = true)
-
 public class ReportServiceImpl implements ReportService {
-
-
 
     private final ReportJobRepository jobRepository;
 
@@ -140,31 +84,19 @@ public class ReportServiceImpl implements ReportService {
 
     private final ObjectMapper objectMapper;
 
-
-
     @Value("${marketplace.outbox.max-retries:5}")
-
     private int outboxMaxRetries;
 
-
-
     @Value("${marketplace.security.enabled:true}")
-
     private boolean securityEnabled;
 
-
-
     @Override
-
     @Transactional
-
     public ReportJobResponse createJob(CreateReportJobRequest request) {
 
         ReportDefinitionEntity definition = requestValidator.validateCreateJobRequest(request);
 
         applyRequestContext(request);
-
-
 
         ReportJobEntity job = new ReportJobEntity();
 
@@ -180,27 +112,16 @@ public class ReportServiceImpl implements ReportService {
 
         job.setActive(true);
 
-
-
         ReportJobEntity saved = jobRepository.save(job);
 
         reportAuditService.recordAudit(
-
                 saved,
-
                 ReportAuditOperation.CREATE,
-
                 null,
-
                 ReportJobStatus.PENDING,
-
                 null,
-
                 Map.of("reportCode", saved.getReportCode()),
-
                 saved.getRequestedBy());
-
-
 
         ReportJobResponse response = reportMapper.toJobResponse(saved);
 
@@ -208,54 +129,50 @@ public class ReportServiceImpl implements ReportService {
 
         cachePort.evictDefinitions();
 
-        log.info("Report job created id={} requestId={} reportCode={}", saved.getId(), saved.getRequestId(), saved.getReportCode());
+        log.info(
+                "Report job created id={} requestId={} reportCode={}",
+                saved.getId(),
+                saved.getRequestId(),
+                saved.getReportCode());
 
         return response;
-
     }
 
-
-
     @Override
-
     public ReportJobResponse getJob(UUID jobId) {
 
-        return cachePort.getJob(jobId).orElseGet(() -> {
+        return cachePort
+                .getJob(jobId)
+                .orElseGet(
+                        () -> {
+                            ReportJobEntity job = findActiveJob(jobId);
 
-            ReportJobEntity job = findActiveJob(jobId);
+                            ReportJobResponse response = reportMapper.toJobResponse(job);
 
-            ReportJobResponse response = reportMapper.toJobResponse(job);
+                            cachePort.cacheJob(response);
 
-            cachePort.cacheJob(response);
-
-            return response;
-
-        });
-
+                            return response;
+                        });
     }
 
-
-
     @Override
-
     public ReportJobPageResponse listJobs(ReportJobSearchRequest request) {
 
         int page = Math.max(request.getPage(), 0);
 
         int size = normalizePageSize(request.getSize());
 
-        Page<ReportJobEntity> result = jobRepository.searchJobs(
-
-                request.getReportCode(), request.getStatus(), request.getRequestedBy(), pageable(page, size));
+        Page<ReportJobEntity> result =
+                jobRepository.searchJobs(
+                        request.getReportCode(),
+                        request.getStatus(),
+                        request.getRequestedBy(),
+                        pageable(page, size));
 
         return toPageResponse(result);
-
     }
 
-
-
     @Override
-
     public ReportResultResponse getJobResult(UUID jobId) {
 
         ReportJobEntity job = findActiveJob(jobId);
@@ -263,37 +180,33 @@ public class ReportServiceImpl implements ReportService {
         if (job.getStatus() != ReportJobStatus.COMPLETED) {
 
             throw new MarketplaceException(
-
                     ErrorCode.VALIDATION_ERROR,
-
                     "Report result is not available for job in status " + job.getStatus());
-
         }
 
-        return cachePort.getResult(jobId).orElseGet(() -> {
+        return cachePort
+                .getResult(jobId)
+                .orElseGet(
+                        () -> {
+                            ReportResultEntity result =
+                                    resultRepository
+                                            .findByJobId(jobId)
+                                            .orElseThrow(
+                                                    () ->
+                                                            new ResourceNotFoundException(
+                                                                    "Report result not found for job "
+                                                                            + jobId));
 
-            ReportResultEntity result = resultRepository
+                            ReportResultResponse response = reportMapper.toResultResponse(result);
 
-                    .findByJobId(jobId)
+                            cachePort.cacheResult(response);
 
-                    .orElseThrow(() -> new ResourceNotFoundException("Report result not found for job " + jobId));
-
-            ReportResultResponse response = reportMapper.toResultResponse(result);
-
-            cachePort.cacheResult(response);
-
-            return response;
-
-        });
-
+                            return response;
+                        });
     }
 
-
-
     @Override
-
     @Transactional
-
     public void cancelJob(UUID jobId) {
 
         ensureAdminRole();
@@ -302,17 +215,14 @@ public class ReportServiceImpl implements ReportService {
 
         if (job.getStatus() == ReportJobStatus.PROCESSING) {
 
-            throw new MarketplaceException(ErrorCode.CONFLICT, "Cannot cancel job while processing");
-
+            throw new MarketplaceException(
+                    ErrorCode.CONFLICT, "Cannot cancel job while processing");
         }
 
         if (job.getStatus() == ReportJobStatus.CANCELLED) {
 
             return;
-
         }
-
-
 
         ReportJobStatus previousStatus = job.getStatus();
 
@@ -324,88 +234,71 @@ public class ReportServiceImpl implements ReportService {
 
         ReportJobEntity saved = jobRepository.save(job);
 
-
-
         reportAuditService.recordAudit(
-
                 saved,
-
                 ReportAuditOperation.CANCEL,
-
                 previousStatus,
-
                 ReportJobStatus.CANCELLED,
-
                 null,
-
                 null,
-
                 resolveActor(null));
-
-
 
         cachePort.evictJob(jobId);
 
         cachePort.evictResult(jobId);
 
         log.info("Report job cancelled id={} requestId={}", jobId, saved.getRequestId());
-
     }
 
-
-
     @Override
-
     public List<ReportDefinitionResponse> listDefinitions() {
 
-        return cachePort.getAllDefinitions().orElseGet(() -> {
+        return cachePort
+                .getAllDefinitions()
+                .orElseGet(
+                        () -> {
+                            List<ReportDefinitionResponse> definitions =
+                                    definitionRepository
+                                            .findByActiveTrueOrderByReportCodeAsc()
+                                            .stream()
+                                            .map(reportMapper::toDefinitionResponse)
+                                            .toList();
 
-            List<ReportDefinitionResponse> definitions = definitionRepository.findByActiveTrueOrderByReportCodeAsc().stream()
+                            cachePort.cacheDefinitions(definitions);
 
-                    .map(reportMapper::toDefinitionResponse)
+                            definitions.forEach(cachePort::cacheDefinition);
 
-                    .toList();
-
-            cachePort.cacheDefinitions(definitions);
-
-            definitions.forEach(cachePort::cacheDefinition);
-
-            return definitions;
-
-        });
-
+                            return definitions;
+                        });
     }
 
-
-
     @Override
-
     public ReportDefinitionResponse getDefinition(String reportCode) {
 
-        return cachePort.getDefinition(reportCode).orElseGet(() -> {
+        return cachePort
+                .getDefinition(reportCode)
+                .orElseGet(
+                        () -> {
+                            ReportDefinitionEntity definition =
+                                    definitionRepository
+                                            .findByReportCodeAndActiveTrue(reportCode)
+                                            .orElseThrow(
+                                                    () ->
+                                                            new ResourceNotFoundException(
+                                                                    "Report definition not found: "
+                                                                            + reportCode));
 
-            ReportDefinitionEntity definition = definitionRepository
+                            ReportDefinitionResponse response =
+                                    reportMapper.toDefinitionResponse(definition);
 
-                    .findByReportCodeAndActiveTrue(reportCode)
+                            cachePort.cacheDefinition(response);
 
-                    .orElseThrow(() -> new ResourceNotFoundException("Report definition not found: " + reportCode));
-
-            ReportDefinitionResponse response = reportMapper.toDefinitionResponse(definition);
-
-            cachePort.cacheDefinition(response);
-
-            return response;
-
-        });
-
+                            return response;
+                        });
     }
 
-
-
     @Override
-
     @Transactional
-
     public void processExternalEvent(String payload, String eventSource) {
 
         try {
@@ -414,25 +307,14 @@ public class ReportServiceImpl implements ReportService {
 
             Map<String, Object> eventMap = objectMapper.convertValue(root, Map.class);
 
-
-
             reportAuditService.recordAudit(
-
                     null,
-
                     ReportAuditOperation.EVENT_RECEIVED,
-
                     null,
-
                     null,
-
                     null,
-
                     eventMap,
-
                     resolveKafkaActor(root));
-
-
 
             if ("workflow-completed".equals(eventSource)) {
 
@@ -441,7 +323,6 @@ public class ReportServiceImpl implements ReportService {
                 if (reportProperties.isAutoTriggerOnEvents()) {
 
                     maybeAutoCreateJob("WORKFLOW_STATUS", root, eventMap);
-
                 }
 
             } else if ("product-created".equals(eventSource)) {
@@ -451,64 +332,56 @@ public class ReportServiceImpl implements ReportService {
                 if (reportProperties.isAutoTriggerOnEvents()) {
 
                     maybeAutoCreateJob("INVENTORY_SNAPSHOT", root, eventMap);
-
                 }
-
             }
 
-
-
-            log.info("Processed external event source={} requestId={}", eventSource, extractText(root, "requestId"));
+            log.info(
+                    "Processed external event source={} requestId={}",
+                    eventSource,
+                    extractText(root, "requestId"));
 
         } catch (Exception ex) {
 
             log.error("Failed to process external event {}", eventSource, ex);
 
-            throw new MarketplaceException(ErrorCode.INTERNAL_ERROR, "Failed to process external event: " + eventSource);
-
+            throw new MarketplaceException(
+                    ErrorCode.INTERNAL_ERROR, "Failed to process external event: " + eventSource);
         }
-
     }
 
-
-
     @Override
-
     @Transactional
-
     public void processPendingJob(UUID jobId) {
 
-        ReportJobEntity job = jobRepository.findById(jobId).orElseThrow(() -> new ResourceNotFoundException("Report job not found: " + jobId));
+        ReportJobEntity job =
+                jobRepository
+                        .findById(jobId)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "Report job not found: " + jobId));
 
         if (job.getStatus() != ReportJobStatus.PENDING || !Boolean.TRUE.equals(job.getActive())) {
 
             return;
-
         }
 
         executeJob(job);
-
     }
-
-
 
     @Override
     @Transactional
     public void processNextPendingJobs() {
 
         List<ReportJobEntity> pendingJobs =
-
-                jobRepository.findTop20ByStatusAndActiveTrueOrderByCreatedAtAsc(ReportJobStatus.PENDING);
+                jobRepository.findTop20ByStatusAndActiveTrueOrderByCreatedAtAsc(
+                        ReportJobStatus.PENDING);
 
         for (ReportJobEntity job : pendingJobs) {
 
             executeJob(job);
-
         }
-
     }
-
-
 
     private void executeJob(ReportJobEntity job) {
 
@@ -520,41 +393,31 @@ public class ReportServiceImpl implements ReportService {
 
         jobRepository.save(job);
 
-
-
         reportAuditService.recordAudit(
-
                 job,
-
                 ReportAuditOperation.GENERATE,
-
                 previousStatus,
-
                 ReportJobStatus.PROCESSING,
-
                 null,
-
                 null,
-
                 "report-engine");
-
-
 
         try {
 
-            ReportDefinitionEntity definition = definitionRepository
+            ReportDefinitionEntity definition =
+                    definitionRepository
+                            .findByReportCodeAndActiveTrue(job.getReportCode())
+                            .orElseThrow(
+                                    () ->
+                                            new ResourceNotFoundException(
+                                                    "Report definition not found: "
+                                                            + job.getReportCode()));
 
-                    .findByReportCodeAndActiveTrue(job.getReportCode())
+            Map<String, Object> parameters =
+                    reportDataGenerator.parseParameters(job.getParameters());
 
-                    .orElseThrow(() -> new ResourceNotFoundException("Report definition not found: " + job.getReportCode()));
-
-
-
-            Map<String, Object> parameters = reportDataGenerator.parseParameters(job.getParameters());
-
-            ReportDataGenerator.GeneratedReportData generated = reportDataGenerator.generate(definition, parameters);
-
-
+            ReportDataGenerator.GeneratedReportData generated =
+                    reportDataGenerator.generate(definition, parameters);
 
             ReportResultEntity result = new ReportResultEntity();
 
@@ -568,8 +431,6 @@ public class ReportServiceImpl implements ReportService {
 
             resultRepository.save(result);
 
-
-
             job.setStatus(ReportJobStatus.COMPLETED);
 
             job.setCompletedAt(Instant.now());
@@ -578,49 +439,42 @@ public class ReportServiceImpl implements ReportService {
 
             jobRepository.save(job);
 
-
-
             reportAuditService.recordAudit(
-
                     job,
-
                     ReportAuditOperation.STATUS_CHANGE,
-
                     ReportJobStatus.PROCESSING,
-
                     ReportJobStatus.COMPLETED,
-
                     null,
-
                     Map.of("rowCount", generated.rowCount()),
-
                     "report-engine");
 
+            saveOutboxEvent(
+                    job,
+                    "REPORT_GENERATED",
+                    ReportKafkaTopics.REPORT_GENERATED,
+                    buildGeneratedPayload(job, result));
 
-
-            saveOutboxEvent(job, "REPORT_GENERATED", ReportKafkaTopics.REPORT_GENERATED, buildGeneratedPayload(job, result));
-
-            saveOutboxEvent(job, "AUDIT_CREATED", ReportKafkaTopics.AUDIT_CREATED, buildAuditPayload(job, "GENERATE"));
-
-
+            saveOutboxEvent(
+                    job,
+                    "AUDIT_CREATED",
+                    ReportKafkaTopics.AUDIT_CREATED,
+                    buildAuditPayload(job, "GENERATE"));
 
             cachePort.cacheJob(reportMapper.toJobResponse(job));
 
             cachePort.cacheResult(reportMapper.toResultResponse(result));
 
-
-
-            log.info("Report job completed id={} reportCode={} rowCount={}", job.getId(), job.getReportCode(), generated.rowCount());
+            log.info(
+                    "Report job completed id={} reportCode={} rowCount={}",
+                    job.getId(),
+                    job.getReportCode(),
+                    generated.rowCount());
 
         } catch (Exception ex) {
 
             failJob(job, ex.getMessage());
-
         }
-
     }
-
-
 
     private void failJob(ReportJobEntity job, String errorMessage) {
 
@@ -632,43 +486,37 @@ public class ReportServiceImpl implements ReportService {
 
         jobRepository.save(job);
 
-
-
         reportAuditService.recordAudit(
-
                 job,
-
                 ReportAuditOperation.STATUS_CHANGE,
-
                 ReportJobStatus.PROCESSING,
-
                 ReportJobStatus.FAILED,
-
                 null,
-
                 Map.of("error", job.getErrorMessage()),
-
                 "report-engine");
 
+        saveOutboxEvent(
+                job, "REPORT_FAILED", ReportKafkaTopics.REPORT_FAILED, buildFailedPayload(job));
 
-
-        saveOutboxEvent(job, "REPORT_FAILED", ReportKafkaTopics.REPORT_FAILED, buildFailedPayload(job));
-
-        saveOutboxEvent(job, "AUDIT_CREATED", ReportKafkaTopics.AUDIT_CREATED, buildAuditPayload(job, "GENERATE"));
-
-
+        saveOutboxEvent(
+                job,
+                "AUDIT_CREATED",
+                ReportKafkaTopics.AUDIT_CREATED,
+                buildAuditPayload(job, "GENERATE"));
 
         cachePort.cacheJob(reportMapper.toJobResponse(job));
 
         cachePort.evictResult(job.getId());
 
-        log.error("Report job failed id={} reportCode={} error={}", job.getId(), job.getReportCode(), job.getErrorMessage());
-
+        log.error(
+                "Report job failed id={} reportCode={} error={}",
+                job.getId(),
+                job.getReportCode(),
+                job.getErrorMessage());
     }
 
-
-
-    private void maybeAutoCreateJob(String reportCode, JsonNode root, Map<String, Object> eventMap) {
+    private void maybeAutoCreateJob(
+            String reportCode, JsonNode root, Map<String, Object> eventMap) {
 
         String requestId = extractText(root, "requestId");
 
@@ -679,42 +527,26 @@ public class ReportServiceImpl implements ReportService {
         } else {
 
             requestId = "auto-" + reportCode.toLowerCase() + "-" + requestId;
-
         }
-
-
 
         if (jobRepository.findByRequestIdAndActiveTrue(requestId).isPresent()) {
 
             return;
-
         }
-
-
 
         if (definitionRepository.findByReportCodeAndActiveTrue(reportCode).isEmpty()) {
 
             return;
-
         }
 
-
-
-        CreateReportJobRequest autoRequest = CreateReportJobRequest.builder()
-
-                .requestId(requestId)
-
-                .reportCode(reportCode)
-
-                .requestedBy("event-trigger")
-
-                .correlationId(extractText(root, "correlationId"))
-
-                .parameters(buildAutoParameters(reportCode, eventMap))
-
-                .build();
-
-
+        CreateReportJobRequest autoRequest =
+                CreateReportJobRequest.builder()
+                        .requestId(requestId)
+                        .reportCode(reportCode)
+                        .requestedBy("event-trigger")
+                        .correlationId(extractText(root, "correlationId"))
+                        .parameters(buildAutoParameters(reportCode, eventMap))
+                        .build();
 
         try {
 
@@ -726,17 +558,16 @@ public class ReportServiceImpl implements ReportService {
 
             if (ex.getErrorCode() != ErrorCode.CONFLICT) {
 
-                log.warn("Failed to auto-create report job reportCode={}: {}", reportCode, ex.getMessage());
-
+                log.warn(
+                        "Failed to auto-create report job reportCode={}: {}",
+                        reportCode,
+                        ex.getMessage());
             }
-
         }
-
     }
 
-
-
-    private Map<String, Object> buildAutoParameters(String reportCode, Map<String, Object> eventMap) {
+    private Map<String, Object> buildAutoParameters(
+            String reportCode, Map<String, Object> eventMap) {
 
         Map<String, Object> parameters = new HashMap<>();
 
@@ -747,22 +578,18 @@ public class ReportServiceImpl implements ReportService {
             if (eventMap.containsKey("aggregateType")) {
 
                 parameters.put("aggregateType", eventMap.get("aggregateType"));
-
             }
 
         } else if ("INVENTORY_SNAPSHOT".equals(reportCode)) {
 
             parameters.put("snapshotDate", Instant.now().toString().substring(0, 10));
-
         }
 
         return parameters;
-
     }
 
-
-
-    private void saveOutboxEvent(ReportJobEntity job, String eventType, String topic, Map<String, Object> payload) {
+    private void saveOutboxEvent(
+            ReportJobEntity job, String eventType, String topic, Map<String, Object> payload) {
 
         OutboxEventEntity event = new OutboxEventEntity();
 
@@ -787,12 +614,10 @@ public class ReportServiceImpl implements ReportService {
         event.setRequestId(job.getRequestId());
 
         outboxEventRepository.save(event);
-
     }
 
-
-
-    private Map<String, Object> buildGeneratedPayload(ReportJobEntity job, ReportResultEntity result) {
+    private Map<String, Object> buildGeneratedPayload(
+            ReportJobEntity job, ReportResultEntity result) {
 
         Map<String, Object> payload = new HashMap<>();
 
@@ -810,13 +635,12 @@ public class ReportServiceImpl implements ReportService {
 
         payload.put("fileUrl", result.getFileUrl());
 
-        payload.put("completedAt", job.getCompletedAt() != null ? job.getCompletedAt().toString() : null);
+        payload.put(
+                "completedAt",
+                job.getCompletedAt() != null ? job.getCompletedAt().toString() : null);
 
         return payload;
-
     }
-
-
 
     private Map<String, Object> buildFailedPayload(ReportJobEntity job) {
 
@@ -834,13 +658,12 @@ public class ReportServiceImpl implements ReportService {
 
         payload.put("errorMessage", job.getErrorMessage());
 
-        payload.put("completedAt", job.getCompletedAt() != null ? job.getCompletedAt().toString() : null);
+        payload.put(
+                "completedAt",
+                job.getCompletedAt() != null ? job.getCompletedAt().toString() : null);
 
         return payload;
-
     }
-
-
 
     private Map<String, Object> buildAuditPayload(ReportJobEntity job, String operation) {
 
@@ -866,111 +689,77 @@ public class ReportServiceImpl implements ReportService {
 
         payload.put("actor", job.getRequestedBy());
 
-        payload.put("afterState", Map.of("reportCode", job.getReportCode(), "status", job.getStatus().name()));
+        payload.put(
+                "afterState",
+                Map.of("reportCode", job.getReportCode(), "status", job.getStatus().name()));
 
         return payload;
-
     }
-
-
 
     private String buildFileUrl(ReportJobEntity job) {
 
         return "/api/v1/reports/jobs/" + job.getId() + "/result";
-
     }
-
-
 
     private ReportJobEntity findActiveJob(UUID jobId) {
 
         return jobRepository
-
                 .findByIdAndActiveTrue(jobId)
-
                 .orElseThrow(() -> new ResourceNotFoundException("Report job not found: " + jobId));
-
     }
-
-
 
     private ReportJobPageResponse toPageResponse(Page<ReportJobEntity> result) {
 
-        List<ReportJobResponse> content = result.getContent().stream().map(reportMapper::toJobResponse).toList();
+        List<ReportJobResponse> content =
+                result.getContent().stream().map(reportMapper::toJobResponse).toList();
 
         return ReportJobPageResponse.builder()
-
                 .content(content)
-
                 .page(result.getNumber())
-
                 .size(result.getSize())
-
                 .totalElements(result.getTotalElements())
-
                 .totalPages(result.getTotalPages())
-
                 .build();
-
     }
-
-
 
     private PageRequest pageable(int page, int size) {
 
-        return PageRequest.of(page, normalizePageSize(size), Sort.by(Sort.Direction.DESC, "createdAt"));
-
+        return PageRequest.of(
+                page, normalizePageSize(size), Sort.by(Sort.Direction.DESC, "createdAt"));
     }
-
-
 
     private int normalizePageSize(int size) {
 
         if (size <= 0) {
 
             return reportProperties.getDefaultPageSize();
-
         }
 
         return Math.min(size, reportProperties.getMaxPageSize());
-
     }
-
-
 
     private void applyRequestContext(CreateReportJobRequest request) {
 
         if (StringUtils.hasText(request.getCorrelationId())) {
 
             RequestContext.setCorrelationId(request.getCorrelationId());
-
         }
-
     }
-
-
 
     private String resolveRequestedBy(String explicit) {
 
         return resolveActor(explicit);
-
     }
-
-
 
     private String resolveActor(String explicit) {
 
         if (StringUtils.hasText(explicit)) {
 
             return explicit;
-
         }
 
         return RequestContext.getUserId().orElse("system");
-
     }
-
-
 
     private String resolveKafkaActor(JsonNode root) {
 
@@ -979,7 +768,6 @@ public class ReportServiceImpl implements ReportService {
         if (StringUtils.hasText(actor)) {
 
             return actor;
-
         }
 
         actor = extractText(root, "initiatedBy");
@@ -987,21 +775,16 @@ public class ReportServiceImpl implements ReportService {
         if (StringUtils.hasText(actor)) {
 
             return actor;
-
         }
 
         return "kafka";
-
     }
-
-
 
     private void ensureAdminRole() {
 
         if (!securityEnabled) {
 
             return;
-
         }
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -1009,33 +792,26 @@ public class ReportServiceImpl implements ReportService {
         if (authentication == null) {
 
             throw new MarketplaceException(ErrorCode.FORBIDDEN, "Cancel requires ADMIN role");
-
         }
 
         String adminAuthority = MarketplaceRoles.ROLE_PREFIX + MarketplaceRoles.ADMIN;
 
-        boolean isAdmin = authentication.getAuthorities().stream()
-
-                .map(GrantedAuthority::getAuthority)
-
-                .anyMatch(adminAuthority::equals);
+        boolean isAdmin =
+                authentication.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .anyMatch(adminAuthority::equals);
 
         if (!isAdmin) {
 
             throw new MarketplaceException(ErrorCode.FORBIDDEN, "Cancel requires ADMIN role");
-
         }
-
     }
-
-
 
     private String serializeJson(Map<String, Object> value) {
 
         if (value == null || value.isEmpty()) {
 
             return null;
-
         }
 
         try {
@@ -1045,12 +821,8 @@ public class ReportServiceImpl implements ReportService {
         } catch (Exception ex) {
 
             throw new MarketplaceException(ErrorCode.VALIDATION_ERROR, "Invalid JSON field value");
-
         }
-
     }
-
-
 
     private String serializePayload(Map<String, Object> payload) {
 
@@ -1060,39 +832,28 @@ public class ReportServiceImpl implements ReportService {
 
         } catch (Exception ex) {
 
-            throw new MarketplaceException(ErrorCode.INTERNAL_ERROR, "Failed to serialize outbox payload");
-
+            throw new MarketplaceException(
+                    ErrorCode.INTERNAL_ERROR, "Failed to serialize outbox payload");
         }
-
     }
-
-
 
     private String extractText(JsonNode node, String field) {
 
         if (node != null && node.hasNonNull(field)) {
 
             return node.get(field).asText();
-
         }
 
         return null;
-
     }
-
-
 
     private String truncate(String value, int maxLength) {
 
         if (value == null) {
 
             return null;
-
         }
 
         return value.length() <= maxLength ? value : value.substring(0, maxLength);
-
     }
-
 }
-

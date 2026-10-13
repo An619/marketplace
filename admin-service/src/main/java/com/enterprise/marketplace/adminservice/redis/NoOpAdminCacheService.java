@@ -1,11 +1,13 @@
 package com.enterprise.marketplace.adminservice.redis;
 
-import com.enterprise.marketplace.adminservice.dto.FeatureFlagResponse;
-import com.enterprise.marketplace.adminservice.dto.SettingResponse;
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+
+import com.enterprise.marketplace.adminservice.dto.FeatureFlagResponse;
+import com.enterprise.marketplace.adminservice.dto.SettingResponse;
 
 @Service
 @ConditionalOnProperty(prefix = "marketplace.redis", name = "enabled", havingValue = "false")

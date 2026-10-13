@@ -1,7 +1,9 @@
 package com.enterprise.marketplace.pricingservice.application.dto;
 
-import com.enterprise.marketplace.pricingservice.domain.model.PricingStatus;
 import jakarta.validation.constraints.NotNull;
+
+import com.enterprise.marketplace.pricingservice.domain.model.PricingStatus;
+
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -11,6 +13,5 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class UpdatePricingStatusRequest {
 
-    @NotNull
-    PricingStatus status;
+    @NotNull PricingStatus status;
 }

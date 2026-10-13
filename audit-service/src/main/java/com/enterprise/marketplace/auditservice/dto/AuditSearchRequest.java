@@ -1,7 +1,9 @@
 package com.enterprise.marketplace.auditservice.dto;
 
-import com.enterprise.marketplace.auditservice.enums.AuditOperation;
 import java.time.Instant;
+
+import com.enterprise.marketplace.auditservice.enums.AuditOperation;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,9 +21,7 @@ public class AuditSearchRequest {
     private Instant fromDate;
     private Instant toDate;
 
-    @Builder.Default
-    private int page = 0;
+    @Builder.Default private int page = 0;
 
-    @Builder.Default
-    private int size = 20;
+    @Builder.Default private int size = 20;
 }

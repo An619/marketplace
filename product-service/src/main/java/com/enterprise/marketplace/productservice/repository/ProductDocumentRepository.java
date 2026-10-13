@@ -1,10 +1,11 @@
 package com.enterprise.marketplace.productservice.repository;
 
-import com.enterprise.marketplace.productservice.entity.ProductDocumentEntity;
+import java.util.List;
 import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
+import com.enterprise.marketplace.productservice.entity.ProductDocumentEntity;
 
 public interface ProductDocumentRepository extends JpaRepository<ProductDocumentEntity, UUID> {
 

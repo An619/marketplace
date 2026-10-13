@@ -1,12 +1,12 @@
 package com.enterprise.marketplace.workflowservice.workflow;
 
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
+import com.enterprise.marketplace.common.context.RequestContext;
 import com.enterprise.marketplace.workflowservice.entity.WorkflowEntity;
 import com.enterprise.marketplace.workflowservice.entity.WorkflowHistoryEntity;
 import com.enterprise.marketplace.workflowservice.enums.WorkflowStatus;
-import com.enterprise.marketplace.common.context.RequestContext;
-import java.util.UUID;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 @Component
 public class WorkflowEngine {
@@ -22,7 +22,11 @@ public class WorkflowEngine {
     }
 
     public WorkflowHistoryEntity buildHistoryRecord(
-            WorkflowEntity workflow, WorkflowStatus fromStatus, WorkflowStatus toStatus, String reason, String actor) {
+            WorkflowEntity workflow,
+            WorkflowStatus fromStatus,
+            WorkflowStatus toStatus,
+            String reason,
+            String actor) {
         WorkflowHistoryEntity history = new WorkflowHistoryEntity();
         history.setWorkflowId(workflow.getId());
         history.setFromStatus(fromStatus);

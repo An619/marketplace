@@ -1,9 +1,11 @@
 package com.enterprise.marketplace.pricingservice.application.dto;
 
-import com.enterprise.marketplace.pricingservice.domain.model.PricingStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
+
+import com.enterprise.marketplace.pricingservice.domain.model.PricingStatus;
+
 import lombok.Builder;
 import lombok.Value;
 

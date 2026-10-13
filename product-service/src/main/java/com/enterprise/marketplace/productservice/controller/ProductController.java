@@ -1,21 +1,9 @@
 package com.enterprise.marketplace.productservice.controller;
 
-import com.enterprise.marketplace.common.api.ApiResponse;
-import com.enterprise.marketplace.common.constant.HttpHeaders;
-import com.enterprise.marketplace.common.idempotency.Idempotent;
-import com.enterprise.marketplace.productservice.dto.canonical.CanonicalProductPatchRequest;
-import com.enterprise.marketplace.productservice.dto.canonical.CanonicalProductRequest;
-import com.enterprise.marketplace.productservice.dto.canonical.ProductDetailResponse;
-import com.enterprise.marketplace.productservice.dto.canonical.ProductPageResponse;
-import com.enterprise.marketplace.productservice.dto.canonical.ProductSearchRequest;
-import com.enterprise.marketplace.productservice.enums.ProductStatus;
-import com.enterprise.marketplace.productservice.service.ProductService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
+
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,10 +18,27 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.enterprise.marketplace.common.api.ApiResponse;
+import com.enterprise.marketplace.common.constant.HttpHeaders;
+import com.enterprise.marketplace.common.idempotency.Idempotent;
+import com.enterprise.marketplace.productservice.dto.canonical.CanonicalProductPatchRequest;
+import com.enterprise.marketplace.productservice.dto.canonical.CanonicalProductRequest;
+import com.enterprise.marketplace.productservice.dto.canonical.ProductDetailResponse;
+import com.enterprise.marketplace.productservice.dto.canonical.ProductPageResponse;
+import com.enterprise.marketplace.productservice.dto.canonical.ProductSearchRequest;
+import com.enterprise.marketplace.productservice.service.ProductService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
-@Tag(name = "Products", description = "Enterprise product catalog APIs with canonical request envelope")
+@Tag(
+        name = "Products",
+        description = "Enterprise product catalog APIs with canonical request envelope")
 public class ProductController {
 
     private final ProductService productService;
@@ -42,7 +47,8 @@ public class ProductController {
     @Idempotent
     @Operation(
             summary = "Create product",
-            description = "Accepts enterprise canonical request envelope. Requires Idempotency-Key header.",
+            description =
+                    "Accepts enterprise canonical request envelope. Requires Idempotency-Key header.",
             security = @SecurityRequirement(name = HttpHeaders.IDEMPOTENCY_KEY))
     public ResponseEntity<ApiResponse<ProductDetailResponse>> createProduct(
             @Valid @RequestBody CanonicalProductRequest request) {
@@ -63,7 +69,8 @@ public class ProductController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
-        return ResponseEntity.ok(ApiResponse.success(productService.listProducts(page, size, sort)));
+        return ResponseEntity.ok(
+                ApiResponse.success(productService.listProducts(page, size, sort)));
     }
 
     @GetMapping("/search")
@@ -79,7 +86,8 @@ public class ProductController {
     public ResponseEntity<ApiResponse<ProductDetailResponse>> updateProduct(
             @PathVariable UUID id, @Valid @RequestBody CanonicalProductRequest request) {
         return ResponseEntity.ok(
-                ApiResponse.success(productService.updateProduct(id, request), "Product updated successfully"));
+                ApiResponse.success(
+                        productService.updateProduct(id, request), "Product updated successfully"));
     }
 
     @PatchMapping("/{id}")
@@ -88,7 +96,8 @@ public class ProductController {
     public ResponseEntity<ApiResponse<ProductDetailResponse>> patchProduct(
             @PathVariable UUID id, @Valid @RequestBody CanonicalProductPatchRequest request) {
         return ResponseEntity.ok(
-                ApiResponse.success(productService.patchProduct(id, request), "Product patched successfully"));
+                ApiResponse.success(
+                        productService.patchProduct(id, request), "Product patched successfully"));
     }
 
     @DeleteMapping("/{id}")

@@ -1,13 +1,17 @@
 package com.enterprise.marketplace.productservice.validation;
 
-import com.enterprise.marketplace.common.exception.ErrorCode;
-import com.enterprise.marketplace.common.exception.MarketplaceException;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
+
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
+
 import org.springframework.stereotype.Component;
+
+import com.enterprise.marketplace.common.exception.ErrorCode;
+import com.enterprise.marketplace.common.exception.MarketplaceException;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
@@ -22,10 +26,12 @@ public class BeanValidationStep implements ValidationStep {
         }
         Set<ConstraintViolation<Object>> violations = validator.validate(context.request());
         if (!violations.isEmpty()) {
-            String message = violations.stream()
-                    .map(v -> v.getPropertyPath() + ": " + v.getMessage())
-                    .collect(Collectors.joining("; "));
-            throw new MarketplaceException(ErrorCode.VALIDATION_ERROR, "Bean validation failed: " + message);
+            String message =
+                    violations.stream()
+                            .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                            .collect(Collectors.joining("; "));
+            throw new MarketplaceException(
+                    ErrorCode.VALIDATION_ERROR, "Bean validation failed: " + message);
         }
     }
 }

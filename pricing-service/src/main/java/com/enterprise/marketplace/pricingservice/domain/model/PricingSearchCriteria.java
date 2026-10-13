@@ -1,6 +1,7 @@
 package com.enterprise.marketplace.pricingservice.domain.model;
 
 import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Value;
 

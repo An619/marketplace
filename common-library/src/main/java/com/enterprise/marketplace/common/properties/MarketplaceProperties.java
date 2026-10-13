@@ -1,12 +1,11 @@
 package com.enterprise.marketplace.common.properties;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/**
- * Shared marketplace platform properties.
- */
+import lombok.Getter;
+import lombok.Setter;
+
+/** Shared marketplace platform properties. */
 @Getter
 @Setter
 @ConfigurationProperties(prefix = "marketplace")

@@ -1,11 +1,12 @@
 package com.enterprise.marketplace.productservice.service;
 
+import java.util.UUID;
+
 import com.enterprise.marketplace.productservice.dto.canonical.CanonicalProductPatchRequest;
 import com.enterprise.marketplace.productservice.dto.canonical.CanonicalProductRequest;
 import com.enterprise.marketplace.productservice.dto.canonical.ProductDetailResponse;
 import com.enterprise.marketplace.productservice.dto.canonical.ProductPageResponse;
 import com.enterprise.marketplace.productservice.dto.canonical.ProductSearchRequest;
-import java.util.UUID;
 
 public interface ProductService {
 

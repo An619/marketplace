@@ -1,22 +1,9 @@
 package com.enterprise.marketplace.adminservice.controller;
 
-import com.enterprise.marketplace.adminservice.dto.BulkPatchFeatureFlagsRequest;
-import com.enterprise.marketplace.adminservice.dto.ConfigResponse;
-import com.enterprise.marketplace.adminservice.dto.CreateConfigRequest;
-import com.enterprise.marketplace.adminservice.dto.CreateSettingRequest;
-import com.enterprise.marketplace.adminservice.dto.DashboardResponse;
-import com.enterprise.marketplace.adminservice.dto.FeatureFlagResponse;
-import com.enterprise.marketplace.adminservice.dto.PatchFeatureFlagRequest;
-import com.enterprise.marketplace.adminservice.dto.SettingResponse;
-import com.enterprise.marketplace.adminservice.dto.UpdateConfigRequest;
-import com.enterprise.marketplace.adminservice.dto.UpdateSettingRequest;
-import com.enterprise.marketplace.adminservice.service.AdminService;
-import com.enterprise.marketplace.common.api.ApiResponse;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
+
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,6 +16,23 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.enterprise.marketplace.adminservice.dto.BulkPatchFeatureFlagsRequest;
+import com.enterprise.marketplace.adminservice.dto.ConfigResponse;
+import com.enterprise.marketplace.adminservice.dto.CreateConfigRequest;
+import com.enterprise.marketplace.adminservice.dto.CreateSettingRequest;
+import com.enterprise.marketplace.adminservice.dto.DashboardResponse;
+import com.enterprise.marketplace.adminservice.dto.FeatureFlagResponse;
+import com.enterprise.marketplace.adminservice.dto.PatchFeatureFlagRequest;
+import com.enterprise.marketplace.adminservice.dto.SettingResponse;
+import com.enterprise.marketplace.adminservice.dto.UpdateConfigRequest;
+import com.enterprise.marketplace.adminservice.dto.UpdateSettingRequest;
+import com.enterprise.marketplace.adminservice.service.AdminService;
+import com.enterprise.marketplace.common.api.ApiResponse;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -59,7 +63,9 @@ public class AdminController {
     public ResponseEntity<ApiResponse<SettingResponse>> updateSetting(
             @PathVariable String settingKey, @Valid @RequestBody UpdateSettingRequest request) {
         return ResponseEntity.ok(
-                ApiResponse.success(adminService.updateSetting(settingKey, request), "Setting updated successfully"));
+                ApiResponse.success(
+                        adminService.updateSetting(settingKey, request),
+                        "Setting updated successfully"));
     }
 
     @DeleteMapping("/settings/{settingKey}")
@@ -80,12 +86,15 @@ public class AdminController {
     public ResponseEntity<ApiResponse<List<FeatureFlagResponse>>> patchFeatureFlags(
             @Valid @RequestBody BulkPatchFeatureFlagsRequest request) {
         return ResponseEntity.ok(
-                ApiResponse.success(adminService.patchFeatureFlags(request), "Feature flags updated successfully"));
+                ApiResponse.success(
+                        adminService.patchFeatureFlags(request),
+                        "Feature flags updated successfully"));
     }
 
     @GetMapping("/feature-flags/{flagKey}")
     @Operation(summary = "Get feature flag by key")
-    public ResponseEntity<ApiResponse<FeatureFlagResponse>> getFeatureFlag(@PathVariable String flagKey) {
+    public ResponseEntity<ApiResponse<FeatureFlagResponse>> getFeatureFlag(
+            @PathVariable String flagKey) {
         return ResponseEntity.ok(ApiResponse.success(adminService.getFeatureFlag(flagKey)));
     }
 
@@ -94,18 +103,22 @@ public class AdminController {
     public ResponseEntity<ApiResponse<FeatureFlagResponse>> patchFeatureFlag(
             @PathVariable String flagKey, @Valid @RequestBody PatchFeatureFlagRequest request) {
         return ResponseEntity.ok(
-                ApiResponse.success(adminService.patchFeatureFlag(flagKey, request), "Feature flag updated successfully"));
+                ApiResponse.success(
+                        adminService.patchFeatureFlag(flagKey, request),
+                        "Feature flag updated successfully"));
     }
 
     @GetMapping("/configs")
     @Operation(summary = "List admin configs")
-    public ResponseEntity<ApiResponse<List<ConfigResponse>>> getConfigs(@RequestParam(required = false) String scope) {
+    public ResponseEntity<ApiResponse<List<ConfigResponse>>> getConfigs(
+            @RequestParam(required = false) String scope) {
         return ResponseEntity.ok(ApiResponse.success(adminService.getConfigs(scope)));
     }
 
     @PostMapping("/configs")
     @Operation(summary = "Create admin config")
-    public ResponseEntity<ApiResponse<ConfigResponse>> createConfig(@Valid @RequestBody CreateConfigRequest request) {
+    public ResponseEntity<ApiResponse<ConfigResponse>> createConfig(
+            @Valid @RequestBody CreateConfigRequest request) {
         ConfigResponse response = adminService.createConfig(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(response, "Config created successfully"));
@@ -116,7 +129,9 @@ public class AdminController {
     public ResponseEntity<ApiResponse<ConfigResponse>> updateConfig(
             @PathVariable String configKey, @Valid @RequestBody UpdateConfigRequest request) {
         return ResponseEntity.ok(
-                ApiResponse.success(adminService.updateConfig(configKey, request), "Config updated successfully"));
+                ApiResponse.success(
+                        adminService.updateConfig(configKey, request),
+                        "Config updated successfully"));
     }
 
     @GetMapping("/dashboard")

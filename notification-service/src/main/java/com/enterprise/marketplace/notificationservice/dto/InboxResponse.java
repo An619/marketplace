@@ -2,6 +2,7 @@ package com.enterprise.marketplace.notificationservice.dto;
 
 import java.time.Instant;
 import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -1,5 +1,7 @@
 package com.enterprise.marketplace.adminservice.service;
 
+import java.util.List;
+
 import com.enterprise.marketplace.adminservice.dto.BulkPatchFeatureFlagsRequest;
 import com.enterprise.marketplace.adminservice.dto.ConfigResponse;
 import com.enterprise.marketplace.adminservice.dto.CreateConfigRequest;
@@ -10,7 +12,6 @@ import com.enterprise.marketplace.adminservice.dto.PatchFeatureFlagRequest;
 import com.enterprise.marketplace.adminservice.dto.SettingResponse;
 import com.enterprise.marketplace.adminservice.dto.UpdateConfigRequest;
 import com.enterprise.marketplace.adminservice.dto.UpdateSettingRequest;
-import java.util.List;
 
 public interface AdminService {
 

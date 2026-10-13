@@ -1,12 +1,15 @@
 package com.enterprise.marketplace.notificationservice.dto;
 
-import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
-import com.enterprise.marketplace.notificationservice.enums.NotificationType;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
+import com.enterprise.marketplace.notificationservice.enums.NotificationType;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,8 +21,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SendNotificationRequest {
 
-    @NotBlank
-    private String requestId;
+    @NotBlank private String requestId;
 
     private String correlationId;
 
@@ -29,14 +31,11 @@ public class SendNotificationRequest {
 
     private UUID aggregateId;
 
-    @NotNull
-    private NotificationType notificationType;
+    @NotNull private NotificationType notificationType;
 
-    @NotNull
-    private NotificationChannel channel;
+    @NotNull private NotificationChannel channel;
 
-    @NotBlank
-    private String recipientId;
+    @NotBlank private String recipientId;
 
     private String recipientAddress;
 

@@ -1,5 +1,13 @@
 package com.enterprise.marketplace.productservice.mapper;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+
 import com.enterprise.marketplace.productservice.dto.canonical.CanonicalProductRequest;
 import com.enterprise.marketplace.productservice.dto.canonical.ProductDetailResponse;
 import com.enterprise.marketplace.productservice.entity.ProductAttributeEntity;
@@ -10,14 +18,11 @@ import com.enterprise.marketplace.productservice.entity.ProductInventoryEntity;
 import com.enterprise.marketplace.productservice.entity.ProductPriceEntity;
 import com.enterprise.marketplace.productservice.entity.ProductWorkflowEntity;
 import com.enterprise.marketplace.productservice.enums.ProductStatus;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 
-@Mapper(componentModel = "spring", implementationName = "CanonicalProductMapperImpl", imports = ProductStatus.class)
+@Mapper(
+        componentModel = "spring",
+        implementationName = "CanonicalProductMapperImpl",
+        imports = ProductStatus.class)
 public interface ProductMapper {
 
     @Mapping(target = "id", ignore = true)
@@ -31,12 +36,18 @@ public interface ProductMapper {
     @Mapping(target = "name", source = "product.name")
     @Mapping(target = "description", source = "product.description")
     @Mapping(target = "categoryId", source = "product.categoryId")
-    @Mapping(target = "unitOfMeasure", source = "product.unitOfMeasure", qualifiedByName = "defaultUnitOfMeasure")
+    @Mapping(
+            target = "unitOfMeasure",
+            source = "product.unitOfMeasure",
+            qualifiedByName = "defaultUnitOfMeasure")
     @Mapping(target = "hsnCode", source = "product.hsnCode")
     @Mapping(target = "status", source = "product.status", qualifiedByName = "defaultStatus")
     @Mapping(target = "unitPrice", source = "pricing.unitPrice")
     @Mapping(target = "currency", source = "pricing.currency", qualifiedByName = "upperCurrency")
-    @Mapping(target = "minOrderQuantity", source = "pricing.minQuantity", qualifiedByName = "defaultMinQuantity")
+    @Mapping(
+            target = "minOrderQuantity",
+            source = "pricing.minQuantity",
+            qualifiedByName = "defaultMinQuantity")
     @Mapping(target = "gstRate", ignore = true)
     ProductEntity toEntity(CanonicalProductRequest request);
 
@@ -91,15 +102,18 @@ public interface ProductMapper {
                 .updatedAt(base.getUpdatedAt())
                 .price(price != null ? toPriceDetail(price) : null)
                 .inventory(inventory != null ? toInventoryDetail(inventory) : null)
-                .attributes(attributes != null
-                        ? attributes.stream().map(this::toAttributeDetail).toList()
-                        : Collections.emptyList())
-                .images(images != null
-                        ? images.stream().map(this::toImageDetail).toList()
-                        : Collections.emptyList())
-                .documents(documents != null
-                        ? documents.stream().map(this::toDocumentDetail).toList()
-                        : Collections.emptyList())
+                .attributes(
+                        attributes != null
+                                ? attributes.stream().map(this::toAttributeDetail).toList()
+                                : Collections.emptyList())
+                .images(
+                        images != null
+                                ? images.stream().map(this::toImageDetail).toList()
+                                : Collections.emptyList())
+                .documents(
+                        documents != null
+                                ? documents.stream().map(this::toDocumentDetail).toList()
+                                : Collections.emptyList())
                 .workflow(workflow != null ? toWorkflowDetail(workflow) : null)
                 .tags(tags)
                 .build();

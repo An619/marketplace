@@ -1,14 +1,17 @@
 package com.enterprise.marketplace.notificationservice.audit;
 
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.enterprise.marketplace.notificationservice.entity.NotificationEntity;
 import com.enterprise.marketplace.notificationservice.entity.NotificationHistoryEntity;
 import com.enterprise.marketplace.notificationservice.enums.NotificationStatus;
 import com.enterprise.marketplace.notificationservice.repository.NotificationHistoryRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Map;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,7 +22,10 @@ public class NotificationHistoryService {
 
     @Transactional
     public void recordHistory(
-            NotificationEntity notification, String eventType, NotificationStatus status, String message) {
+            NotificationEntity notification,
+            String eventType,
+            NotificationStatus status,
+            String message) {
         recordHistory(notification, eventType, status, message, null);
     }
 

@@ -1,19 +1,21 @@
 package com.enterprise.marketplace.common.util;
 
-import com.enterprise.marketplace.common.exception.ErrorCode;
-import com.enterprise.marketplace.common.exception.MarketplaceException;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
+
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
+
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-/**
- * Shared validation helpers for domain and API input validation.
- */
+import com.enterprise.marketplace.common.exception.ErrorCode;
+import com.enterprise.marketplace.common.exception.MarketplaceException;
+
+import lombok.RequiredArgsConstructor;
+
+/** Shared validation helpers for domain and API input validation. */
 @Component
 @RequiredArgsConstructor
 public class ValidationUtility {
@@ -30,9 +32,10 @@ public class ValidationUtility {
     public <T> void validateAndThrow(T object) {
         Set<ConstraintViolation<T>> violations = validator.validate(object);
         if (!violations.isEmpty()) {
-            String message = violations.stream()
-                    .map(v -> v.getPropertyPath() + ": " + v.getMessage())
-                    .collect(Collectors.joining("; "));
+            String message =
+                    violations.stream()
+                            .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                            .collect(Collectors.joining("; "));
             throw new MarketplaceException(ErrorCode.VALIDATION_ERROR, message);
         }
     }
@@ -61,7 +64,8 @@ public class ValidationUtility {
     public void requireIndianMobile(String mobile) {
         requireNonBlank(mobile, "mobile");
         if (!INDIAN_MOBILE_PATTERN.matcher(mobile).matches()) {
-            throw new MarketplaceException(ErrorCode.VALIDATION_ERROR, "Invalid Indian mobile number");
+            throw new MarketplaceException(
+                    ErrorCode.VALIDATION_ERROR, "Invalid Indian mobile number");
         }
     }
 

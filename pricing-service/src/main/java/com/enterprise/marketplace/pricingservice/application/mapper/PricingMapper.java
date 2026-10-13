@@ -1,11 +1,12 @@
 package com.enterprise.marketplace.pricingservice.application.mapper;
 
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+
 import com.enterprise.marketplace.pricingservice.application.dto.CreatePricingRequest;
 import com.enterprise.marketplace.pricingservice.application.dto.PricingResponse;
 import com.enterprise.marketplace.pricingservice.domain.model.Pricing;
 import com.enterprise.marketplace.pricingservice.domain.model.PricingStatus;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring", imports = PricingStatus.class)
 public interface PricingMapper {
@@ -20,12 +21,14 @@ public interface PricingMapper {
     @Mapping(target = "version", ignore = true)
     @Mapping(
             target = "status",
-            expression = "java(request.getStatus() != null ? request.getStatus() : PricingStatus.ACTIVE)")
+            expression =
+                    "java(request.getStatus() != null ? request.getStatus() : PricingStatus.ACTIVE)")
     @Mapping(
             target = "minQuantity",
             expression = "java(request.getMinQuantity() != null ? request.getMinQuantity() : 1)")
     @Mapping(
             target = "currency",
-            expression = "java(request.getCurrency() != null ? request.getCurrency().toUpperCase() : \"INR\")")
+            expression =
+                    "java(request.getCurrency() != null ? request.getCurrency().toUpperCase() : \"INR\")")
     Pricing toDomain(CreatePricingRequest request);
 }

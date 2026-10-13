@@ -1,20 +1,27 @@
 package com.enterprise.marketplace.searchservice.redis;
 
-import com.enterprise.marketplace.searchservice.dto.ProductSearchPageResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import com.enterprise.marketplace.searchservice.dto.ProductSearchPageResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "marketplace.redis", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+        prefix = "marketplace.redis",
+        name = "enabled",
+        havingValue = "true",
+        matchIfMissing = true)
 public class SearchRedisCacheService implements SearchCachePort {
 
     private final StringRedisTemplate redisTemplate;
@@ -28,7 +35,10 @@ public class SearchRedisCacheService implements SearchCachePort {
         try {
             redisTemplate
                     .opsForValue()
-                    .set(cacheKey, objectMapper.writeValueAsString(response), Duration.ofSeconds(searchCacheTtlSeconds));
+                    .set(
+                            cacheKey,
+                            objectMapper.writeValueAsString(response),
+                            Duration.ofSeconds(searchCacheTtlSeconds));
         } catch (Exception ex) {
             log.warn("Failed to cache search result key={}", cacheKey, ex);
         }

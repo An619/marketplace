@@ -1,9 +1,9 @@
 package com.enterprise.marketplace.categoryservice;
 
-import com.enterprise.marketplace.common.util.LoggingUtility;
-
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import com.enterprise.marketplace.common.util.LoggingUtility;
 
 @SpringBootApplication
 public class CategoryServiceApplication {

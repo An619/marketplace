@@ -1,18 +1,9 @@
 package com.enterprise.marketplace.categoryservice.bootstrap.controller;
 
-import com.enterprise.marketplace.categoryservice.application.dto.CategoryPageResponse;
-import com.enterprise.marketplace.categoryservice.application.dto.CategoryResponse;
-import com.enterprise.marketplace.categoryservice.application.dto.CreateCategoryRequest;
-import com.enterprise.marketplace.categoryservice.application.dto.UpdateCategoryRequest;
-import com.enterprise.marketplace.categoryservice.application.service.CategoryApplicationService;
-import com.enterprise.marketplace.categoryservice.domain.model.CategoryStatus;
-import com.enterprise.marketplace.common.api.ApiResponse;
-import com.enterprise.marketplace.common.idempotency.Idempotent;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
+
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,6 +15,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.enterprise.marketplace.categoryservice.application.dto.CategoryPageResponse;
+import com.enterprise.marketplace.categoryservice.application.dto.CategoryResponse;
+import com.enterprise.marketplace.categoryservice.application.dto.CreateCategoryRequest;
+import com.enterprise.marketplace.categoryservice.application.dto.UpdateCategoryRequest;
+import com.enterprise.marketplace.categoryservice.application.service.CategoryApplicationService;
+import com.enterprise.marketplace.categoryservice.domain.model.CategoryStatus;
+import com.enterprise.marketplace.common.api.ApiResponse;
+import com.enterprise.marketplace.common.idempotency.Idempotent;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/categories")
@@ -46,13 +50,16 @@ public class CategoryController {
     @GetMapping("/{id}")
     @Operation(summary = "Get category by ID")
     public ResponseEntity<ApiResponse<CategoryResponse>> getCategoryById(@PathVariable UUID id) {
-        return ResponseEntity.ok(ApiResponse.success(categoryApplicationService.getCategoryById(id)));
+        return ResponseEntity.ok(
+                ApiResponse.success(categoryApplicationService.getCategoryById(id)));
     }
 
     @GetMapping("/slug/{slug}")
     @Operation(summary = "Get category by slug")
-    public ResponseEntity<ApiResponse<CategoryResponse>> getCategoryBySlug(@PathVariable String slug) {
-        return ResponseEntity.ok(ApiResponse.success(categoryApplicationService.getCategoryBySlug(slug)));
+    public ResponseEntity<ApiResponse<CategoryResponse>> getCategoryBySlug(
+            @PathVariable String slug) {
+        return ResponseEntity.ok(
+                ApiResponse.success(categoryApplicationService.getCategoryBySlug(slug)));
     }
 
     @GetMapping
@@ -65,7 +72,8 @@ public class CategoryController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "displayOrder,asc") String sort) {
         CategoryPageResponse response =
-                categoryApplicationService.searchCategories(status, parentId, keyword, page, size, sort);
+                categoryApplicationService.searchCategories(
+                        status, parentId, keyword, page, size, sort);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -75,7 +83,9 @@ public class CategoryController {
     public ResponseEntity<ApiResponse<CategoryResponse>> updateCategory(
             @PathVariable UUID id, @Valid @RequestBody UpdateCategoryRequest request) {
         return ResponseEntity.ok(
-                ApiResponse.success(categoryApplicationService.updateCategory(id, request), "Category updated successfully"));
+                ApiResponse.success(
+                        categoryApplicationService.updateCategory(id, request),
+                        "Category updated successfully"));
     }
 
     @DeleteMapping("/{id}")

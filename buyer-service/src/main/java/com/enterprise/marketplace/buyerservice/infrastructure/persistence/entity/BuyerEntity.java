@@ -1,12 +1,14 @@
 package com.enterprise.marketplace.buyerservice.infrastructure.persistence.entity;
 
-import com.enterprise.marketplace.buyerservice.domain.model.BuyerStatus;
-import com.enterprise.marketplace.common.model.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+
+import com.enterprise.marketplace.buyerservice.domain.model.BuyerStatus;
+import com.enterprise.marketplace.common.model.BaseEntity;
+
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,14 +1,16 @@
 package com.enterprise.marketplace.productservice.validation;
 
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
 import com.enterprise.marketplace.common.exception.ErrorCode;
 import com.enterprise.marketplace.common.exception.MarketplaceException;
 import com.enterprise.marketplace.productservice.dto.canonical.CanonicalProductPatchRequest;
 import com.enterprise.marketplace.productservice.dto.canonical.CanonicalProductRequest;
 import com.enterprise.marketplace.productservice.dto.canonical.ProductSectionDto;
 import com.enterprise.marketplace.productservice.repository.ProductRepository;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 @Component
 @RequiredArgsConstructor
@@ -34,15 +36,21 @@ public class DuplicateSkuValidationStep implements ValidationStep {
         }
 
         if (context.operation() == ValidationOperation.CREATE) {
-            throw new MarketplaceException(ErrorCode.CONFLICT, "Product SKU already exists: " + sku);
+            throw new MarketplaceException(
+                    ErrorCode.CONFLICT, "Product SKU already exists: " + sku);
         }
 
         if (context.productId() != null) {
-            productRepository.findBySku(sku).ifPresent(existing -> {
-                if (!existing.getId().equals(context.productId())) {
-                    throw new MarketplaceException(ErrorCode.CONFLICT, "Product SKU already exists: " + sku);
-                }
-            });
+            productRepository
+                    .findBySku(sku)
+                    .ifPresent(
+                            existing -> {
+                                if (!existing.getId().equals(context.productId())) {
+                                    throw new MarketplaceException(
+                                            ErrorCode.CONFLICT,
+                                            "Product SKU already exists: " + sku);
+                                }
+                            });
         }
     }
 

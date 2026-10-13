@@ -1,11 +1,12 @@
 package com.enterprise.marketplace.auditservice.service;
 
+import java.util.UUID;
+
 import com.enterprise.marketplace.auditservice.dto.AuditPageResponse;
 import com.enterprise.marketplace.auditservice.dto.AuditResponse;
 import com.enterprise.marketplace.auditservice.dto.AuditSearchRequest;
 import com.enterprise.marketplace.auditservice.dto.AuditTimelineResponse;
 import com.enterprise.marketplace.auditservice.dto.CreateAuditRequest;
-import java.util.UUID;
 
 public interface AuditService {
 

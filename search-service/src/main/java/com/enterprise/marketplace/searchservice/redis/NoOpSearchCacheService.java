@@ -1,9 +1,11 @@
 package com.enterprise.marketplace.searchservice.redis;
 
-import com.enterprise.marketplace.searchservice.dto.ProductSearchPageResponse;
 import java.util.Optional;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+
+import com.enterprise.marketplace.searchservice.dto.ProductSearchPageResponse;
 
 @Service
 @ConditionalOnProperty(prefix = "marketplace.redis", name = "enabled", havingValue = "false")

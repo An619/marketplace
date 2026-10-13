@@ -5,6 +5,18 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Optional;
+import java.util.UUID;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+
 import com.enterprise.marketplace.identityservice.application.dto.ConfirmQrRequest;
 import com.enterprise.marketplace.identityservice.application.dto.CreateQrRequest;
 import com.enterprise.marketplace.identityservice.application.dto.QrCreateResponse;
@@ -15,27 +27,15 @@ import com.enterprise.marketplace.identityservice.domain.UserType;
 import com.enterprise.marketplace.identityservice.infrastructure.redis.AccessTokenData;
 import com.enterprise.marketplace.identityservice.infrastructure.redis.AuthSessionStore;
 import com.enterprise.marketplace.identityservice.infrastructure.redis.QrSessionData;
-import java.util.Optional;
-import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class QrSessionServiceTest {
 
-    @Mock
-    private AuthSessionStore authRedisStore;
+    @Mock private AuthSessionStore authRedisStore;
 
     private final AuthProperties authProperties = new AuthProperties();
 
-    @InjectMocks
-    private QrSessionService qrSessionService;
+    @InjectMocks private QrSessionService qrSessionService;
 
     @BeforeEach
     void setUp() {
@@ -58,15 +58,17 @@ class QrSessionServiceTest {
     @Test
     void confirmQrSessionBindsAccessToken() {
         UUID userId = UUID.randomUUID();
-        QrSessionData session = QrSessionData.builder()
-                .qrSessionId("qr-1")
-                .status(QrSessionStatus.PENDING.name())
-                .build();
-        AccessTokenData access = AccessTokenData.builder()
-                .token("access-9")
-                .userId(userId)
-                .userType(UserType.INDIVIDUAL)
-                .build();
+        QrSessionData session =
+                QrSessionData.builder()
+                        .qrSessionId("qr-1")
+                        .status(QrSessionStatus.PENDING.name())
+                        .build();
+        AccessTokenData access =
+                AccessTokenData.builder()
+                        .token("access-9")
+                        .userId(userId)
+                        .userType(UserType.INDIVIDUAL)
+                        .build();
         when(authRedisStore.getQrSession("qr-1")).thenReturn(Optional.of(session));
         when(authRedisStore.getAccessToken("access-9")).thenReturn(Optional.of(access));
 

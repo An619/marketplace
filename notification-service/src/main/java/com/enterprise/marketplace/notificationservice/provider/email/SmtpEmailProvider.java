@@ -1,15 +1,7 @@
 package com.enterprise.marketplace.notificationservice.provider.email;
 
-import com.enterprise.marketplace.notificationservice.config.NotificationProperties;
-import com.enterprise.marketplace.notificationservice.entity.NotificationEntity;
-import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
-import com.enterprise.marketplace.notificationservice.enums.TemplateContentType;
-import com.enterprise.marketplace.notificationservice.provider.NotificationProvider;
-import com.enterprise.marketplace.notificationservice.provider.ProviderDeliveryResult;
-import com.enterprise.marketplace.notificationservice.repository.NotificationTemplateRepository;
 import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -17,10 +9,25 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import com.enterprise.marketplace.notificationservice.config.NotificationProperties;
+import com.enterprise.marketplace.notificationservice.entity.NotificationEntity;
+import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
+import com.enterprise.marketplace.notificationservice.enums.TemplateContentType;
+import com.enterprise.marketplace.notificationservice.provider.NotificationProvider;
+import com.enterprise.marketplace.notificationservice.provider.ProviderDeliveryResult;
+import com.enterprise.marketplace.notificationservice.repository.NotificationTemplateRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "marketplace.notification", name = "email-provider", havingValue = "SMTP", matchIfMissing = true)
+@ConditionalOnProperty(
+        prefix = "marketplace.notification",
+        name = "email-provider",
+        havingValue = "SMTP",
+        matchIfMissing = true)
 @ConditionalOnBean(JavaMailSender.class)
 public class SmtpEmailProvider implements NotificationProvider {
 
@@ -45,10 +52,13 @@ public class SmtpEmailProvider implements NotificationProvider {
             helper.setFrom(notificationProperties.getDefaultFromEmail());
             helper.setTo(notification.getRecipientAddress());
             helper.setSubject(
-                    StringUtils.hasText(notification.getSubject()) ? notification.getSubject() : "Notification");
+                    StringUtils.hasText(notification.getSubject())
+                            ? notification.getSubject()
+                            : "Notification");
             helper.setText(notification.getBody(), html);
             mailSender.send(message);
-            return ProviderDeliveryResult.success("SMTP email sent to " + notification.getRecipientAddress());
+            return ProviderDeliveryResult.success(
+                    "SMTP email sent to " + notification.getRecipientAddress());
         } catch (Exception ex) {
             log.error("SMTP email delivery failed notification id={}", notification.getId(), ex);
             return ProviderDeliveryResult.failure(ex.getMessage());

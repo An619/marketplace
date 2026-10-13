@@ -4,12 +4,22 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.UUID;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+
 import com.enterprise.marketplace.workflowservice.audit.WorkflowAuditService;
 import com.enterprise.marketplace.workflowservice.dto.CreateWorkflowRequest;
 import com.enterprise.marketplace.workflowservice.entity.WorkflowEntity;
 import com.enterprise.marketplace.workflowservice.enums.AggregateType;
 import com.enterprise.marketplace.workflowservice.enums.WorkflowOperationType;
-import com.enterprise.marketplace.workflowservice.enums.WorkflowStatus;
 import com.enterprise.marketplace.workflowservice.mapper.WorkflowMapper;
 import com.enterprise.marketplace.workflowservice.redis.WorkflowCachePort;
 import com.enterprise.marketplace.workflowservice.repository.OutboxEventRepository;
@@ -20,43 +30,22 @@ import com.enterprise.marketplace.workflowservice.service.impl.WorkflowServiceIm
 import com.enterprise.marketplace.workflowservice.validation.WorkflowStatusTransitionValidator;
 import com.enterprise.marketplace.workflowservice.workflow.WorkflowEngine;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Optional;
-import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class WorkflowServiceImplTest {
 
-    @Mock
-    private WorkflowRepository workflowRepository;
-    @Mock
-    private WorkflowHistoryRepository historyRepository;
-    @Mock
-    private WorkflowEventRepository eventRepository;
-    @Mock
-    private OutboxEventRepository outboxEventRepository;
-    @Mock
-    private WorkflowMapper workflowMapper;
-    @Spy
-    private WorkflowEngine workflowEngine = new WorkflowEngine();
-    @Mock
-    private WorkflowStatusTransitionValidator transitionValidator;
-    @Mock
-    private WorkflowAuditService auditService;
-    @Mock
-    private WorkflowCachePort cachePort;
-    @Spy
-    private ObjectMapper objectMapper = new ObjectMapper();
+    @Mock private WorkflowRepository workflowRepository;
+    @Mock private WorkflowHistoryRepository historyRepository;
+    @Mock private WorkflowEventRepository eventRepository;
+    @Mock private OutboxEventRepository outboxEventRepository;
+    @Mock private WorkflowMapper workflowMapper;
+    @Spy private WorkflowEngine workflowEngine = new WorkflowEngine();
+    @Mock private WorkflowStatusTransitionValidator transitionValidator;
+    @Mock private WorkflowAuditService auditService;
+    @Mock private WorkflowCachePort cachePort;
+    @Spy private ObjectMapper objectMapper = new ObjectMapper();
 
-    @InjectMocks
-    private WorkflowServiceImpl workflowService;
+    @InjectMocks private WorkflowServiceImpl workflowService;
 
     @BeforeEach
     void setUp() {
@@ -65,19 +54,22 @@ class WorkflowServiceImplTest {
 
     @Test
     void shouldPersistWorkflowOnCreate() {
-        CreateWorkflowRequest request = CreateWorkflowRequest.builder()
-                .requestId("req-create-1")
-                .aggregateType(AggregateType.PRODUCT)
-                .aggregateId(UUID.randomUUID())
-                .operationType(WorkflowOperationType.CREATE)
-                .initiatedBy("tester")
-                .build();
+        CreateWorkflowRequest request =
+                CreateWorkflowRequest.builder()
+                        .requestId("req-create-1")
+                        .aggregateType(AggregateType.PRODUCT)
+                        .aggregateId(UUID.randomUUID())
+                        .operationType(WorkflowOperationType.CREATE)
+                        .initiatedBy("tester")
+                        .build();
 
-        when(workflowRepository.save(any(WorkflowEntity.class))).thenAnswer(invocation -> {
-            WorkflowEntity entity = invocation.getArgument(0);
-            entity.setId(UUID.randomUUID());
-            return entity;
-        });
+        when(workflowRepository.save(any(WorkflowEntity.class)))
+                .thenAnswer(
+                        invocation -> {
+                            WorkflowEntity entity = invocation.getArgument(0);
+                            entity.setId(UUID.randomUUID());
+                            return entity;
+                        });
 
         workflowService.createWorkflow(request);
 

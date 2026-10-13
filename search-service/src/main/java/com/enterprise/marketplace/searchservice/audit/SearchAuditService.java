@@ -1,15 +1,18 @@
 package com.enterprise.marketplace.searchservice.audit;
 
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.enterprise.marketplace.common.context.RequestContext;
 import com.enterprise.marketplace.searchservice.entity.SearchAuditEntity;
 import com.enterprise.marketplace.searchservice.enums.SearchAuditOperation;
 import com.enterprise.marketplace.searchservice.repository.SearchAuditRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Map;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor

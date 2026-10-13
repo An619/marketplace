@@ -6,6 +6,19 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.enterprise.marketplace.common.exception.ErrorCode;
 import com.enterprise.marketplace.common.exception.MarketplaceException;
 import com.enterprise.marketplace.common.exception.ResourceNotFoundException;
@@ -15,44 +28,33 @@ import com.enterprise.marketplace.pricingservice.application.mapper.PricingMappe
 import com.enterprise.marketplace.pricingservice.domain.model.Pricing;
 import com.enterprise.marketplace.pricingservice.domain.model.PricingStatus;
 import com.enterprise.marketplace.pricingservice.domain.port.PricingRepository;
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.Optional;
-import java.util.UUID;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mapstruct.factory.Mappers;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class PricingApplicationServiceTest {
 
-    @Mock
-    private PricingRepository pricingRepository;
+    @Mock private PricingRepository pricingRepository;
 
-    @Spy
-    private PricingMapper pricingMapper = Mappers.getMapper(PricingMapper.class);
+    @Spy private PricingMapper pricingMapper = Mappers.getMapper(PricingMapper.class);
 
-    @InjectMocks
-    private PricingApplicationService pricingApplicationService;
+    @InjectMocks private PricingApplicationService pricingApplicationService;
 
     @Test
     void shouldCreatePricingWhenRequestIsValid() {
-        CreatePricingRequest request = CreatePricingRequest.builder()
-                .productId(UUID.randomUUID())
-                .sellerId(UUID.randomUUID())
-                .unitPrice(new BigDecimal("1500.00"))
-                .currency("INR")
-                .validFrom(Instant.parse("2026-07-01T00:00:00Z"))
-                .build();
+        CreatePricingRequest request =
+                CreatePricingRequest.builder()
+                        .productId(UUID.randomUUID())
+                        .sellerId(UUID.randomUUID())
+                        .unitPrice(new BigDecimal("1500.00"))
+                        .currency("INR")
+                        .validFrom(Instant.parse("2026-07-01T00:00:00Z"))
+                        .build();
 
-        when(pricingRepository.save(any(Pricing.class))).thenAnswer(invocation -> {
-            Pricing pricing = invocation.getArgument(0);
-            return pricing.toBuilder().id(UUID.randomUUID()).version(0L).build();
-        });
+        when(pricingRepository.save(any(Pricing.class)))
+                .thenAnswer(
+                        invocation -> {
+                            Pricing pricing = invocation.getArgument(0);
+                            return pricing.toBuilder().id(UUID.randomUUID()).version(0L).build();
+                        });
 
         var response = pricingApplicationService.createPricing(request);
 
@@ -63,14 +65,15 @@ class PricingApplicationServiceTest {
 
     @Test
     void shouldThrowValidationErrorForInvalidDiscountPercent() {
-        CreatePricingRequest request = CreatePricingRequest.builder()
-                .productId(UUID.randomUUID())
-                .sellerId(UUID.randomUUID())
-                .unitPrice(BigDecimal.TEN)
-                .currency("INR")
-                .discountPercent(new BigDecimal("101"))
-                .validFrom(Instant.parse("2026-07-01T00:00:00Z"))
-                .build();
+        CreatePricingRequest request =
+                CreatePricingRequest.builder()
+                        .productId(UUID.randomUUID())
+                        .sellerId(UUID.randomUUID())
+                        .unitPrice(BigDecimal.TEN)
+                        .currency("INR")
+                        .discountPercent(new BigDecimal("101"))
+                        .validFrom(Instant.parse("2026-07-01T00:00:00Z"))
+                        .build();
 
         assertThatThrownBy(() -> pricingApplicationService.createPricing(request))
                 .isInstanceOf(MarketplaceException.class)
@@ -90,25 +93,28 @@ class PricingApplicationServiceTest {
     @Test
     void shouldUpdatePricingWhenEntryExists() {
         UUID id = UUID.randomUUID();
-        Pricing existing = Pricing.builder()
-                .id(id)
-                .productId(UUID.randomUUID())
-                .sellerId(UUID.randomUUID())
-                .unitPrice(BigDecimal.TEN)
-                .currency("INR")
-                .minQuantity(1)
-                .validFrom(Instant.parse("2026-07-01T00:00:00Z"))
-                .status(PricingStatus.ACTIVE)
-                .version(1L)
-                .build();
+        Pricing existing =
+                Pricing.builder()
+                        .id(id)
+                        .productId(UUID.randomUUID())
+                        .sellerId(UUID.randomUUID())
+                        .unitPrice(BigDecimal.TEN)
+                        .currency("INR")
+                        .minQuantity(1)
+                        .validFrom(Instant.parse("2026-07-01T00:00:00Z"))
+                        .status(PricingStatus.ACTIVE)
+                        .version(1L)
+                        .build();
 
         when(pricingRepository.findById(id)).thenReturn(Optional.of(existing));
-        when(pricingRepository.save(any(Pricing.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(pricingRepository.save(any(Pricing.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
-        UpdatePricingRequest request = UpdatePricingRequest.builder()
-                .unitPrice(new BigDecimal("99.99"))
-                .discountPercent(new BigDecimal("5.00"))
-                .build();
+        UpdatePricingRequest request =
+                UpdatePricingRequest.builder()
+                        .unitPrice(new BigDecimal("99.99"))
+                        .discountPercent(new BigDecimal("5.00"))
+                        .build();
 
         var response = pricingApplicationService.updatePricing(id, request);
 

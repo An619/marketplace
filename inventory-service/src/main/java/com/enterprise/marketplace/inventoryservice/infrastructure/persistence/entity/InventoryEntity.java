@@ -1,13 +1,16 @@
 package com.enterprise.marketplace.inventoryservice.infrastructure.persistence.entity;
 
-import com.enterprise.marketplace.common.model.BaseEntity;
-import com.enterprise.marketplace.inventoryservice.domain.model.InventoryStatus;
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
-import java.util.UUID;
+
+import com.enterprise.marketplace.common.model.BaseEntity;
+import com.enterprise.marketplace.inventoryservice.domain.model.InventoryStatus;
+
 import lombok.Getter;
 import lombok.Setter;
 

@@ -2,15 +2,19 @@ package com.enterprise.marketplace.notificationservice.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Map;
+
+import org.junit.jupiter.api.Test;
+
 import com.enterprise.marketplace.notificationservice.entity.NotificationTemplateEntity;
 import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
 import com.enterprise.marketplace.notificationservice.enums.TemplateContentType;
-import java.util.Map;
-import org.junit.jupiter.api.Test;
 
 class NotificationTemplateEngineTest {
 
-    private final NotificationTemplateEngine engine = new NotificationTemplateEngine(new com.enterprise.marketplace.notificationservice.util.TemplateRenderer());
+    private final NotificationTemplateEngine engine =
+            new NotificationTemplateEngine(
+                    new com.enterprise.marketplace.notificationservice.util.TemplateRenderer());
 
     @Test
     void shouldRenderHtmlTemplateWithVariables() {

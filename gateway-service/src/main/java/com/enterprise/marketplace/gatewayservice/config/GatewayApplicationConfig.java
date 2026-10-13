@@ -1,15 +1,14 @@
 package com.enterprise.marketplace.gatewayservice.config;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
-/**
- * Gateway application beans not provided by servlet common-library auto-config.
- */
+/** Gateway application beans not provided by servlet common-library auto-config. */
 @Configuration
 public class GatewayApplicationConfig {
 

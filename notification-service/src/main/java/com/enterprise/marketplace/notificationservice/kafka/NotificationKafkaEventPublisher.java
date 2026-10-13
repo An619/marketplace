@@ -1,18 +1,25 @@
 package com.enterprise.marketplace.notificationservice.kafka;
 
-import com.enterprise.marketplace.notificationservice.constants.NotificationKafkaTopics;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
+import com.enterprise.marketplace.notificationservice.constants.NotificationKafkaTopics;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "marketplace.kafka", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+        prefix = "marketplace.kafka",
+        name = "enabled",
+        havingValue = "true",
+        matchIfMissing = true)
 public class NotificationKafkaEventPublisher {
 
     private final KafkaTemplate<String, String> kafkaTemplate;

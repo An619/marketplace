@@ -1,24 +1,31 @@
 package com.enterprise.marketplace.adminservice.redis;
 
-import com.enterprise.marketplace.adminservice.constants.AdminCacheKeys;
-import com.enterprise.marketplace.adminservice.dto.FeatureFlagResponse;
-import com.enterprise.marketplace.adminservice.dto.SettingResponse;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import com.enterprise.marketplace.adminservice.constants.AdminCacheKeys;
+import com.enterprise.marketplace.adminservice.dto.FeatureFlagResponse;
+import com.enterprise.marketplace.adminservice.dto.SettingResponse;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "marketplace.redis", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+        prefix = "marketplace.redis",
+        name = "enabled",
+        havingValue = "true",
+        matchIfMissing = true)
 public class AdminRedisCacheService implements AdminCachePort {
 
     private final StringRedisTemplate redisTemplate;

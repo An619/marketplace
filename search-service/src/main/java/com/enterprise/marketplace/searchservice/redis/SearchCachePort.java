@@ -1,7 +1,8 @@
 package com.enterprise.marketplace.searchservice.redis;
 
-import com.enterprise.marketplace.searchservice.dto.ProductSearchPageResponse;
 import java.util.Optional;
+
+import com.enterprise.marketplace.searchservice.dto.ProductSearchPageResponse;
 
 public interface SearchCachePort {
 

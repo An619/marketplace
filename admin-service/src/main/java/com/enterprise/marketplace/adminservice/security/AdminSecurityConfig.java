@@ -1,10 +1,10 @@
 package com.enterprise.marketplace.adminservice.security;
 
-import com.enterprise.marketplace.common.constant.MarketplaceRoles;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,30 +19,41 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.enterprise.marketplace.common.constant.MarketplaceRoles;
+
 @Configuration
 @EnableMethodSecurity(prePostEnabled = false)
 public class AdminSecurityConfig {
 
     @Bean
     SecurityFilterChain adminSecurityFilterChain(
-            HttpSecurity http, @Value("${marketplace.security.enabled:true}") boolean securityEnabled)
+            HttpSecurity http,
+            @Value("${marketplace.security.enabled:true}") boolean securityEnabled)
             throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                .sessionManagement(
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         if (securityEnabled) {
-            http.authorizeHttpRequests(auth -> auth.requestMatchers(
-                                    "/actuator/**",
-                                    "/swagger-ui.html",
-                                    "/swagger-ui/**",
-                                    "/v3/api-docs/**",
-                                    "/api/v1/bootstrap/**")
-                            .permitAll()
-                            .requestMatchers("/api/v1/admin/**")
-                            .hasRole(MarketplaceRoles.ADMIN)
-                            .anyRequest()
-                            .authenticated())
-                    .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
+            http.authorizeHttpRequests(
+                            auth ->
+                                    auth.requestMatchers(
+                                                    "/actuator/**",
+                                                    "/swagger-ui.html",
+                                                    "/swagger-ui/**",
+                                                    "/v3/api-docs/**",
+                                                    "/api/v1/bootstrap/**")
+                                            .permitAll()
+                                            .requestMatchers("/api/v1/admin/**")
+                                            .hasRole(MarketplaceRoles.ADMIN)
+                                            .anyRequest()
+                                            .authenticated())
+                    .oauth2ResourceServer(
+                            oauth2 ->
+                                    oauth2.jwt(
+                                            jwt ->
+                                                    jwt.jwtAuthenticationConverter(
+                                                            jwtAuthenticationConverter())));
         } else {
             http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
         }
@@ -57,7 +68,8 @@ public class AdminSecurityConfig {
         return converter;
     }
 
-    static class KeycloakRealmRoleConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
+    static class KeycloakRealmRoleConverter
+            implements Converter<Jwt, Collection<GrantedAuthority>> {
 
         @Override
         @SuppressWarnings("unchecked")
@@ -67,7 +79,10 @@ public class AdminSecurityConfig {
             if (realmAccess != null && realmAccess.get("roles") instanceof List<?> roles) {
                 roles.stream()
                         .map(Object::toString)
-                        .map(role -> new SimpleGrantedAuthority(MarketplaceRoles.ROLE_PREFIX + role))
+                        .map(
+                                role ->
+                                        new SimpleGrantedAuthority(
+                                                MarketplaceRoles.ROLE_PREFIX + role))
                         .forEach(authorities::add);
             }
             return authorities;

@@ -1,5 +1,10 @@
 package com.enterprise.marketplace.common.util;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import jakarta.validation.Validator;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -8,19 +13,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.enterprise.marketplace.common.exception.MarketplaceException;
 
-import jakarta.validation.Validator;
-
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 @ExtendWith(MockitoExtension.class)
 class ValidationUtilityTest {
 
-    @Mock
-    private Validator validator;
+    @Mock private Validator validator;
 
-    @InjectMocks
-    private ValidationUtility validationUtility;
+    @InjectMocks private ValidationUtility validationUtility;
 
     @Test
     void shouldValidateIndianMobile() {

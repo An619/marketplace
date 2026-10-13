@@ -1,11 +1,13 @@
 package com.enterprise.marketplace.identityservice.bootstrap.controller;
 
-import com.enterprise.marketplace.common.api.ApiResponse;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.enterprise.marketplace.common.api.ApiResponse;
 
 @RestController
 public class RootController {
@@ -28,7 +30,9 @@ public class RootController {
 
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("service", "identity-service");
-        payload.put("message", "Use the auth endpoints below (not /). Via gateway prefix with /api/identity");
+        payload.put(
+                "message",
+                "Use the auth endpoints below (not /). Via gateway prefix with /api/identity");
         payload.put("endpoints", endpoints);
 
         return ResponseEntity.ok(ApiResponse.success(payload, "Identity service root"));

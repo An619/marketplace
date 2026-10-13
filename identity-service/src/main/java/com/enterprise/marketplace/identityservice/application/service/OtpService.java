@@ -1,5 +1,13 @@
 package com.enterprise.marketplace.identityservice.application.service;
 
+import java.security.SecureRandom;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.enterprise.marketplace.common.exception.ErrorCode;
 import com.enterprise.marketplace.common.exception.MarketplaceException;
 import com.enterprise.marketplace.identityservice.application.dto.OtpResponse;
@@ -15,13 +23,8 @@ import com.enterprise.marketplace.identityservice.infrastructure.persistence.ent
 import com.enterprise.marketplace.identityservice.infrastructure.redis.AuthSessionStore;
 import com.enterprise.marketplace.identityservice.infrastructure.redis.OtpSessionData;
 import com.enterprise.marketplace.identityservice.infrastructure.redis.VerificationTokenData;
-import java.security.SecureRandom;
-import java.util.Optional;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -41,30 +44,41 @@ public class OtpService {
     }
 
     public OtpResponse resendOtp(ResendOtpRequest request) {
-        OtpSessionData existing = authRedisStore
-                .getOtpSession(request.getSessionId())
-                .orElseThrow(() -> new MarketplaceException(ErrorCode.RESOURCE_NOT_FOUND, "OTP session not found or expired"));
+        OtpSessionData existing =
+                authRedisStore
+                        .getOtpSession(request.getSessionId())
+                        .orElseThrow(
+                                () ->
+                                        new MarketplaceException(
+                                                ErrorCode.RESOURCE_NOT_FOUND,
+                                                "OTP session not found or expired"));
 
         long now = System.currentTimeMillis();
         long cooldownMs = authProperties.getOtp().getResendCooldownSeconds() * 1000L;
         if (now - existing.getLastSentAtEpochMs() < cooldownMs) {
             throw new MarketplaceException(
-                    ErrorCode.BUSINESS_RULE_VIOLATION,
-                    "Please wait before requesting another OTP");
+                    ErrorCode.BUSINESS_RULE_VIOLATION, "Please wait before requesting another OTP");
         }
 
-        return issueOtp(existing.getCountryCode(), existing.getMobileNumber(), existing.getSessionId());
+        return issueOtp(
+                existing.getCountryCode(), existing.getMobileNumber(), existing.getSessionId());
     }
 
     @Transactional(readOnly = true)
     public VerifyOtpResponse verifyOtp(VerifyOtpRequest request) {
-        OtpSessionData session = authRedisStore
-                .getOtpSession(request.getSessionId())
-                .orElseThrow(() -> new MarketplaceException(ErrorCode.RESOURCE_NOT_FOUND, "OTP session not found or expired"));
+        OtpSessionData session =
+                authRedisStore
+                        .getOtpSession(request.getSessionId())
+                        .orElseThrow(
+                                () ->
+                                        new MarketplaceException(
+                                                ErrorCode.RESOURCE_NOT_FOUND,
+                                                "OTP session not found or expired"));
 
         if (session.getAttempts() >= authProperties.getOtp().getMaxAttempts()) {
             authRedisStore.deleteOtpSession(session.getSessionId());
-            throw new MarketplaceException(ErrorCode.BUSINESS_RULE_VIOLATION, "OTP attempts exceeded");
+            throw new MarketplaceException(
+                    ErrorCode.BUSINESS_RULE_VIOLATION, "OTP attempts exceeded");
         }
 
         if (!passwordEncoder.matches(request.getOtp(), session.getOtpHash())) {
@@ -76,17 +90,21 @@ public class OtpService {
         authRedisStore.deleteOtpSession(session.getSessionId());
 
         Optional<MobileUserEntity> existing =
-                mobileUserJpaRepository.findByCountryCodeAndMobileNumber(session.getCountryCode(), session.getMobileNumber());
+                mobileUserJpaRepository.findByCountryCodeAndMobileNumber(
+                        session.getCountryCode(), session.getMobileNumber());
 
-        VerificationTokenData tokenData = VerificationTokenData.builder()
-                .sessionId(session.getSessionId())
-                .countryCode(session.getCountryCode())
-                .mobileNumber(session.getMobileNumber())
-                .userId(existing.map(MobileUserEntity::getId).orElse(null))
-                .userType(existing.map(MobileUserEntity::getUserType).orElse(null))
-                .onboardingStep(existing.map(MobileUserEntity::getOnboardingStep).orElse(OnboardingStep.OTP_VERIFIED))
-                .newUser(existing.isEmpty())
-                .build();
+        VerificationTokenData tokenData =
+                VerificationTokenData.builder()
+                        .sessionId(session.getSessionId())
+                        .countryCode(session.getCountryCode())
+                        .mobileNumber(session.getMobileNumber())
+                        .userId(existing.map(MobileUserEntity::getId).orElse(null))
+                        .userType(existing.map(MobileUserEntity::getUserType).orElse(null))
+                        .onboardingStep(
+                                existing.map(MobileUserEntity::getOnboardingStep)
+                                        .orElse(OnboardingStep.OTP_VERIFIED))
+                        .newUser(existing.isEmpty())
+                        .build();
 
         String verificationToken = authRedisStore.saveVerificationToken(tokenData);
 
@@ -103,22 +121,24 @@ public class OtpService {
         String otp = generateOtp(authProperties.getOtp().getLength());
         long now = System.currentTimeMillis();
 
-        OtpSessionData data = OtpSessionData.builder()
-                .sessionId(sessionId)
-                .countryCode(countryCode)
-                .mobileNumber(mobileNumber)
-                .otpHash(passwordEncoder.encode(otp))
-                .attempts(0)
-                .createdAtEpochMs(now)
-                .lastSentAtEpochMs(now)
-                .build();
+        OtpSessionData data =
+                OtpSessionData.builder()
+                        .sessionId(sessionId)
+                        .countryCode(countryCode)
+                        .mobileNumber(mobileNumber)
+                        .otpHash(passwordEncoder.encode(otp))
+                        .attempts(0)
+                        .createdAtEpochMs(now)
+                        .lastSentAtEpochMs(now)
+                        .build();
         authRedisStore.saveOtpSession(data);
         notificationClient.sendOtpSms(countryCode, mobileNumber, otp);
 
         boolean smsEnabled = authProperties.getOtp().isSmsEnabled();
-        String deliveryNote = smsEnabled
-                ? "OTP submitted to SMS provider"
-                : "SMS is disabled in local/dev. Use the otp field from this response to verify.";
+        String deliveryNote =
+                smsEnabled
+                        ? "OTP submitted to SMS provider"
+                        : "SMS is disabled in local/dev. Use the otp field from this response to verify.";
 
         return OtpResponse.builder()
                 .sessionId(sessionId)

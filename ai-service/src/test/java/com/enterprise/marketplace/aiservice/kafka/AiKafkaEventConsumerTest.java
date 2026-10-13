@@ -3,21 +3,20 @@ package com.enterprise.marketplace.aiservice.kafka;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 
-import com.enterprise.marketplace.aiservice.service.AiService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.enterprise.marketplace.aiservice.service.AiService;
+
 @ExtendWith(MockitoExtension.class)
 class AiKafkaEventConsumerTest {
 
-    @Mock
-    private AiService aiService;
+    @Mock private AiService aiService;
 
-    @InjectMocks
-    private AiKafkaEventConsumer consumer;
+    @InjectMocks private AiKafkaEventConsumer consumer;
 
     @Test
     void onProductCreatedDelegatesToService() {

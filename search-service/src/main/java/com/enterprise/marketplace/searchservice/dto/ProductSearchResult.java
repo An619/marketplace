@@ -2,6 +2,7 @@ package com.enterprise.marketplace.searchservice.dto;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

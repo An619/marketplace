@@ -1,14 +1,17 @@
 package com.enterprise.marketplace.productservice.entity;
 
-import com.enterprise.marketplace.common.model.BaseEntity;
-import com.enterprise.marketplace.productservice.enums.ProductStatus;
+import java.math.BigDecimal;
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
-import java.math.BigDecimal;
-import java.util.UUID;
+
+import com.enterprise.marketplace.common.model.BaseEntity;
+import com.enterprise.marketplace.productservice.enums.ProductStatus;
+
 import lombok.Getter;
 import lombok.Setter;
 

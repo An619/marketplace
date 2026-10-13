@@ -1,5 +1,10 @@
 package com.enterprise.marketplace.adminservice.mapper;
 
+import java.util.Collections;
+import java.util.Map;
+
+import org.springframework.stereotype.Component;
+
 import com.enterprise.marketplace.adminservice.dto.ConfigResponse;
 import com.enterprise.marketplace.adminservice.dto.FeatureFlagResponse;
 import com.enterprise.marketplace.adminservice.dto.SettingResponse;
@@ -8,10 +13,8 @@ import com.enterprise.marketplace.adminservice.entity.FeatureFlagEntity;
 import com.enterprise.marketplace.adminservice.entity.PlatformSettingEntity;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Collections;
-import java.util.Map;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor

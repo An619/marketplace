@@ -1,11 +1,13 @@
 package com.enterprise.marketplace.productservice.validation;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
+
 import com.enterprise.marketplace.productservice.dto.canonical.PricingSectionDto;
 import com.enterprise.marketplace.productservice.dto.canonical.ProductSectionDto;
 import com.enterprise.marketplace.productservice.dto.canonical.SellerSectionDto;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor

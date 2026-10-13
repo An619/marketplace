@@ -1,14 +1,13 @@
 package com.enterprise.marketplace.common.idempotency;
 
 import java.time.Instant;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Stored idempotency record for replay detection.
- */
+/** Stored idempotency record for replay detection. */
 @Data
 @Builder
 @NoArgsConstructor

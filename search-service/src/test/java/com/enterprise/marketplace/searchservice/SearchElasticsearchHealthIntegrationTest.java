@@ -1,5 +1,9 @@
 package com.enterprise.marketplace.searchservice;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,24 +16,22 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 @Testcontainers(disabledWithoutDocker = true)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
-    "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,"
-            + "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,"
-            + "org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration,"
-            + "org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration,"
-            + "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
-            + "org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration,"
-            + "org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration",
-    "marketplace.security.enabled=false",
-    "marketplace.kafka.enabled=false",
-    "marketplace.redis.enabled=false",
-    "marketplace.outbox.enabled=false"
-})
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = {
+            "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,"
+                    + "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,"
+                    + "org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration,"
+                    + "org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration,"
+                    + "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
+                    + "org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration,"
+                    + "org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration",
+            "marketplace.security.enabled=false",
+            "marketplace.kafka.enabled=false",
+            "marketplace.redis.enabled=false",
+            "marketplace.outbox.enabled=false"
+        })
 class SearchElasticsearchHealthIntegrationTest {
 
     @Container
@@ -39,12 +41,12 @@ class SearchElasticsearchHealthIntegrationTest {
 
     @DynamicPropertySource
     static void registerProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.elasticsearch.uris", () -> "http://" + elasticsearch.getHttpHostAddress());
+        registry.add(
+                "spring.elasticsearch.uris", () -> "http://" + elasticsearch.getHttpHostAddress());
         registry.add("marketplace.elasticsearch.enabled", () -> "true");
     }
 
-    @Autowired
-    private TestRestTemplate restTemplate;
+    @Autowired private TestRestTemplate restTemplate;
 
     @Test
     void elasticsearchHealthEndpointReturnsUp() {

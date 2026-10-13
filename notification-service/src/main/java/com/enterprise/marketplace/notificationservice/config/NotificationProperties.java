@@ -1,9 +1,11 @@
 package com.enterprise.marketplace.notificationservice.config;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import com.enterprise.marketplace.notificationservice.enums.EmailProviderType;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Getter
 @Setter

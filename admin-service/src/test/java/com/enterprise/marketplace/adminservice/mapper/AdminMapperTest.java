@@ -2,13 +2,15 @@ package com.enterprise.marketplace.adminservice.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.enterprise.marketplace.adminservice.dto.SettingResponse;
-import com.enterprise.marketplace.adminservice.entity.PlatformSettingEntity;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
+
+import com.enterprise.marketplace.adminservice.dto.SettingResponse;
+import com.enterprise.marketplace.adminservice.entity.PlatformSettingEntity;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 class AdminMapperTest {
 

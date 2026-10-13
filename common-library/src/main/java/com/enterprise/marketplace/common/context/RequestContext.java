@@ -1,17 +1,17 @@
 package com.enterprise.marketplace.common.context;
 
-import com.enterprise.marketplace.common.constant.HttpHeaders;
-import com.enterprise.marketplace.common.constant.MdcKeys;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.slf4j.MDC;
 
-/**
- * Thread-local request context holding correlation, request, tenant, and user identifiers.
- */
+import com.enterprise.marketplace.common.constant.MdcKeys;
+
+/** Thread-local request context holding correlation, request, tenant, and user identifiers. */
 public final class RequestContext {
 
-    private static final ThreadLocal<ContextHolder> CONTEXT = ThreadLocal.withInitial(ContextHolder::new);
+    private static final ThreadLocal<ContextHolder> CONTEXT =
+            ThreadLocal.withInitial(ContextHolder::new);
 
     private RequestContext() {
         throw new UnsupportedOperationException("Utility class");

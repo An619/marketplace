@@ -1,5 +1,18 @@
 package com.enterprise.marketplace.workflowservice.service.impl;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import com.enterprise.marketplace.common.context.RequestContext;
 import com.enterprise.marketplace.common.exception.ErrorCode;
 import com.enterprise.marketplace.common.exception.MarketplaceException;
@@ -28,19 +41,9 @@ import com.enterprise.marketplace.workflowservice.service.WorkflowService;
 import com.enterprise.marketplace.workflowservice.validation.WorkflowStatusTransitionValidator;
 import com.enterprise.marketplace.workflowservice.workflow.WorkflowEngine;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 @Slf4j
 @Service
@@ -69,7 +72,9 @@ public class WorkflowServiceImpl implements WorkflowService {
         applyRequestContext(request);
 
         WorkflowStatus initialStatus =
-                request.getInitialStatus() != null ? request.getInitialStatus() : WorkflowStatus.INITIAL;
+                request.getInitialStatus() != null
+                        ? request.getInitialStatus()
+                        : WorkflowStatus.INITIAL;
 
         WorkflowEntity workflow = new WorkflowEntity();
         workflow.setRequestId(request.getRequestId());
@@ -87,8 +92,13 @@ public class WorkflowServiceImpl implements WorkflowService {
 
         WorkflowEntity saved = workflowRepository.save(workflow);
 
-        WorkflowHistoryEntity history = workflowEngine.buildHistoryRecord(
-                saved, null, initialStatus, "Workflow created", workflowEngine.resolveActor(request.getInitiatedBy()));
+        WorkflowHistoryEntity history =
+                workflowEngine.buildHistoryRecord(
+                        saved,
+                        null,
+                        initialStatus,
+                        "Workflow created",
+                        workflowEngine.resolveActor(request.getInitiatedBy()));
         historyRepository.save(history);
 
         auditService.recordAudit(
@@ -100,34 +110,53 @@ public class WorkflowServiceImpl implements WorkflowService {
                 workflowMapper.toResponse(saved),
                 workflowEngine.resolveActor(request.getInitiatedBy()));
 
-        saveOutboxEvent(saved, "WORKFLOW_CREATED", WorkflowKafkaTopics.WORKFLOW_CREATED, buildEventPayload(saved));
-        saveOutboxEvent(saved, "AUDIT_CREATED", WorkflowKafkaTopics.AUDIT_CREATED, buildAuditPayload(saved, AuditOperation.CREATE));
+        saveOutboxEvent(
+                saved,
+                "WORKFLOW_CREATED",
+                WorkflowKafkaTopics.WORKFLOW_CREATED,
+                buildEventPayload(saved));
+        saveOutboxEvent(
+                saved,
+                "AUDIT_CREATED",
+                WorkflowKafkaTopics.AUDIT_CREATED,
+                buildAuditPayload(saved, AuditOperation.CREATE));
 
         WorkflowResponse response = workflowMapper.toResponse(saved, List.of(history));
         cachePort.cacheWorkflow(response);
-        log.info("Workflow created id={} requestId={} status={}", saved.getId(), saved.getRequestId(), initialStatus);
+        log.info(
+                "Workflow created id={} requestId={} status={}",
+                saved.getId(),
+                saved.getRequestId(),
+                initialStatus);
         return response;
     }
 
     @Override
     public WorkflowResponse getWorkflow(UUID workflowId) {
         WorkflowEntity workflow = findActiveWorkflow(workflowId);
-        List<WorkflowHistoryEntity> history = historyRepository.findByWorkflowIdOrderByCreatedAtAsc(workflowId);
+        List<WorkflowHistoryEntity> history =
+                historyRepository.findByWorkflowIdOrderByCreatedAtAsc(workflowId);
         return workflowMapper.toResponse(workflow, history);
     }
 
     @Override
     public WorkflowResponse getWorkflowByRequestId(String requestId) {
-        WorkflowEntity workflow = workflowRepository
-                .findByRequestIdAndActiveTrue(requestId)
-                .orElseThrow(() -> new ResourceNotFoundException("Workflow not found for requestId " + requestId));
+        WorkflowEntity workflow =
+                workflowRepository
+                        .findByRequestIdAndActiveTrue(requestId)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "Workflow not found for requestId " + requestId));
         return getWorkflow(workflow.getId());
     }
 
     @Override
     public WorkflowPageResponse getWorkflowsByStatus(WorkflowStatus status, int page, int size) {
-        Page<WorkflowEntity> result = workflowRepository.findByStatusAndActiveTrue(
-                status, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+        Page<WorkflowEntity> result =
+                workflowRepository.findByStatusAndActiveTrue(
+                        status,
+                        PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
         List<WorkflowResponse> content =
                 result.getContent().stream().map(workflowMapper::toResponse).toList();
         return WorkflowPageResponse.builder()
@@ -171,7 +200,11 @@ public class WorkflowServiceImpl implements WorkflowService {
                 workflowMapper.toResponse(saved),
                 workflowEngine.resolveActor(request.getInitiatedBy()));
 
-        saveOutboxEvent(saved, "WORKFLOW_UPDATED", WorkflowKafkaTopics.WORKFLOW_UPDATED, buildEventPayload(saved));
+        saveOutboxEvent(
+                saved,
+                "WORKFLOW_UPDATED",
+                WorkflowKafkaTopics.WORKFLOW_UPDATED,
+                buildEventPayload(saved));
 
         WorkflowResponse response = workflowMapper.toResponse(saved);
         cachePort.evictWorkflow(saved.getId());
@@ -207,7 +240,11 @@ public class WorkflowServiceImpl implements WorkflowService {
                 null,
                 workflowEngine.resolveActor(null));
 
-        saveOutboxEvent(workflow, "WORKFLOW_CANCELLED", WorkflowKafkaTopics.WORKFLOW_CANCELLED, buildEventPayload(workflow));
+        saveOutboxEvent(
+                workflow,
+                "WORKFLOW_CANCELLED",
+                WorkflowKafkaTopics.WORKFLOW_CANCELLED,
+                buildEventPayload(workflow));
         cachePort.evictWorkflow(workflowId);
         log.info("Workflow soft-deleted id={}", workflowId);
     }
@@ -216,9 +253,13 @@ public class WorkflowServiceImpl implements WorkflowService {
     @Transactional
     public WorkflowResponse advanceWorkflowFromEvent(
             String requestId, WorkflowStatus targetStatus, String eventSource, String payload) {
-        WorkflowEntity workflow = workflowRepository
-                .findByRequestIdAndActiveTrue(requestId)
-                .orElseThrow(() -> new ResourceNotFoundException("Workflow not found for requestId " + requestId));
+        WorkflowEntity workflow =
+                workflowRepository
+                        .findByRequestIdAndActiveTrue(requestId)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "Workflow not found for requestId " + requestId));
 
         WorkflowEventEntity event = new WorkflowEventEntity();
         event.setWorkflowId(workflow.getId());
@@ -239,7 +280,8 @@ public class WorkflowServiceImpl implements WorkflowService {
                 "kafka:" + eventSource);
 
         if (targetStatus != null && targetStatus != workflow.getStatus()) {
-            return transitionWorkflow(workflow, targetStatus, "Advanced from " + eventSource, "kafka:" + eventSource);
+            return transitionWorkflow(
+                    workflow, targetStatus, "Advanced from " + eventSource, "kafka:" + eventSource);
         }
         return workflowMapper.toResponse(workflow);
     }
@@ -269,7 +311,9 @@ public class WorkflowServiceImpl implements WorkflowService {
         publishStatusOutboxEvents(saved, fromStatus, targetStatus);
 
         WorkflowResponse response =
-                workflowMapper.toResponse(saved, historyRepository.findByWorkflowIdOrderByCreatedAtAsc(saved.getId()));
+                workflowMapper.toResponse(
+                        saved,
+                        historyRepository.findByWorkflowIdOrderByCreatedAtAsc(saved.getId()));
         cachePort.evictWorkflow(saved.getId());
         cachePort.cacheWorkflow(response);
         log.info(
@@ -286,38 +330,55 @@ public class WorkflowServiceImpl implements WorkflowService {
         payload.put("previousStatus", fromStatus.name());
         payload.put("status", targetStatus.name());
 
-        saveOutboxEvent(workflow, "WORKFLOW_UPDATED", WorkflowKafkaTopics.WORKFLOW_UPDATED, payload);
-        saveOutboxEvent(workflow, "AUDIT_CREATED", WorkflowKafkaTopics.AUDIT_CREATED, buildAuditPayload(workflow, AuditOperation.STATUS_CHANGE));
+        saveOutboxEvent(
+                workflow, "WORKFLOW_UPDATED", WorkflowKafkaTopics.WORKFLOW_UPDATED, payload);
+        saveOutboxEvent(
+                workflow,
+                "AUDIT_CREATED",
+                WorkflowKafkaTopics.AUDIT_CREATED,
+                buildAuditPayload(workflow, AuditOperation.STATUS_CHANGE));
 
         if (targetStatus == WorkflowStatus.COMPLETED) {
-            saveOutboxEvent(workflow, "WORKFLOW_COMPLETED", WorkflowKafkaTopics.WORKFLOW_COMPLETED, payload);
+            saveOutboxEvent(
+                    workflow,
+                    "WORKFLOW_COMPLETED",
+                    WorkflowKafkaTopics.WORKFLOW_COMPLETED,
+                    payload);
             saveOutboxEvent(
                     workflow,
                     "NOTIFICATION_CREATED",
                     WorkflowKafkaTopics.NOTIFICATION_CREATED,
                     buildNotificationPayload(workflow));
         } else if (targetStatus == WorkflowStatus.FAILED) {
-            saveOutboxEvent(workflow, "WORKFLOW_FAILED", WorkflowKafkaTopics.WORKFLOW_FAILED, payload);
+            saveOutboxEvent(
+                    workflow, "WORKFLOW_FAILED", WorkflowKafkaTopics.WORKFLOW_FAILED, payload);
         } else if (targetStatus == WorkflowStatus.CANCELLED) {
-            saveOutboxEvent(workflow, "WORKFLOW_CANCELLED", WorkflowKafkaTopics.WORKFLOW_CANCELLED, payload);
+            saveOutboxEvent(
+                    workflow,
+                    "WORKFLOW_CANCELLED",
+                    WorkflowKafkaTopics.WORKFLOW_CANCELLED,
+                    payload);
         }
     }
 
     private WorkflowEntity findActiveWorkflow(UUID workflowId) {
         return workflowRepository
                 .findByIdAndActiveTrue(workflowId)
-                .orElseThrow(() -> new ResourceNotFoundException("Workflow not found: " + workflowId));
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Workflow not found: " + workflowId));
     }
 
     private void applyRequestContext(CreateWorkflowRequest request) {
         if (StringUtils.hasText(request.getCorrelationId())) {
             RequestContext.setCorrelationId(request.getCorrelationId());
         }
-        RequestContext.getTenantId().ifPresent(t -> {
-            if (!StringUtils.hasText(request.getTenantId())) {
-                request.setTenantId(t);
-            }
-        });
+        RequestContext.getTenantId()
+                .ifPresent(
+                        t -> {
+                            if (!StringUtils.hasText(request.getTenantId())) {
+                                request.setTenantId(t);
+                            }
+                        });
     }
 
     private String resolveCorrelationId(String explicit) {
@@ -325,7 +386,9 @@ public class WorkflowServiceImpl implements WorkflowService {
             return explicit;
         }
         String fromContext = RequestContext.getCorrelationId();
-        return StringUtils.hasText(fromContext) ? fromContext : RequestContext.generateCorrelationId();
+        return StringUtils.hasText(fromContext)
+                ? fromContext
+                : RequestContext.generateCorrelationId();
     }
 
     private void saveOutboxEvent(
@@ -353,14 +416,17 @@ public class WorkflowServiceImpl implements WorkflowService {
         payload.put("aggregateId", workflow.getAggregateId().toString());
         payload.put("operationType", workflow.getOperationType().name());
         payload.put("status", workflow.getStatus().name());
-        payload.put("previousStatus", workflow.getPreviousStatus() != null ? workflow.getPreviousStatus().name() : null);
+        payload.put(
+                "previousStatus",
+                workflow.getPreviousStatus() != null ? workflow.getPreviousStatus().name() : null);
         payload.put("sourceSystem", workflow.getSourceSystem());
         payload.put("initiatedBy", workflow.getInitiatedBy());
         payload.put("message", workflow.getMessage());
         return payload;
     }
 
-    private Map<String, Object> buildAuditPayload(WorkflowEntity workflow, AuditOperation operation) {
+    private Map<String, Object> buildAuditPayload(
+            WorkflowEntity workflow, AuditOperation operation) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("workflowId", workflow.getId().toString());
         payload.put("requestId", workflow.getRequestId());
@@ -397,7 +463,8 @@ public class WorkflowServiceImpl implements WorkflowService {
         try {
             return objectMapper.writeValueAsString(payload);
         } catch (Exception ex) {
-            throw new MarketplaceException(ErrorCode.INTERNAL_ERROR, "Failed to serialize outbox payload");
+            throw new MarketplaceException(
+                    ErrorCode.INTERNAL_ERROR, "Failed to serialize outbox payload");
         }
     }
 }

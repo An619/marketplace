@@ -1,13 +1,16 @@
 package com.enterprise.marketplace.auditservice.mapper;
 
+import java.util.Collections;
+import java.util.Map;
+
+import org.springframework.stereotype.Component;
+
 import com.enterprise.marketplace.auditservice.dto.AuditResponse;
 import com.enterprise.marketplace.auditservice.entity.AuditRecordEntity;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Collections;
-import java.util.Map;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor

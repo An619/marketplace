@@ -1,13 +1,15 @@
 package com.enterprise.marketplace.workflowservice.repository;
 
-import com.enterprise.marketplace.workflowservice.entity.WorkflowEntity;
-import com.enterprise.marketplace.workflowservice.enums.WorkflowStatus;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.enterprise.marketplace.workflowservice.entity.WorkflowEntity;
+import com.enterprise.marketplace.workflowservice.enums.WorkflowStatus;
 
 public interface WorkflowRepository extends JpaRepository<WorkflowEntity, UUID> {
 
@@ -18,7 +20,8 @@ public interface WorkflowRepository extends JpaRepository<WorkflowEntity, UUID> 
     Page<WorkflowEntity> findByStatusAndActiveTrue(WorkflowStatus status, Pageable pageable);
 
     Optional<WorkflowEntity> findByAggregateTypeAndAggregateIdAndActiveTrue(
-            com.enterprise.marketplace.workflowservice.enums.AggregateType aggregateType, UUID aggregateId);
+            com.enterprise.marketplace.workflowservice.enums.AggregateType aggregateType,
+            UUID aggregateId);
 
     List<WorkflowEntity> findByCorrelationIdAndActiveTrue(String correlationId);
 }

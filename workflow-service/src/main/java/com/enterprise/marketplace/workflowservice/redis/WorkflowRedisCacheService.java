@@ -1,5 +1,16 @@
 package com.enterprise.marketplace.workflowservice.redis;
 
+import java.time.Duration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Service;
+
 import com.enterprise.marketplace.workflowservice.constants.WorkflowCacheKeys;
 import com.enterprise.marketplace.workflowservice.dto.WorkflowResponse;
 import com.enterprise.marketplace.workflowservice.entity.WorkflowTransitionEntity;
@@ -7,22 +18,18 @@ import com.enterprise.marketplace.workflowservice.enums.WorkflowStatus;
 import com.enterprise.marketplace.workflowservice.repository.WorkflowTransitionRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Duration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "marketplace.redis", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+        prefix = "marketplace.redis",
+        name = "enabled",
+        havingValue = "true",
+        matchIfMissing = true)
 public class WorkflowRedisCacheService implements WorkflowCachePort {
 
     private final StringRedisTemplate redisTemplate;
@@ -38,7 +45,10 @@ public class WorkflowRedisCacheService implements WorkflowCachePort {
             String key = WorkflowCacheKeys.workflowKey(response.getId());
             redisTemplate
                     .opsForValue()
-                    .set(key, objectMapper.writeValueAsString(response), Duration.ofSeconds(cacheTtlSeconds));
+                    .set(
+                            key,
+                            objectMapper.writeValueAsString(response),
+                            Duration.ofSeconds(cacheTtlSeconds));
         } catch (Exception ex) {
             log.warn("Failed to cache workflow id={}", response.getId(), ex);
         }

@@ -9,7 +9,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class OllamaClientConfig {
 
     @Bean
-    public WebClient ollamaWebClient(@Value("${marketplace.ollama.base-url:http://localhost:11434}") String baseUrl) {
+    public WebClient ollamaWebClient(
+            @Value("${marketplace.ollama.base-url:http://localhost:11434}") String baseUrl) {
         return WebClient.builder().baseUrl(baseUrl).build();
     }
 }

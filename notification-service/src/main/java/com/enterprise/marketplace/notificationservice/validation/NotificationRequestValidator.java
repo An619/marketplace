@@ -1,60 +1,67 @@
 package com.enterprise.marketplace.notificationservice.validation;
 
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
 import com.enterprise.marketplace.common.exception.ErrorCode;
 import com.enterprise.marketplace.common.exception.MarketplaceException;
 import com.enterprise.marketplace.notificationservice.dto.CreateNotificationRequest;
 import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
 import com.enterprise.marketplace.notificationservice.enums.NotificationStatus;
 import com.enterprise.marketplace.notificationservice.repository.NotificationRepository;
-import java.util.EnumSet;
-import java.util.Map;
-import java.util.Set;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 @Component
 @RequiredArgsConstructor
 public class NotificationRequestValidator {
 
-    private static final Map<NotificationStatus, Set<NotificationStatus>> ALLOWED_TRANSITIONS = Map.of(
-            NotificationStatus.CREATED,
-                    EnumSet.of(
-                            NotificationStatus.QUEUED,
-                            NotificationStatus.PROCESSING,
-                            NotificationStatus.CANCELLED,
-                            NotificationStatus.EXPIRED),
-            NotificationStatus.QUEUED,
-                    EnumSet.of(
-                            NotificationStatus.PROCESSING,
-                            NotificationStatus.CANCELLED,
-                            NotificationStatus.EXPIRED),
-            NotificationStatus.PROCESSING,
-                    EnumSet.of(
-                            NotificationStatus.SENT,
-                            NotificationStatus.DELIVERED,
-                            NotificationStatus.FAILED,
-                            NotificationStatus.RETRYING),
-            NotificationStatus.RETRYING,
-                    EnumSet.of(
-                            NotificationStatus.QUEUED,
-                            NotificationStatus.PROCESSING,
-                            NotificationStatus.CANCELLED,
-                            NotificationStatus.EXPIRED),
-            NotificationStatus.SENT,
-                    EnumSet.of(NotificationStatus.DELIVERED, NotificationStatus.FAILED),
-            NotificationStatus.FAILED,
-                    EnumSet.of(NotificationStatus.RETRYING, NotificationStatus.CANCELLED),
-            NotificationStatus.DELIVERED, EnumSet.noneOf(NotificationStatus.class),
-            NotificationStatus.CANCELLED, EnumSet.noneOf(NotificationStatus.class),
-            NotificationStatus.EXPIRED, EnumSet.noneOf(NotificationStatus.class));
+    private static final Map<NotificationStatus, Set<NotificationStatus>> ALLOWED_TRANSITIONS =
+            Map.of(
+                    NotificationStatus.CREATED,
+                            EnumSet.of(
+                                    NotificationStatus.QUEUED,
+                                    NotificationStatus.PROCESSING,
+                                    NotificationStatus.CANCELLED,
+                                    NotificationStatus.EXPIRED),
+                    NotificationStatus.QUEUED,
+                            EnumSet.of(
+                                    NotificationStatus.PROCESSING,
+                                    NotificationStatus.CANCELLED,
+                                    NotificationStatus.EXPIRED),
+                    NotificationStatus.PROCESSING,
+                            EnumSet.of(
+                                    NotificationStatus.SENT,
+                                    NotificationStatus.DELIVERED,
+                                    NotificationStatus.FAILED,
+                                    NotificationStatus.RETRYING),
+                    NotificationStatus.RETRYING,
+                            EnumSet.of(
+                                    NotificationStatus.QUEUED,
+                                    NotificationStatus.PROCESSING,
+                                    NotificationStatus.CANCELLED,
+                                    NotificationStatus.EXPIRED),
+                    NotificationStatus.SENT,
+                            EnumSet.of(NotificationStatus.DELIVERED, NotificationStatus.FAILED),
+                    NotificationStatus.FAILED,
+                            EnumSet.of(NotificationStatus.RETRYING, NotificationStatus.CANCELLED),
+                    NotificationStatus.DELIVERED, EnumSet.noneOf(NotificationStatus.class),
+                    NotificationStatus.CANCELLED, EnumSet.noneOf(NotificationStatus.class),
+                    NotificationStatus.EXPIRED, EnumSet.noneOf(NotificationStatus.class));
 
     private final NotificationRepository notificationRepository;
 
     public void validateCreateRequest(CreateNotificationRequest request) {
         validateRequestIdUnique(request.getRequestId());
         validateChannelRequirements(
-                request.getChannel(), request.getRecipientAddress(), request.getBody(), request.getTemplateCode());
+                request.getChannel(),
+                request.getRecipientAddress(),
+                request.getBody(),
+                request.getTemplateCode());
     }
 
     public void validateTransition(NotificationStatus fromStatus, NotificationStatus toStatus) {
@@ -72,10 +79,14 @@ public class NotificationRequestValidator {
     }
 
     public void validateRequestIdUnique(String requestId) {
-        notificationRepository.findByRequestIdAndActiveTrue(requestId).ifPresent(existing -> {
-            throw new MarketplaceException(
-                    ErrorCode.CONFLICT, "Notification already exists for requestId " + requestId);
-        });
+        notificationRepository
+                .findByRequestIdAndActiveTrue(requestId)
+                .ifPresent(
+                        existing -> {
+                            throw new MarketplaceException(
+                                    ErrorCode.CONFLICT,
+                                    "Notification already exists for requestId " + requestId);
+                        });
     }
 
     public void validateRetryAllowed(NotificationStatus status, int retryCount, int maxRetries) {
@@ -92,7 +103,10 @@ public class NotificationRequestValidator {
     }
 
     public void validateChannelRequirements(
-            NotificationChannel channel, String recipientAddress, String body, String templateCode) {
+            NotificationChannel channel,
+            String recipientAddress,
+            String body,
+            String templateCode) {
         if (channel != NotificationChannel.IN_APP && !StringUtils.hasText(recipientAddress)) {
             throw new MarketplaceException(
                     ErrorCode.VALIDATION_ERROR,

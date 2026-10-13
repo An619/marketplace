@@ -1,5 +1,7 @@
 package com.enterprise.marketplace.notificationservice.audit;
 
+import org.springframework.stereotype.Component;
+
 import com.enterprise.marketplace.common.context.RequestContext;
 import com.enterprise.marketplace.notificationservice.entity.NotificationAuditEntity;
 import com.enterprise.marketplace.notificationservice.entity.NotificationEntity;
@@ -7,9 +9,9 @@ import com.enterprise.marketplace.notificationservice.enums.AuditOperation;
 import com.enterprise.marketplace.notificationservice.enums.NotificationStatus;
 import com.enterprise.marketplace.notificationservice.repository.NotificationAuditRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component

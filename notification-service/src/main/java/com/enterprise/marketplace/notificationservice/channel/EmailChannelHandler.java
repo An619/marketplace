@@ -1,17 +1,20 @@
 package com.enterprise.marketplace.notificationservice.channel;
 
-import com.enterprise.marketplace.notificationservice.config.NotificationProperties;
-import com.enterprise.marketplace.notificationservice.entity.NotificationEntity;
-import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
 import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+
+import com.enterprise.marketplace.notificationservice.config.NotificationProperties;
+import com.enterprise.marketplace.notificationservice.entity.NotificationEntity;
+import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -44,7 +47,8 @@ public class EmailChannelHandler implements NotificationChannelHandler {
                             : "Notification");
             helper.setText(notification.getBody(), false);
             mailSender.send(message);
-            return ChannelDeliveryResult.success("Email sent to " + notification.getRecipientAddress());
+            return ChannelDeliveryResult.success(
+                    "Email sent to " + notification.getRecipientAddress());
         } catch (Exception ex) {
             log.error("Failed to send email notification id={}", notification.getId(), ex);
             return ChannelDeliveryResult.failure(ex.getMessage());

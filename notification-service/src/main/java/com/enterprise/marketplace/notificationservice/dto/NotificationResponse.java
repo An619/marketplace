@@ -1,11 +1,13 @@
 package com.enterprise.marketplace.notificationservice.dto;
 
-import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
-import com.enterprise.marketplace.notificationservice.enums.NotificationStatus;
-import com.enterprise.marketplace.notificationservice.enums.NotificationType;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
+
+import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
+import com.enterprise.marketplace.notificationservice.enums.NotificationStatus;
+import com.enterprise.marketplace.notificationservice.enums.NotificationType;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

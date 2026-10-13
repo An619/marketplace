@@ -3,13 +3,12 @@ package com.enterprise.marketplace.pricingservice.domain.model;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Value;
 import lombok.With;
 
-/**
- * Pricing aggregate root (domain model — no framework dependencies).
- */
+/** Pricing aggregate root (domain model — no framework dependencies). */
 @Value
 @Builder(toBuilder = true)
 @With

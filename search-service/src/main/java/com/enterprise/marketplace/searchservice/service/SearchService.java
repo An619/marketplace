@@ -1,9 +1,10 @@
 package com.enterprise.marketplace.searchservice.service;
 
+import java.util.UUID;
+
 import com.enterprise.marketplace.searchservice.dto.ProductSearchPageResponse;
 import com.enterprise.marketplace.searchservice.dto.ProductSearchRequest;
 import com.enterprise.marketplace.searchservice.dto.ProductSearchResult;
-import java.util.UUID;
 
 public interface SearchService {
 

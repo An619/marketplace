@@ -1,8 +1,10 @@
 package com.enterprise.marketplace.categoryservice.application.dto;
 
-import com.enterprise.marketplace.categoryservice.domain.model.CategoryStatus;
 import java.time.Instant;
 import java.util.UUID;
+
+import com.enterprise.marketplace.categoryservice.domain.model.CategoryStatus;
+
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;

@@ -1,12 +1,13 @@
 package com.enterprise.marketplace.pricingservice.infrastructure.persistence.mapper;
 
-import com.enterprise.marketplace.pricingservice.domain.model.Pricing;
-import com.enterprise.marketplace.pricingservice.infrastructure.persistence.entity.PricingEntity;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+
+import com.enterprise.marketplace.pricingservice.domain.model.Pricing;
+import com.enterprise.marketplace.pricingservice.infrastructure.persistence.entity.PricingEntity;
 
 @Mapper(componentModel = "spring")
 public interface PricingPersistenceMapper {

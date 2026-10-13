@@ -1,14 +1,17 @@
 package com.enterprise.marketplace.notificationservice.provider.email;
 
+import java.util.List;
+
+import org.springframework.stereotype.Component;
+
 import com.enterprise.marketplace.notificationservice.config.NotificationProperties;
 import com.enterprise.marketplace.notificationservice.entity.NotificationEntity;
 import com.enterprise.marketplace.notificationservice.enums.EmailProviderType;
 import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
 import com.enterprise.marketplace.notificationservice.provider.NotificationProvider;
 import com.enterprise.marketplace.notificationservice.provider.ProviderDeliveryResult;
-import java.util.List;
+
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
@@ -18,12 +21,17 @@ public class EmailNotificationProvider implements NotificationProvider {
     private final List<NotificationProvider> emailProviders;
 
     public EmailNotificationProvider(
-            NotificationProperties notificationProperties, List<NotificationProvider> allProviders) {
+            NotificationProperties notificationProperties,
+            List<NotificationProvider> allProviders) {
         this.notificationProperties = notificationProperties;
-        this.emailProviders = allProviders.stream()
-                .filter(provider -> provider.getChannel() == NotificationChannel.EMAIL
-                        && provider.getClass() != EmailNotificationProvider.class)
-                .toList();
+        this.emailProviders =
+                allProviders.stream()
+                        .filter(
+                                provider ->
+                                        provider.getChannel() == NotificationChannel.EMAIL
+                                                && provider.getClass()
+                                                        != EmailNotificationProvider.class)
+                        .toList();
     }
 
     @Override

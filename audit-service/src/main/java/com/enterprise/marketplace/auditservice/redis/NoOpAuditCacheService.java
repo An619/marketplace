@@ -1,11 +1,13 @@
 package com.enterprise.marketplace.auditservice.redis;
 
-import com.enterprise.marketplace.auditservice.dto.AuditResponse;
-import com.enterprise.marketplace.auditservice.dto.AuditTimelineResponse;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+
+import com.enterprise.marketplace.auditservice.dto.AuditResponse;
+import com.enterprise.marketplace.auditservice.dto.AuditTimelineResponse;
 
 @Service
 @ConditionalOnProperty(prefix = "marketplace.redis", name = "enabled", havingValue = "false")

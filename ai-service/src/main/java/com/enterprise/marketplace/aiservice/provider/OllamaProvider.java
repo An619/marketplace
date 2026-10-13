@@ -1,23 +1,30 @@
 package com.enterprise.marketplace.aiservice.provider;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "marketplace.ollama", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+        prefix = "marketplace.ollama",
+        name = "enabled",
+        havingValue = "true",
+        matchIfMissing = true)
 public class OllamaProvider {
 
     private final WebClient ollamaWebClient;
@@ -38,19 +45,21 @@ public class OllamaProvider {
 
         long start = System.currentTimeMillis();
         try {
-            String responseBody = ollamaWebClient
-                    .post()
-                    .uri("/api/chat")
-                    .bodyValue(body)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block(Duration.ofSeconds(timeoutSeconds));
+            String responseBody =
+                    ollamaWebClient
+                            .post()
+                            .uri("/api/chat")
+                            .bodyValue(body)
+                            .retrieve()
+                            .bodyToMono(String.class)
+                            .block(Duration.ofSeconds(timeoutSeconds));
             JsonNode root = objectMapper.readTree(responseBody);
             String content = root.path("message").path("content").asText("");
             return OllamaResult.success(content, resolvedModel, System.currentTimeMillis() - start);
         } catch (Exception ex) {
             log.warn("Ollama chat failed model={}", resolvedModel, ex);
-            return OllamaResult.failure(ex.getMessage(), resolvedModel, System.currentTimeMillis() - start);
+            return OllamaResult.failure(
+                    ex.getMessage(), resolvedModel, System.currentTimeMillis() - start);
         }
     }
 
@@ -66,19 +75,21 @@ public class OllamaProvider {
 
         long start = System.currentTimeMillis();
         try {
-            String responseBody = ollamaWebClient
-                    .post()
-                    .uri("/api/generate")
-                    .bodyValue(body)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block(Duration.ofSeconds(timeoutSeconds));
+            String responseBody =
+                    ollamaWebClient
+                            .post()
+                            .uri("/api/generate")
+                            .bodyValue(body)
+                            .retrieve()
+                            .bodyToMono(String.class)
+                            .block(Duration.ofSeconds(timeoutSeconds));
             JsonNode root = objectMapper.readTree(responseBody);
             String content = root.path("response").asText("");
             return OllamaResult.success(content, resolvedModel, System.currentTimeMillis() - start);
         } catch (Exception ex) {
             log.warn("Ollama generate failed model={}", resolvedModel, ex);
-            return OllamaResult.failure(ex.getMessage(), resolvedModel, System.currentTimeMillis() - start);
+            return OllamaResult.failure(
+                    ex.getMessage(), resolvedModel, System.currentTimeMillis() - start);
         }
     }
 
@@ -95,7 +106,8 @@ public class OllamaProvider {
 
     public record OllamaMessage(String role, String content) {}
 
-    public record OllamaResult(boolean success, String content, String model, long latencyMs, String error) {
+    public record OllamaResult(
+            boolean success, String content, String model, long latencyMs, String error) {
 
         static OllamaResult success(String content, String model, long latencyMs) {
             return new OllamaResult(true, content, model, latencyMs, null);

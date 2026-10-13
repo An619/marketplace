@@ -1,8 +1,11 @@
 package com.enterprise.marketplace.productservice.dto.canonical;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
+
+import jakarta.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -13,6 +16,5 @@ import lombok.extern.jackson.Jacksonized;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SellerSectionDto {
 
-    @NotNull
-    UUID sellerId;
+    @NotNull UUID sellerId;
 }

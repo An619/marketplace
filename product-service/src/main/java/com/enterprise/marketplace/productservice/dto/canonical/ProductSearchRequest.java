@@ -1,8 +1,10 @@
 package com.enterprise.marketplace.productservice.dto.canonical;
 
+import java.util.UUID;
+
 import com.enterprise.marketplace.productservice.enums.ProductStatus;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -21,12 +23,9 @@ public class ProductSearchRequest {
 
     String keyword;
 
-    @Builder.Default
-    int page = 0;
+    @Builder.Default int page = 0;
 
-    @Builder.Default
-    int size = 20;
+    @Builder.Default int size = 20;
 
-    @Builder.Default
-    String sort = "createdAt,desc";
+    @Builder.Default String sort = "createdAt,desc";
 }

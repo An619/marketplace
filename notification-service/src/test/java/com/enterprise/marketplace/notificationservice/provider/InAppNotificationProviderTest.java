@@ -2,27 +2,27 @@ package com.enterprise.marketplace.notificationservice.provider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.enterprise.marketplace.notificationservice.entity.NotificationEntity;
-import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
-import com.enterprise.marketplace.notificationservice.enums.NotificationStatus;
-import com.enterprise.marketplace.notificationservice.enums.NotificationType;
-import com.enterprise.marketplace.notificationservice.provider.inapp.InAppNotificationProvider;
-import com.enterprise.marketplace.notificationservice.repository.NotificationInboxRepository;
 import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.enterprise.marketplace.notificationservice.entity.NotificationEntity;
+import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
+import com.enterprise.marketplace.notificationservice.enums.NotificationStatus;
+import com.enterprise.marketplace.notificationservice.enums.NotificationType;
+import com.enterprise.marketplace.notificationservice.provider.inapp.InAppNotificationProvider;
+import com.enterprise.marketplace.notificationservice.repository.NotificationInboxRepository;
+
 @ExtendWith(MockitoExtension.class)
 class InAppNotificationProviderTest {
 
-    @Mock
-    private NotificationInboxRepository inboxRepository;
+    @Mock private NotificationInboxRepository inboxRepository;
 
-    @InjectMocks
-    private InAppNotificationProvider provider;
+    @InjectMocks private InAppNotificationProvider provider;
 
     @Test
     void shouldDeliverInAppNotification() {

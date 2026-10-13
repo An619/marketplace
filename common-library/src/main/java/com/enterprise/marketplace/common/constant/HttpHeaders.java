@@ -1,8 +1,6 @@
 package com.enterprise.marketplace.common.constant;
 
-/**
- * HTTP header and MDC constants used across all microservices.
- */
+/** HTTP header and MDC constants used across all microservices. */
 public final class HttpHeaders {
 
     public static final String CORRELATION_ID = "X-Correlation-Id";

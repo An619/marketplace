@@ -1,14 +1,16 @@
 package com.enterprise.marketplace.notificationservice.repository;
 
-import com.enterprise.marketplace.notificationservice.entity.NotificationEntity;
-import com.enterprise.marketplace.notificationservice.enums.NotificationStatus;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.enterprise.marketplace.notificationservice.entity.NotificationEntity;
+import com.enterprise.marketplace.notificationservice.enums.NotificationStatus;
 
 public interface NotificationRepository extends JpaRepository<NotificationEntity, UUID> {
 
@@ -18,7 +20,8 @@ public interface NotificationRepository extends JpaRepository<NotificationEntity
 
     Page<NotificationEntity> findByRecipientIdAndActiveTrue(String recipientId, Pageable pageable);
 
-    Page<NotificationEntity> findByStatusAndActiveTrue(NotificationStatus status, Pageable pageable);
+    Page<NotificationEntity> findByStatusAndActiveTrue(
+            NotificationStatus status, Pageable pageable);
 
     Page<NotificationEntity> findByActiveTrue(Pageable pageable);
 

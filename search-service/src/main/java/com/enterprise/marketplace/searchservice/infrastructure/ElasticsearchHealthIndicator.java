@@ -1,11 +1,12 @@
 package com.enterprise.marketplace.searchservice.infrastructure;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import lombok.RequiredArgsConstructor;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
+
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import lombok.RequiredArgsConstructor;
 
 @Component
 @ConditionalOnBean(ElasticsearchClient.class)
@@ -21,7 +22,10 @@ public class ElasticsearchHealthIndicator implements HealthIndicator {
             if (result) {
                 return Health.up().withDetail("component", "elasticsearch").build();
             }
-            return Health.down().withDetail("component", "elasticsearch").withDetail("ping", false).build();
+            return Health.down()
+                    .withDetail("component", "elasticsearch")
+                    .withDetail("ping", false)
+                    .build();
         } catch (Exception ex) {
             return Health.down(ex).withDetail("component", "elasticsearch").build();
         }

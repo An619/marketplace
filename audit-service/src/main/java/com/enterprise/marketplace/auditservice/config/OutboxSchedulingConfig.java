@@ -6,5 +6,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
 @EnableScheduling
-@ConditionalOnProperty(prefix = "marketplace.outbox", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+        prefix = "marketplace.outbox",
+        name = "enabled",
+        havingValue = "true",
+        matchIfMissing = true)
 public class OutboxSchedulingConfig {}

@@ -1,12 +1,15 @@
 package com.enterprise.marketplace.productservice.dto.canonical;
 
+import java.util.UUID;
+
+import jakarta.validation.constraints.NotBlank;
+
 import com.enterprise.marketplace.productservice.enums.ProductStatus;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.validation.constraints.NotBlank;
+
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
-import java.util.UUID;
 
 @Value
 @Builder
@@ -14,11 +17,9 @@ import java.util.UUID;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ProductSectionDto {
 
-    @NotBlank
-    String sku;
+    @NotBlank String sku;
 
-    @NotBlank
-    String name;
+    @NotBlank String name;
 
     String description;
 

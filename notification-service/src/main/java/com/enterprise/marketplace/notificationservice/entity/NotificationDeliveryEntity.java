@@ -1,7 +1,8 @@
 package com.enterprise.marketplace.notificationservice.entity;
 
-import com.enterprise.marketplace.notificationservice.enums.DeliveryStatus;
-import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
+import java.time.Instant;
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,8 +12,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import java.time.Instant;
-import java.util.UUID;
+
+import com.enterprise.marketplace.notificationservice.enums.DeliveryStatus;
+import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
+
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,5 +1,13 @@
 package com.enterprise.marketplace.pricingservice.application.service;
 
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import com.enterprise.marketplace.common.exception.ErrorCode;
 import com.enterprise.marketplace.common.exception.MarketplaceException;
 import com.enterprise.marketplace.common.exception.ResourceNotFoundException;
@@ -14,13 +22,8 @@ import com.enterprise.marketplace.pricingservice.domain.model.PricingSearchCrite
 import com.enterprise.marketplace.pricingservice.domain.model.PricingStatus;
 import com.enterprise.marketplace.pricingservice.domain.port.PricingRepository;
 import com.enterprise.marketplace.pricingservice.domain.service.PricingDomainService;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -43,19 +46,21 @@ public class PricingApplicationService {
     }
 
     public PricingResponse getPricingById(UUID id) {
-        Pricing pricing = pricingRepository
-                .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Pricing", id));
+        Pricing pricing =
+                pricingRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Pricing", id));
         return pricingMapper.toResponse(pricing);
     }
 
     public PricingPageResponse searchPricing(
             UUID productId, UUID sellerId, PricingStatus status, int page, int size, String sort) {
-        PricingSearchCriteria criteria = PricingSearchCriteria.builder()
-                .productId(productId)
-                .sellerId(sellerId)
-                .status(status)
-                .build();
+        PricingSearchCriteria criteria =
+                PricingSearchCriteria.builder()
+                        .productId(productId)
+                        .sellerId(sellerId)
+                        .status(status)
+                        .build();
         PricingPage<Pricing> result = pricingRepository.search(criteria, page, size, sort);
         List<PricingResponse> content =
                 result.content().stream().map(pricingMapper::toResponse).toList();
@@ -71,22 +76,38 @@ public class PricingApplicationService {
 
     @Transactional
     public PricingResponse updatePricing(UUID id, UpdatePricingRequest request) {
-        Pricing existing = pricingRepository
-                .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Pricing", id));
+        Pricing existing =
+                pricingRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Pricing", id));
 
-        Pricing updated = existing.toBuilder()
-                .unitPrice(request.getUnitPrice() != null ? request.getUnitPrice() : existing.getUnitPrice())
-                .currency(StringUtils.hasText(request.getCurrency())
-                        ? request.getCurrency().toUpperCase(Locale.ROOT)
-                        : existing.getCurrency())
-                .minQuantity(request.getMinQuantity() != null ? request.getMinQuantity() : existing.getMinQuantity())
-                .discountPercent(request.getDiscountPercent() != null
-                        ? request.getDiscountPercent()
-                        : existing.getDiscountPercent())
-                .validFrom(request.getValidFrom() != null ? request.getValidFrom() : existing.getValidFrom())
-                .validTo(request.getValidTo() != null ? request.getValidTo() : existing.getValidTo())
-                .build();
+        Pricing updated =
+                existing.toBuilder()
+                        .unitPrice(
+                                request.getUnitPrice() != null
+                                        ? request.getUnitPrice()
+                                        : existing.getUnitPrice())
+                        .currency(
+                                StringUtils.hasText(request.getCurrency())
+                                        ? request.getCurrency().toUpperCase(Locale.ROOT)
+                                        : existing.getCurrency())
+                        .minQuantity(
+                                request.getMinQuantity() != null
+                                        ? request.getMinQuantity()
+                                        : existing.getMinQuantity())
+                        .discountPercent(
+                                request.getDiscountPercent() != null
+                                        ? request.getDiscountPercent()
+                                        : existing.getDiscountPercent())
+                        .validFrom(
+                                request.getValidFrom() != null
+                                        ? request.getValidFrom()
+                                        : existing.getValidFrom())
+                        .validTo(
+                                request.getValidTo() != null
+                                        ? request.getValidTo()
+                                        : existing.getValidTo())
+                        .build();
 
         try {
             PricingDomainService.validateForUpdate(updated);
@@ -98,9 +119,10 @@ public class PricingApplicationService {
 
     @Transactional
     public PricingResponse updatePricingStatus(UUID id, PricingStatus status) {
-        Pricing existing = pricingRepository
-                .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Pricing", id));
+        Pricing existing =
+                pricingRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Pricing", id));
         try {
             PricingDomainService.validateStatusTransition(existing.getStatus(), status);
         } catch (IllegalArgumentException ex) {

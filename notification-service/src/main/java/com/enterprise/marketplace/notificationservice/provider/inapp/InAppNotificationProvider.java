@@ -1,13 +1,15 @@
 package com.enterprise.marketplace.notificationservice.provider.inapp;
 
+import org.springframework.stereotype.Component;
+
 import com.enterprise.marketplace.notificationservice.entity.NotificationEntity;
 import com.enterprise.marketplace.notificationservice.entity.NotificationInboxEntity;
 import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
 import com.enterprise.marketplace.notificationservice.provider.NotificationProvider;
 import com.enterprise.marketplace.notificationservice.provider.ProviderDeliveryResult;
 import com.enterprise.marketplace.notificationservice.repository.NotificationInboxRepository;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
@@ -29,6 +31,7 @@ public class InAppNotificationProvider implements NotificationProvider {
         inbox.setBody(notification.getBody());
         inbox.setReadFlag(Boolean.FALSE);
         inboxRepository.save(inbox);
-        return ProviderDeliveryResult.success("In-app notification saved to inbox id=" + inbox.getId());
+        return ProviderDeliveryResult.success(
+                "In-app notification saved to inbox id=" + inbox.getId());
     }
 }

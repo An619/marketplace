@@ -1,8 +1,10 @@
 package com.enterprise.marketplace.identityservice.application.dto;
 
+import java.util.UUID;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Value;
 

@@ -1,15 +1,18 @@
 package com.enterprise.marketplace.identityservice.infrastructure.persistence.entity;
 
-import com.enterprise.marketplace.common.model.BaseEntity;
-import com.enterprise.marketplace.identityservice.domain.MobileUserStatus;
-import com.enterprise.marketplace.identityservice.domain.OnboardingStep;
-import com.enterprise.marketplace.identityservice.domain.UserType;
+import java.time.Instant;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
-import java.time.Instant;
+
+import com.enterprise.marketplace.common.model.BaseEntity;
+import com.enterprise.marketplace.identityservice.domain.MobileUserStatus;
+import com.enterprise.marketplace.identityservice.domain.OnboardingStep;
+import com.enterprise.marketplace.identityservice.domain.UserType;
+
 import lombok.Getter;
 import lombok.Setter;
 
