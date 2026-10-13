@@ -12,6 +12,10 @@ This configuration is a starter for a disposable development EKS environment. It
 
 EKS clusters, EC2 worker nodes, NAT gateways, load balancers, EBS, logging and data transfer can incur charges. A single NAT gateway lowers cost but is not highly available. This configuration is not a free-tier guarantee.
 
+## Automated validation
+
+The `Validate deployment configuration` GitHub Actions workflow runs `terraform fmt -check -recursive`, initializes providers with the backend disabled, and runs `terraform validate`. This workflow validates configuration only; it does not create AWS resources.
+
 ## Plan before apply
 
 From this directory:
