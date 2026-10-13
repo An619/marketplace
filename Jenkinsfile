@@ -15,7 +15,7 @@ pipeline {
     }
 
     environment {
-        JAVA_HOME = "\${tool 'jdk-21'}"
+        JAVA_HOME = "${tool 'jdk-21'}"
     }
 
     stages {
@@ -96,9 +96,9 @@ pipeline {
 
                     docker.withRegistry('https://ghcr.io', 'ghcr-push-token') {
                         for (service in services) {
-                            def imageName = "ghcr.io/an619/marketplace-\${service}"
-                            sh "docker build -f docker/Dockerfile.service --build-arg SERVICE_MODULE=\${service} -t \${imageName}:\${imageTag} ."
-                            sh "docker push \${imageName}:\${imageTag}"
+                            def imageName = "ghcr.io/an619/marketplace-${service}"
+                            sh "docker build -f docker/Dockerfile.service --build-arg SERVICE_MODULE=${service} -t ${imageName}:${imageTag} ."
+                            sh "docker push ${imageName}:${imageTag}"
                         }
                     }
                 }
