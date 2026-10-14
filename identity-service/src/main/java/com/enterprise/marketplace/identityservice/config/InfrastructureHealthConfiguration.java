@@ -3,9 +3,7 @@ package com.enterprise.marketplace.identityservice.config;
 import java.util.Map;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -14,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.enterprise.marketplace.common.api.ApiResponse;
 import com.enterprise.marketplace.identityservice.infrastructure.InfrastructureHealthAggregator;
 
-@ConditionalOnBean({RedisConnectionFactory.class, KafkaAdmin.class})
 public class InfrastructureHealthConfiguration {
 
     @RestController
