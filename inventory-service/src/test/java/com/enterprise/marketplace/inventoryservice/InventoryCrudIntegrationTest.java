@@ -73,6 +73,8 @@ class InventoryCrudIntegrationTest {
         assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         UUID inventoryId = createResponse.getBody().getData().getId();
 
+        HttpHeaders reserveHeaders = new HttpHeaders();
+        reserveHeaders.set("Idempotency-Key", UUID.randomUUID().toString());
         ResponseEntity<com.enterprise.marketplace.common.api.ApiResponse<InventoryResponse>>
                 reserveResponse =
                         restTemplate.exchange(
@@ -81,12 +83,15 @@ class InventoryCrudIntegrationTest {
                                 new HttpEntity<>(
                                         AdjustInventoryQuantityRequest.builder()
                                                 .quantity(15)
-                                                .build()),
+                                                .build(),
+                                        reserveHeaders),
                                 new ParameterizedTypeReference<>() {});
         assertThat(reserveResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(reserveResponse.getBody().getData().getQuantityAvailable()).isEqualTo(25);
         assertThat(reserveResponse.getBody().getData().getQuantityReserved()).isEqualTo(15);
 
+        HttpHeaders releaseHeaders = new HttpHeaders();
+        releaseHeaders.set("Idempotency-Key", UUID.randomUUID().toString());
         ResponseEntity<com.enterprise.marketplace.common.api.ApiResponse<InventoryResponse>>
                 releaseResponse =
                         restTemplate.exchange(
@@ -95,7 +100,8 @@ class InventoryCrudIntegrationTest {
                                 new HttpEntity<>(
                                         AdjustInventoryQuantityRequest.builder()
                                                 .quantity(5)
-                                                .build()),
+                                                .build(),
+                                        releaseHeaders),
                                 new ParameterizedTypeReference<>() {});
         assertThat(releaseResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(releaseResponse.getBody().getData().getQuantityAvailable()).isEqualTo(30);
