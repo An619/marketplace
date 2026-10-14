@@ -1,7 +1,6 @@
 package com.enterprise.marketplace.identityservice.config;
 
 import java.util.Map;
-import java.util.Objects;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
