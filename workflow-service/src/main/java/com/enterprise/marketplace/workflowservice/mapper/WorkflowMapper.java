@@ -11,6 +11,7 @@ import com.enterprise.marketplace.workflowservice.dto.WorkflowResponse;
 import com.enterprise.marketplace.workflowservice.entity.WorkflowEntity;
 import com.enterprise.marketplace.workflowservice.entity.WorkflowHistoryEntity;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -60,13 +61,13 @@ public class WorkflowMapper {
                 .build();
     }
 
-    private Map<String, Object> deserializeMetadata(String metadata) {
-        if (metadata == null || metadata.isBlank()) {
+    private Map<String, Object> deserializeMetadata(JsonNode metadata) {
+        if (metadata == null || metadata.isNull() || metadata.isMissingNode()) {
             return Collections.emptyMap();
         }
         try {
-            return objectMapper.readValue(metadata, new TypeReference<>() {});
-        } catch (Exception ex) {
+            return objectMapper.convertValue(metadata, new TypeReference<>() {});
+        } catch (IllegalArgumentException ex) {
             return Collections.emptyMap();
         }
     }
