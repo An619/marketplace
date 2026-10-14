@@ -87,7 +87,7 @@ public class WorkflowServiceImpl implements WorkflowService {
         workflow.setSourceSystem(request.getSourceSystem());
         workflow.setInitiatedBy(request.getInitiatedBy());
         workflow.setMessage(request.getMessage());
-        workflow.setMetadata(serializeMetadata(request.getMetadata()));
+        workflow.setMetadata(request.getMetadata() == null || request.getMetadata().isEmpty() ? null : objectMapper.valueToTree(request.getMetadata()));
         workflow.setActive(true);
 
         WorkflowEntity saved = workflowRepository.save(workflow);
@@ -187,7 +187,7 @@ public class WorkflowServiceImpl implements WorkflowService {
             workflow.setMessage(request.getMessage());
         }
         if (request.getMetadata() != null) {
-            workflow.setMetadata(serializeMetadata(request.getMetadata()));
+            workflow.setMetadata(objectMapper.valueToTree(request.getMetadata()));
         }
 
         WorkflowEntity saved = workflowRepository.save(workflow);
@@ -265,7 +265,7 @@ public class WorkflowServiceImpl implements WorkflowService {
         event.setWorkflowId(workflow.getId());
         event.setEventType(eventSource);
         event.setEventSource(eventSource);
-        event.setPayload(payload);
+        event.setPayload(parseJson(payload));
         event.setCorrelationId(RequestContext.getCorrelationId());
         event.setRequestId(requestId);
         eventRepository.save(event);
@@ -398,7 +398,7 @@ public class WorkflowServiceImpl implements WorkflowService {
         event.setAggregateId(workflow.getId());
         event.setEventType(eventType);
         event.setTopic(topic);
-        event.setPayload(serializePayload(payload));
+        event.setPayload(objectMapper.valueToTree(payload));
         event.setStatus(OutboxEventStatus.PENDING);
         event.setRetryCount(0);
         event.setMaxRetries(outboxMaxRetries);
@@ -448,23 +448,11 @@ public class WorkflowServiceImpl implements WorkflowService {
         return payload;
     }
 
-    private String serializeMetadata(Map<String, Object> metadata) {
-        if (metadata == null || metadata.isEmpty()) {
-            return null;
-        }
+    private com.fasterxml.jackson.databind.JsonNode parseJson(String json) {
         try {
-            return objectMapper.writeValueAsString(metadata);
-        } catch (Exception ex) {
-            throw new MarketplaceException(ErrorCode.VALIDATION_ERROR, "Invalid metadata JSON");
-        }
-    }
-
-    private String serializePayload(Map<String, Object> payload) {
-        try {
-            return objectMapper.writeValueAsString(payload);
-        } catch (Exception ex) {
-            throw new MarketplaceException(
-                    ErrorCode.INTERNAL_ERROR, "Failed to serialize outbox payload");
+            return json == null ? null : objectMapper.readTree(json);
+        } catch (com.fasterxml.jackson.core.JsonProcessingException ex) {
+            throw new MarketplaceException(ErrorCode.VALIDATION_ERROR, "Invalid event payload JSON");
         }
     }
 }
