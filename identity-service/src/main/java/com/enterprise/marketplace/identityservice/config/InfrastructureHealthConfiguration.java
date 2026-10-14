@@ -43,8 +43,14 @@ public class InfrastructureHealthConfiguration {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
         }
         Map<String, Object> payload = aggregator.collectHealth();
+        Object components = payload.get("components");
+        if (!(components instanceof Map<?, ?> componentHealth)
+                || componentHealth.get("redis") == null) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
+        }
         return ResponseEntity.ok(
-                ApiResponse.success(Map.of("redis", payload.get("redis")), "Redis health"));
+                ApiResponse.success(
+                        Map.of("redis", componentHealth.get("redis")), "Redis health"));
     }
 
     @GetMapping("/health/kafka")
@@ -55,7 +61,13 @@ public class InfrastructureHealthConfiguration {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
         }
         Map<String, Object> payload = aggregator.collectHealth();
+        Object components = payload.get("components");
+        if (!(components instanceof Map<?, ?> componentHealth)
+                || componentHealth.get("kafka") == null) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
+        }
         return ResponseEntity.ok(
-                ApiResponse.success(Map.of("kafka", payload.get("kafka")), "Kafka health"));
+                ApiResponse.success(
+                        Map.of("kafka", componentHealth.get("kafka")), "Kafka health"));
     }
 }
