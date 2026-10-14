@@ -61,7 +61,7 @@ public class OutboxPublisherService {
             kafkaEventPublisher.publish(
                     event.getTopic(),
                     event.getAggregateId().toString(),
-                    event.getPayload(),
+                    event.getPayload().toString(),
                     headers);
             event.setStatus(OutboxEventStatus.PUBLISHED);
             event.setPublishedAt(Instant.now());
@@ -75,7 +75,7 @@ public class OutboxPublisherService {
                 event.setStatus(OutboxEventStatus.DEAD_LETTER);
                 kafkaEventPublisher.publishDeadLetter(
                         event.getAggregateId().toString(),
-                        event.getPayload(),
+                        event.getPayload().toString(),
                         Map.of("eventType", event.getEventType()));
                 log.error(
                         "Outbox event moved to dead letter id={} type={}",
