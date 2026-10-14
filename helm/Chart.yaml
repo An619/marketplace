@@ -1,21 +1,6 @@
-# Helm Charts
-#
-# Bootstrap placeholder. Charts will be added when Kubernetes deployment is implemented.
-#
-# Planned structure:
-# helm/
-# ├── marketplace-platform/     # Umbrella chart
-# │   ├── Chart.yaml
-# │   ├── values.yaml
-# │   └── charts/
-# │       ├── gateway/
-# │       ├── product-service/
-# │       └── ...
-# └── README.md
-
 apiVersion: v2
 name: marketplace-platform
-description: Enterprise Marketplace Platform umbrella Helm chart
+description: Enterprise Marketplace Platform umbrella Helm chart for gateway and microservice workloads
 type: application
 version: 0.1.0
 appVersion: "1.0.0-SNAPSHOT"
