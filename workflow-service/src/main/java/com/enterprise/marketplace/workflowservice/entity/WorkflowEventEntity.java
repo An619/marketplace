@@ -11,6 +11,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -34,8 +39,9 @@ public class WorkflowEventEntity {
     @Column(name = "event_source", nullable = false, length = 64)
     private String eventSource;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "payload", nullable = false, columnDefinition = "jsonb")
-    private String payload;
+    private JsonNode payload;
 
     @Column(name = "correlation_id", length = 64)
     private String correlationId;
