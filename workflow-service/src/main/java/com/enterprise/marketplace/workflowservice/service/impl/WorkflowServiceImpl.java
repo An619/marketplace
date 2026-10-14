@@ -87,7 +87,10 @@ public class WorkflowServiceImpl implements WorkflowService {
         workflow.setSourceSystem(request.getSourceSystem());
         workflow.setInitiatedBy(request.getInitiatedBy());
         workflow.setMessage(request.getMessage());
-        workflow.setMetadata(request.getMetadata() == null || request.getMetadata().isEmpty() ? null : objectMapper.valueToTree(request.getMetadata()));
+        workflow.setMetadata(
+                request.getMetadata() == null || request.getMetadata().isEmpty()
+                        ? null
+                        : objectMapper.valueToTree(request.getMetadata()));
         workflow.setActive(true);
 
         WorkflowEntity saved = workflowRepository.save(workflow);
@@ -452,7 +455,8 @@ public class WorkflowServiceImpl implements WorkflowService {
         try {
             return json == null ? null : objectMapper.readTree(json);
         } catch (com.fasterxml.jackson.core.JsonProcessingException ex) {
-            throw new MarketplaceException(ErrorCode.VALIDATION_ERROR, "Invalid event payload JSON");
+            throw new MarketplaceException(
+                    ErrorCode.VALIDATION_ERROR, "Invalid event payload JSON");
         }
     }
 }
