@@ -3,8 +3,6 @@ package com.enterprise.marketplace.identityservice.config;
 import java.util.Map;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaAdmin;
@@ -16,19 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.enterprise.marketplace.common.api.ApiResponse;
 import com.enterprise.marketplace.identityservice.infrastructure.InfrastructureHealthAggregator;
 
-@Configuration
 @ConditionalOnBean({RedisConnectionFactory.class, KafkaAdmin.class})
 public class InfrastructureHealthConfiguration {
 
-    @Bean
-    @ConditionalOnBean(InfrastructureHealthAggregator.class)
-    InfrastructureHealthEndpoints infrastructureHealthEndpoints(
-            InfrastructureHealthAggregator healthAggregator) {
-        return new InfrastructureHealthEndpoints(healthAggregator);
-    }
-
     @RestController
     @RequestMapping("/api/v1/infrastructure")
+    @ConditionalOnBean(InfrastructureHealthAggregator.class)
     static class InfrastructureHealthEndpoints {
 
         private final InfrastructureHealthAggregator healthAggregator;
