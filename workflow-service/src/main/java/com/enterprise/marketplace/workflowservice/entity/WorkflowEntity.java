@@ -8,10 +8,14 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import com.enterprise.marketplace.common.model.BaseEntity;
 import com.enterprise.marketplace.workflowservice.enums.AggregateType;
 import com.enterprise.marketplace.workflowservice.enums.WorkflowOperationType;
 import com.enterprise.marketplace.workflowservice.enums.WorkflowStatus;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -59,8 +63,9 @@ public class WorkflowEntity extends BaseEntity {
     @Column(name = "message", length = 2000)
     private String message;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "metadata", columnDefinition = "jsonb")
-    private String metadata;
+    private JsonNode metadata;
 
     @Column(name = "active", nullable = false)
     private Boolean active = Boolean.TRUE;
