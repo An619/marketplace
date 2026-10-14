@@ -13,7 +13,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import com.enterprise.marketplace.productservice.enums.AuditOperation;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -45,11 +49,13 @@ public class ProductAuditEntity {
     @Column(name = "request_id", length = 64)
     private String requestId;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "before_state", columnDefinition = "jsonb")
-    private String beforeState;
+    private JsonNode beforeState;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "after_state", columnDefinition = "jsonb")
-    private String afterState;
+    private JsonNode afterState;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
