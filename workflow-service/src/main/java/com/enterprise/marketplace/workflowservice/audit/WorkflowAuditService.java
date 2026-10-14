@@ -37,8 +37,8 @@ public class WorkflowAuditService {
         audit.setRequestId(workflow.getRequestId());
         audit.setBeforeStatus(beforeStatus);
         audit.setAfterStatus(afterStatus);
-        audit.setBeforeState(serialize(beforeState));
-        audit.setAfterState(serialize(afterState));
+        audit.setBeforeState(toJsonNode(beforeState));
+        audit.setAfterState(toJsonNode(afterState));
         auditRepository.save(audit);
         log.info(
                 "Workflow audit recorded workflowId={} operation={} before={} after={}",
@@ -48,15 +48,7 @@ public class WorkflowAuditService {
                 afterStatus);
     }
 
-    private String serialize(Object value) {
-        if (value == null) {
-            return null;
-        }
-        try {
-            return objectMapper.writeValueAsString(value);
-        } catch (Exception ex) {
-            log.warn("Failed to serialize audit state", ex);
-            return null;
-        }
+    private com.fasterxml.jackson.databind.JsonNode toJsonNode(Object value) {
+        return value == null ? null : objectMapper.valueToTree(value);
     }
 }
