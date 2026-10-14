@@ -58,7 +58,7 @@ public class OutboxPublisherService {
                     event.getTopic(),
                     event.getAggregateId().toString(),
                     event.getPayload().toString(),
-                    headers;
+                    headers);
             event.setStatus(OutboxEventStatus.PUBLISHED);
             event.setPublishedAt(Instant.now());
             event.setLastError(null);
