@@ -72,7 +72,8 @@ public class InfrastructureHealthAggregator {
             return kafkaHealth;
         }
 
-        try (AdminClient adminClient = AdminClient.create(kafkaAdmin.getConfigurationProperties())) {
+        try (AdminClient adminClient =
+                AdminClient.create(kafkaAdmin.getConfigurationProperties())) {
             int brokerCount = adminClient.describeCluster().nodes().get(5, TimeUnit.SECONDS).size();
             if (brokerCount == 0) {
                 kafkaHealth.put("status", "DOWN");
