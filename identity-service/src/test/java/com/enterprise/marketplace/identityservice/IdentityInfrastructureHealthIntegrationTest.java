@@ -61,7 +61,7 @@ class IdentityInfrastructureHealthIntegrationTest {
                 restTemplate.getForEntity("/api/v1/infrastructure/health/redis", Map.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         Map<?, ?> data = responseData(response);
-        assertThat((Map<?, ?>) data.get("redis")).containsEntry("status", "UP");
+        assertThat(((Map<?, ?>) data.get("redis")).get("status")).isEqualTo("UP");
     }
 
     @Test
@@ -70,7 +70,7 @@ class IdentityInfrastructureHealthIntegrationTest {
                 restTemplate.getForEntity("/api/v1/infrastructure/health/kafka", Map.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         Map<?, ?> data = responseData(response);
-        assertThat((Map<?, ?>) data.get("kafka")).containsEntry("status", "UP");
+        assertThat(((Map<?, ?>) data.get("kafka")).get("status")).isEqualTo("UP");
     }
 
     @Test
@@ -79,10 +79,10 @@ class IdentityInfrastructureHealthIntegrationTest {
                 restTemplate.getForEntity("/api/v1/infrastructure/health", Map.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         Map<?, ?> data = responseData(response);
-        assertThat(data).containsEntry("status", "UP");
+        assertThat(data.get("status")).isEqualTo("UP");
         Map<?, ?> components = (Map<?, ?>) data.get("components");
-        assertThat((Map<?, ?>) components.get("redis")).containsEntry("status", "UP");
-        assertThat((Map<?, ?>) components.get("kafka")).containsEntry("status", "UP");
+        assertThat(((Map<?, ?>) components.get("redis")).get("status")).isEqualTo("UP");
+        assertThat(((Map<?, ?>) components.get("kafka")).get("status")).isEqualTo("UP");
     }
 
     private Map<?, ?> responseData(ResponseEntity<Map> response) {
