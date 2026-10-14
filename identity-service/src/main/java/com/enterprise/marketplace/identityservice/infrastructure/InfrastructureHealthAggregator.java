@@ -35,7 +35,8 @@ public class InfrastructureHealthAggregator {
 
     private Map<String, Object> checkRedis() {
         Map<String, Object> redisHealth = new LinkedHashMap<>();
-        RedisConnectionFactory redisConnectionFactory = redisConnectionFactoryProvider.getIfAvailable();
+        RedisConnectionFactory redisConnectionFactory =
+                redisConnectionFactoryProvider.getIfAvailable();
         if (redisConnectionFactory == null) {
             redisHealth.put("status", "UNAVAILABLE");
             redisHealth.put("error", "Redis connection factory is not configured");
