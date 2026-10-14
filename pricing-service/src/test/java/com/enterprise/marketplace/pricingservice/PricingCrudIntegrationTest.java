@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -64,12 +65,15 @@ class PricingCrudIntegrationTest {
                         .status(PricingStatus.ACTIVE)
                         .build();
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Idempotency-Key", UUID.randomUUID().toString());
+
         ResponseEntity<com.enterprise.marketplace.common.api.ApiResponse<PricingResponse>>
                 createResponse =
                         restTemplate.exchange(
                                 "/api/v1/pricing",
                                 HttpMethod.POST,
-                                new HttpEntity<>(request),
+                                new HttpEntity<>(request, headers),
                                 new ParameterizedTypeReference<>() {});
 
         assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
