@@ -7,9 +7,11 @@ import com.enterprise.marketplace.inventoryservice.domain.model.InventoryStatus;
 
 import lombok.Builder;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 @Value
 @Builder
+@Jacksonized
 public class InventoryResponse {
 
     UUID id;
