@@ -98,6 +98,8 @@ class WorkflowCrudIntegrationTest {
                         .reason("Integration test transition")
                         .build();
 
+        headers.set("Idempotency-Key", UUID.randomUUID().toString());
+
         ResponseEntity<com.enterprise.marketplace.common.api.ApiResponse<WorkflowResponse>>
                 patchResponse =
                         restTemplate.exchange(
