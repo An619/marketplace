@@ -2,8 +2,11 @@ package com.enterprise.marketplace.identityservice.infrastructure;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.kafka.clients.admin.AdminClient;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.stereotype.Component;
@@ -43,13 +46,19 @@ public class InfrastructureHealthAggregator {
             return redisHealth;
         }
 
+        RedisConnection connection = null;
         try {
-            String pong = redisConnectionFactory.getConnection().ping();
+            connection = redisConnectionFactory.getConnection();
+            String pong = connection.ping();
             redisHealth.put("status", "UP");
             redisHealth.put("response", pong);
         } catch (Exception ex) {
             redisHealth.put("status", "DOWN");
             redisHealth.put("error", ex.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
         }
         return redisHealth;
     }
@@ -63,12 +72,18 @@ public class InfrastructureHealthAggregator {
             return kafkaHealth;
         }
 
-        try {
-            kafkaAdmin.initialize();
-            kafkaHealth.put("status", "UP");
-            kafkaHealth.put(
-                    "bootstrapServers",
-                    kafkaAdmin.getConfigurationProperties().get("bootstrap.servers"));
+        try (AdminClient adminClient = AdminClient.create(kafkaAdmin.getConfigurationProperties())) {
+            int brokerCount = adminClient.describeCluster().nodes().get(5, TimeUnit.SECONDS).size();
+            if (brokerCount == 0) {
+                kafkaHealth.put("status", "DOWN");
+                kafkaHealth.put("error", "Kafka reported no available brokers");
+            } else {
+                kafkaHealth.put("status", "UP");
+                kafkaHealth.put("brokers", brokerCount);
+                kafkaHealth.put(
+                        "bootstrapServers",
+                        kafkaAdmin.getConfigurationProperties().get("bootstrap.servers"));
+            }
         } catch (Exception ex) {
             kafkaHealth.put("status", "DOWN");
             kafkaHealth.put("error", ex.getMessage());
