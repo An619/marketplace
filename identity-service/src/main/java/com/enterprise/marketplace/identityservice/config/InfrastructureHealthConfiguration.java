@@ -1,8 +1,10 @@
 package com.enterprise.marketplace.identityservice.config;
 
 import java.util.Map;
+import java.util.Objects;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,41 +14,49 @@ import org.springframework.web.bind.annotation.RestController;
 import com.enterprise.marketplace.common.api.ApiResponse;
 import com.enterprise.marketplace.identityservice.infrastructure.InfrastructureHealthAggregator;
 
+@RestController
+@RequestMapping("/api/v1/infrastructure")
 public class InfrastructureHealthConfiguration {
 
-    @RestController
-    @RequestMapping("/api/v1/infrastructure")
-    @ConditionalOnBean(InfrastructureHealthAggregator.class)
-    static class InfrastructureHealthEndpoints {
+    private final ObjectProvider<InfrastructureHealthAggregator> healthAggregatorProvider;
 
-        private final InfrastructureHealthAggregator healthAggregator;
+    public InfrastructureHealthConfiguration(
+            ObjectProvider<InfrastructureHealthAggregator> healthAggregatorProvider) {
+        this.healthAggregatorProvider = healthAggregatorProvider;
+    }
 
-        InfrastructureHealthEndpoints(InfrastructureHealthAggregator healthAggregator) {
-            this.healthAggregator = healthAggregator;
+    @GetMapping("/health")
+    @ResponseBody
+    ResponseEntity<ApiResponse<Map<String, Object>>> infrastructureHealth() {
+        InfrastructureHealthAggregator aggregator = healthAggregatorProvider.getIfAvailable();
+        if (aggregator == null) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
         }
+        Map<String, Object> payload = aggregator.collectHealth();
+        return ResponseEntity.ok(ApiResponse.success(payload, "Infrastructure health snapshot"));
+    }
 
-        @GetMapping("/health")
-        @ResponseBody
-        ResponseEntity<ApiResponse<Map<String, Object>>> infrastructureHealth() {
-            Map<String, Object> payload = healthAggregator.collectHealth();
-            return ResponseEntity.ok(
-                    ApiResponse.success(payload, "Infrastructure health snapshot"));
+    @GetMapping("/health/redis")
+    @ResponseBody
+    ResponseEntity<ApiResponse<Map<String, Object>>> redisHealth() {
+        InfrastructureHealthAggregator aggregator = healthAggregatorProvider.getIfAvailable();
+        if (aggregator == null) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
         }
+        Map<String, Object> payload = aggregator.collectHealth();
+        return ResponseEntity.ok(
+                ApiResponse.success(Map.of("redis", payload.get("redis")), "Redis health"));
+    }
 
-        @GetMapping("/health/redis")
-        @ResponseBody
-        ResponseEntity<ApiResponse<Map<String, Object>>> redisHealth() {
-            Map<String, Object> payload = healthAggregator.collectHealth();
-            return ResponseEntity.ok(
-                    ApiResponse.success(Map.of("redis", payload.get("redis")), "Redis health"));
+    @GetMapping("/health/kafka")
+    @ResponseBody
+    ResponseEntity<ApiResponse<Map<String, Object>>> kafkaHealth() {
+        InfrastructureHealthAggregator aggregator = healthAggregatorProvider.getIfAvailable();
+        if (aggregator == null) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
         }
-
-        @GetMapping("/health/kafka")
-        @ResponseBody
-        ResponseEntity<ApiResponse<Map<String, Object>>> kafkaHealth() {
-            Map<String, Object> payload = healthAggregator.collectHealth();
-            return ResponseEntity.ok(
-                    ApiResponse.success(Map.of("kafka", payload.get("kafka")), "Kafka health"));
-        }
+        Map<String, Object> payload = aggregator.collectHealth();
+        return ResponseEntity.ok(
+                ApiResponse.success(Map.of("kafka", payload.get("kafka")), "Kafka health"));
     }
 }
