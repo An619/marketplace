@@ -16,17 +16,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.enterprise.marketplace.common.api.ApiResponse;
 import com.enterprise.marketplace.identityservice.infrastructure.InfrastructureHealthAggregator;
 
-import lombok.RequiredArgsConstructor;
-
 @Configuration
 @ConditionalOnBean({RedisConnectionFactory.class, KafkaAdmin.class})
-@RequiredArgsConstructor
 public class InfrastructureHealthConfiguration {
 
-    private final InfrastructureHealthAggregator healthAggregator;
-
     @Bean
-    InfrastructureHealthEndpoints infrastructureHealthEndpoints() {
+    @ConditionalOnBean(InfrastructureHealthAggregator.class)
+    InfrastructureHealthEndpoints infrastructureHealthEndpoints(
+            InfrastructureHealthAggregator healthAggregator) {
         return new InfrastructureHealthEndpoints(healthAggregator);
     }
 
