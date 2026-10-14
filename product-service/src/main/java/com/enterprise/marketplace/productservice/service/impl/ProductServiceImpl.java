@@ -63,6 +63,7 @@ import com.enterprise.marketplace.productservice.validation.ProductValidationCon
 import com.enterprise.marketplace.productservice.validation.ProductValidationPipeline;
 import com.enterprise.marketplace.productservice.validation.ValidationOperation;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
@@ -526,8 +527,8 @@ public class ProductServiceImpl implements ProductService {
         audit.setActor(resolveActor(requestInfo));
         audit.setCorrelationId(RequestContext.getCorrelationId());
         audit.setRequestId(RequestContext.getRequestId());
-        audit.setBeforeState(beforeState);
-        audit.setAfterState(serialize(afterEntity));
+        audit.setBeforeState(parseJson(beforeState));
+        audit.setAfterState(objectMapper.valueToTree(afterEntity));
         productAuditRepository.save(audit);
     }
 
@@ -538,7 +539,7 @@ public class ProductServiceImpl implements ProductService {
         event.setAggregateId(aggregateId);
         event.setEventType(eventType);
         event.setTopic(topic);
-        event.setPayload(serialize(payload));
+        event.setPayload(objectMapper.valueToTree(payload));
         event.setStatus(OutboxEventStatus.PENDING);
         event.setRetryCount(0);
         event.setMaxRetries(5);
@@ -685,6 +686,17 @@ public class ProductServiceImpl implements ProductService {
 
     private int defaultInt(Integer value, int defaultValue) {
         return value != null ? value : defaultValue;
+    }
+
+    private JsonNode parseJson(String value) {
+        if (value == null) {
+            return null;
+        }
+        try {
+            return objectMapper.readTree(value);
+        } catch (JsonProcessingException ex) {
+            throw new IllegalStateException("Unable to convert audit state to JSON", ex);
+        }
     }
 
     private String serialize(Object value) {
