@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.enterprise.marketplace.common.exception.ErrorCode;
 import com.enterprise.marketplace.common.exception.MarketplaceException;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonSchema;
@@ -34,7 +35,9 @@ public class JsonSchemaValidationStep implements ValidationStep {
             return;
         }
         try {
-            JsonNode requestNode = objectMapper.valueToTree(context.request());
+            ObjectMapper schemaObjectMapper =
+                    objectMapper.copy().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            JsonNode requestNode = schemaObjectMapper.valueToTree(context.request());
             Set<ValidationMessage> errors = schema().validate(requestNode);
             if (!errors.isEmpty()) {
                 String message =
