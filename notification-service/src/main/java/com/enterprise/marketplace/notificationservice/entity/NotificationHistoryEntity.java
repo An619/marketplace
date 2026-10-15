@@ -13,6 +13,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
+import org.hibernate.annotations.ColumnTransformer;
+
 import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
 import com.enterprise.marketplace.notificationservice.enums.NotificationStatus;
 
@@ -47,6 +49,7 @@ public class NotificationHistoryEntity {
     @Column(name = "message", length = 2000)
     private String message;
 
+    @ColumnTransformer(write = "?::jsonb")
     @Column(name = "metadata", columnDefinition = "jsonb")
     private String metadata;
 
