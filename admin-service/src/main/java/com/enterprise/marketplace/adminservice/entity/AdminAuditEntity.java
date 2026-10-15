@@ -13,6 +13,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
+import org.hibernate.annotations.ColumnTransformer;
+
 import com.enterprise.marketplace.adminservice.enums.AdminAction;
 
 import lombok.Getter;
@@ -45,10 +47,20 @@ public class AdminAuditEntity {
     @Column(name = "actor", nullable = false, length = 128)
     private String actor;
 
+    @ColumnTransformer(write = "?::jsonb")
+
+
     @Column(name = "before_state", columnDefinition = "jsonb")
+
+
     private String beforeState;
 
+    @ColumnTransformer(write = "?::jsonb")
+
+
     @Column(name = "after_state", columnDefinition = "jsonb")
+
+
     private String afterState;
 
     @Column(name = "correlation_id", length = 64)
