@@ -13,6 +13,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
+import org.hibernate.annotations.ColumnTransformer;
+
 import com.enterprise.marketplace.aiservice.enums.AiAuditOperation;
 
 import lombok.Getter;
@@ -42,7 +44,12 @@ public class AiAuditEntity {
     @Column(name = "request_id", length = 64)
     private String requestId;
 
+    @ColumnTransformer(write = "?::jsonb")
+
+
     @Column(name = "metadata", columnDefinition = "jsonb")
+
+
     private String metadata;
 
     @Column(name = "created_at", nullable = false, updatable = false)
