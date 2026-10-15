@@ -13,6 +13,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
+import org.hibernate.annotations.ColumnTransformer;
+
 import com.enterprise.marketplace.subscriptionservice.enums.AuditOperation;
 import com.enterprise.marketplace.subscriptionservice.enums.SubscriptionStatus;
 
@@ -54,10 +56,20 @@ public class SubscriptionAuditEntity {
     @Column(name = "after_status", length = 32)
     private SubscriptionStatus afterStatus;
 
+    @ColumnTransformer(write = "?::jsonb")
+
+
     @Column(name = "before_state", columnDefinition = "jsonb")
+
+
     private String beforeState;
 
+    @ColumnTransformer(write = "?::jsonb")
+
+
     @Column(name = "after_state", columnDefinition = "jsonb")
+
+
     private String afterState;
 
     @Column(name = "created_at", nullable = false, updatable = false)
