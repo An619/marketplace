@@ -9,8 +9,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+import org.hibernate.annotations.ColumnTransformer;
 
 import com.enterprise.marketplace.common.model.BaseEntity;
 import com.enterprise.marketplace.notificationservice.enums.NotificationChannel;
@@ -72,7 +71,7 @@ public class NotificationEntity extends BaseEntity {
     @Column(name = "template_code", length = 64)
     private String templateCode;
 
-    @JdbcTypeCode(SqlTypes.JSON)
+    @ColumnTransformer(write = "?::jsonb")
     @Column(name = "metadata", columnDefinition = "jsonb")
     private String metadata;
 
