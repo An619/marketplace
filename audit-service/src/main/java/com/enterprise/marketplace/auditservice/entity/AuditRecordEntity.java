@@ -8,6 +8,8 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 
+import org.hibernate.annotations.ColumnTransformer;
+
 import com.enterprise.marketplace.auditservice.enums.AuditOperation;
 import com.enterprise.marketplace.auditservice.enums.AuditStatus;
 import com.enterprise.marketplace.common.model.BaseEntity;
@@ -52,12 +54,15 @@ public class AuditRecordEntity extends BaseEntity {
     @Column(name = "actor", length = 128)
     private String actor;
 
+    @ColumnTransformer(write = "?::jsonb")
     @Column(name = "before_state", columnDefinition = "jsonb")
     private String beforeState;
 
+    @ColumnTransformer(write = "?::jsonb")
     @Column(name = "after_state", columnDefinition = "jsonb")
     private String afterState;
 
+    @ColumnTransformer(write = "?::jsonb")
     @Column(name = "metadata", columnDefinition = "jsonb")
     private String metadata;
 
