@@ -14,6 +14,8 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
+import org.hibernate.annotations.ColumnTransformer;
+
 import com.enterprise.marketplace.reportservice.enums.OutboxEventStatus;
 
 import lombok.Getter;
@@ -42,7 +44,12 @@ public class OutboxEventEntity {
     @Column(name = "topic", nullable = false, length = 128)
     private String topic;
 
+    @ColumnTransformer(write = "?::jsonb")
+
+
     @Column(name = "payload", nullable = false, columnDefinition = "jsonb")
+
+
     private String payload;
 
     @Enumerated(EnumType.STRING)
