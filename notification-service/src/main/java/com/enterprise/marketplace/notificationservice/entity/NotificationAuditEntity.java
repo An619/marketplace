@@ -13,6 +13,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import com.enterprise.marketplace.notificationservice.enums.AuditOperation;
 import com.enterprise.marketplace.notificationservice.enums.NotificationStatus;
 
@@ -54,9 +57,11 @@ public class NotificationAuditEntity {
     @Column(name = "after_status", length = 32)
     private NotificationStatus afterStatus;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "before_state", columnDefinition = "jsonb")
     private String beforeState;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "after_state", columnDefinition = "jsonb")
     private String afterState;
 
