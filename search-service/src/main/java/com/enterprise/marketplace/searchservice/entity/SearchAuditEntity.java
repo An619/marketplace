@@ -13,6 +13,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
+import org.hibernate.annotations.ColumnTransformer;
+
 import com.enterprise.marketplace.searchservice.enums.SearchAuditOperation;
 
 import lombok.Getter;
@@ -51,7 +53,12 @@ public class SearchAuditEntity {
     @Column(name = "result_count")
     private Integer resultCount;
 
+    @ColumnTransformer(write = "?::jsonb")
+
+
     @Column(name = "metadata", columnDefinition = "jsonb")
+
+
     private String metadata;
 
     @Column(name = "created_at", nullable = false, updatable = false)
