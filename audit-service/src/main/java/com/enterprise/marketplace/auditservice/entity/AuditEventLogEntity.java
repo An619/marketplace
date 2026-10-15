@@ -11,6 +11,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
+import org.hibernate.annotations.ColumnTransformer;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -34,6 +36,7 @@ public class AuditEventLogEntity {
     @Column(name = "event_type", nullable = false, length = 128)
     private String eventType;
 
+    @ColumnTransformer(write = "?::jsonb")
     @Column(name = "payload", nullable = false, columnDefinition = "jsonb")
     private String payload;
 
